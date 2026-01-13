@@ -66,15 +66,15 @@
     /* Surface for cards/elevated elements */
     --surface: 220 14% 97%;
     
-    /* Sidebar tokens - Rich Amber/Gold with Black text */
-    --sidebar-bg: 45 100% 51%;
-    --sidebar-bg-end: 40 96% 45%;
-    --sidebar-border: 43 90% 40%;
-    --sidebar-hover: 45 100% 60%;
-    --sidebar-active: 0 0% 100%;
-    --sidebar-foreground: 0 0% 0%;
-    --sidebar-foreground-muted: 0 0% 25%;
-    --sidebar-accent: 40 100% 35%;
+    /* Sidebar tokens - macOS style translucent */
+    --sidebar-bg: 0 0% 98%;
+    --sidebar-bg-opacity: 0.72;
+    --sidebar-border: 0 0% 88%;
+    --sidebar-hover: 0 0% 0% / 0.04;
+    --sidebar-active: 0 0% 0% / 0.08;
+    --sidebar-foreground: 0 0% 15%;
+    --sidebar-foreground-muted: 0 0% 45%;
+    --sidebar-accent: 210 100% 50%;
     
     /* Admin specific - Uses primary sparingly */
     --admin-accent: 43 96% 50%;
@@ -128,13 +128,14 @@
     /* Surface for cards */
     --surface: 224 15% 11%;
     
-    /* Sidebar dark mode - Dark with White text */
-    --sidebar-bg: 224 15% 12%;
-    --sidebar-border: 224 15% 18%;
-    --sidebar-hover: 224 15% 16%;
-    --sidebar-active: 224 15% 20%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-foreground-muted: 0 0% 85%;
+    /* Sidebar dark mode - macOS dark translucent */
+    --sidebar-bg: 0 0% 12%;
+    --sidebar-bg-opacity: 0.65;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-hover: 0 0% 100% / 0.06;
+    --sidebar-active: 0 0% 100% / 0.1;
+    --sidebar-foreground: 0 0% 92%;
+    --sidebar-foreground-muted: 0 0% 60%;
     
     /* Admin specific - Green accent in dark */
     --admin-accent: 152 80% 50%;
