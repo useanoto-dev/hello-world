@@ -458,8 +458,8 @@ export default function DashboardLayout() {
         className={cn(
           "ripple-container relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium outline-none transition-all duration-200",
           isActive 
-            ? "bg-amber-500/80 text-gray-900" 
-            : "text-gray-800 hover:bg-amber-500/50",
+            ? "bg-white/10 text-amber-400" 
+            : "text-gray-300 hover:bg-white/5 hover:text-amber-400",
           sidebarCollapsed && "justify-center px-2"
         )}
         onMouseEnter={() => prefetchRoute(item.path)}
@@ -469,12 +469,12 @@ export default function DashboardLayout() {
         {isActive && (
           <motion.div
             layoutId="sidebarActiveIndicator"
-            className="absolute left-0 top-1 bottom-1 w-[3px] bg-blue-500 rounded-r-full"
+            className="absolute left-0 top-1 bottom-1 w-[3px] bg-amber-400 rounded-r-full"
             transition={{ type: "spring", stiffness: 500, damping: 30 }}
           />
         )}
         
-        <div className="relative">
+        <div className="relative text-amber-400">
           <item.icon className={cn(
             "flex-shrink-0",
             sidebarCollapsed ? "w-[18px] h-[18px]" : "w-4 h-4",
@@ -555,7 +555,7 @@ export default function DashboardLayout() {
             }}
             className={cn(
               "hidden md:flex flex-col h-screen flex-shrink-0 relative group/sidebar",
-              "bg-amber-400 border-r border-amber-500"
+              "bg-[#2B2E31] border-r border-[#3a3d41]"
             )}
           >
           {/* Collapse Toggle Button */}
@@ -584,7 +584,7 @@ export default function DashboardLayout() {
               "h-12 flex items-center flex-shrink-0 overflow-hidden",
               "transition-all duration-200",
               sidebarCollapsed ? "justify-center px-2" : "px-3",
-              "border-b border-amber-500/50"
+              "border-b border-[#3a3d41]"
             )}
           >
             <Link to="/dashboard" className="flex items-center gap-2.5 min-w-0">
@@ -600,8 +600,8 @@ export default function DashboardLayout() {
                     className="w-8 h-8 rounded-md object-cover"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-lg bg-white/90 flex items-center justify-center shadow-sm">
-                    <span className="text-amber-600 font-bold text-sm">
+                  <div className="w-8 h-8 rounded-lg bg-amber-400 flex items-center justify-center shadow-sm">
+                    <span className="text-[#2B2E31] font-bold text-sm">
                       {store?.name?.charAt(0) || "A"}
                     </span>
                   </div>
@@ -614,7 +614,7 @@ export default function DashboardLayout() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -8 }}
                     transition={{ duration: 0.15 }}
-                    className="font-bold text-[13px] text-gray-900 truncate"
+                    className="font-bold text-[13px] text-gray-100 truncate"
                   >
                     {store?.name || "Anotô?"}
                   </motion.span>
@@ -716,7 +716,7 @@ export default function DashboardLayout() {
             className={cn(
               "p-1.5 space-y-0.5 flex-shrink-0 overflow-hidden",
               sidebarCollapsed && "flex flex-col items-center",
-              "border-t border-amber-500/50"
+              "border-t border-[#3a3d41]"
             )}
           >
             {/* Theme Toggle */}
@@ -740,11 +740,11 @@ export default function DashboardLayout() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(
-                      "flex items-center gap-2 text-xs text-gray-700 hover:text-gray-900 transition-colors rounded-lg hover:bg-amber-500/50",
+                      "flex items-center gap-2 text-xs text-gray-300 hover:text-amber-400 transition-colors rounded-lg hover:bg-white/5",
                       sidebarCollapsed ? "p-1.5 justify-center" : "px-2.5 py-1.5"
                     )}
                   >
-                    <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
+                    <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
                     <AnimatePresence mode="wait">
                       {!sidebarCollapsed && (
                         <motion.span
@@ -769,10 +769,10 @@ export default function DashboardLayout() {
               <TooltipTrigger asChild>
                 <button
                   onClick={handleLogout}
-                  className={cn(
-                    "flex items-center gap-2 text-xs text-red-600 hover:text-red-700 transition-colors w-full rounded-lg hover:bg-red-500/20",
-                    sidebarCollapsed ? "p-1.5 justify-center" : "px-2.5 py-1.5"
-                  )}
+                    className={cn(
+                      "flex items-center gap-2 text-xs text-red-400 hover:text-red-300 transition-colors w-full rounded-lg hover:bg-red-500/10",
+                      sidebarCollapsed ? "p-1.5 justify-center" : "px-2.5 py-1.5"
+                    )}
                 >
                   <LogOut className="w-3.5 h-3.5 flex-shrink-0" />
                   <AnimatePresence mode="wait">
