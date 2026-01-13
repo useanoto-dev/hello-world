@@ -163,9 +163,9 @@ const SectionTitle = ({ badge, title, subtitle }: { badge?: string; title: strin
       <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: COLORS.foreground }}>
         {displayText}
         <motion.span 
-          animate={{ opacity: [1, 0] }} 
-          transition={{ duration: 0.8, repeat: Infinity, repeatType: "reverse" }}
-          className="ml-0.5 font-light" 
+          animate={{ opacity: [1, 0.25, 1] }}
+          transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
+          className="ml-0.5 font-light"
           style={{ color: COLORS.primary }}
         >|</motion.span>
       </h2>
