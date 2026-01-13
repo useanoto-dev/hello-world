@@ -65,6 +65,8 @@ export default {
           active: "hsl(var(--sidebar-active))",
           foreground: "hsl(var(--sidebar-foreground))",
           "foreground-muted": "hsl(var(--sidebar-foreground-muted))",
+          button: "hsl(var(--sidebar-button-bg))",
+          "button-hover": "hsl(var(--sidebar-button-hover))",
         },
         chart: {
           primary: "hsl(var(--chart-primary))",

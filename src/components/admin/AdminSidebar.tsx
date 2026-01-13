@@ -124,7 +124,7 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
     navigate('/');
   };
 
-  // macOS-style menu item component
+  // macOS-style menu item component with blue selection indicator
   const MenuItem = ({ item, isActive, end = false }: { 
     item: { title: string; url: string; icon: React.ComponentType<{ className?: string }> }; 
     isActive?: boolean;
@@ -140,17 +140,22 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
             to={item.url}
             end={end}
             className={cn(
-              "group relative flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] font-normal transition-all duration-150",
-              "text-sidebar-foreground-muted hover:text-sidebar-foreground",
-              "hover:bg-[hsl(var(--sidebar-hover))]"
+              "group relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150",
+              "bg-[hsl(var(--sidebar-button-bg))] text-sidebar-foreground",
+              "hover:bg-[hsl(var(--sidebar-button-hover))] hover:shadow-sm",
+              "shadow-sm"
             )}
-            activeClassName="bg-[hsl(var(--sidebar-active))] text-sidebar-foreground font-medium"
+            activeClassName="!bg-[hsl(var(--sidebar-active))] text-white shadow-md"
           >
+            {/* Blue selection indicator */}
+            {active && (
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-[hsl(210,100%,50%)] rounded-r-full" />
+            )}
             <Icon className={cn(
               "w-4 h-4 flex-shrink-0 transition-colors",
-              active ? "text-sidebar-foreground" : "text-sidebar-foreground-muted group-hover:text-sidebar-foreground"
+              active ? "text-white" : "text-sidebar-foreground"
             )} />
-            {!collapsed && <span>{item.title}</span>}
+            {!collapsed && <span className={active ? "text-white" : ""}>{item.title}</span>}
           </NavLink>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -161,15 +166,12 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
     <Sidebar 
       collapsible="icon" 
       className={cn(
-        "border-r border-sidebar-border",
-        // macOS vibrancy effect
-        "bg-sidebar/[var(--sidebar-bg-opacity)] backdrop-blur-xl backdrop-saturate-150",
-        "supports-[backdrop-filter]:bg-sidebar/[var(--sidebar-bg-opacity)]"
+        "border-r border-sidebar-border/60",
+        // Apple frosted glass effect
+        "bg-gradient-to-b from-[hsl(var(--sidebar-bg))] to-[hsl(var(--sidebar-bg-end))]",
+        "backdrop-blur-2xl backdrop-saturate-150",
+        "shadow-[inset_-1px_0_0_0_rgba(255,255,255,0.1)]"
       )}
-      style={{
-        // @ts-ignore CSS custom property
-        "--sidebar-bg-opacity": "var(--sidebar-bg-opacity, 0.72)"
-      } as React.CSSProperties}
     >
       <SidebarContent className="bg-transparent">
         {/* Header - Store info */}
@@ -196,12 +198,12 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
         </div>
 
         {/* Quick Access */}
-        <SidebarGroup className="py-1.5">
-          <SidebarGroupLabel className="px-3 py-1.5 text-[11px] font-medium uppercase tracking-wider text-sidebar-foreground-muted/70">
+        <SidebarGroup className="py-2">
+          <SidebarGroupLabel className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground-muted/60">
             Acesso Rápido
           </SidebarGroupLabel>
-          <SidebarGroupContent className="px-2">
-            <SidebarMenu className="gap-0.5">
+          <SidebarGroupContent className="px-2.5">
+            <SidebarMenu className="gap-1.5">
               {quickAccessItems.map((item) => (
                 <MenuItem key={item.title} item={item} />
               ))}
@@ -210,12 +212,12 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
         </SidebarGroup>
 
         {/* Operational */}
-        <SidebarGroup className="py-1.5">
-          <SidebarGroupLabel className="px-3 py-1.5 text-[11px] font-medium uppercase tracking-wider text-sidebar-foreground-muted/70">
+        <SidebarGroup className="py-2">
+          <SidebarGroupLabel className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground-muted/60">
             Operacional
           </SidebarGroupLabel>
-          <SidebarGroupContent className="px-2">
-            <SidebarMenu className="gap-0.5">
+          <SidebarGroupContent className="px-2.5">
+            <SidebarMenu className="gap-1.5">
               {operationalItems.map((item) => (
                 <MenuItem key={item.title} item={item} />
               ))}
@@ -224,12 +226,12 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
         </SidebarGroup>
 
         {/* Management */}
-        <SidebarGroup className="py-1.5 flex-1">
-          <SidebarGroupLabel className="px-3 py-1.5 text-[11px] font-medium uppercase tracking-wider text-sidebar-foreground-muted/70">
+        <SidebarGroup className="py-2 flex-1">
+          <SidebarGroupLabel className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground-muted/60">
             Gestão
           </SidebarGroupLabel>
-          <SidebarGroupContent className="px-2">
-            <SidebarMenu className="gap-0.5">
+          <SidebarGroupContent className="px-2.5">
+            <SidebarMenu className="gap-1.5">
               {/* Dashboard and Pedidos */}
               {managementItems.slice(0, 2).map((item) => (
                 <MenuItem key={item.title} item={item} end={item.url === "/dashboard"} />
@@ -241,20 +243,24 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
                   <CollapsibleTrigger asChild>
                     <button
                       className={cn(
-                        "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] font-normal transition-all duration-150",
-                        "hover:bg-[hsl(var(--sidebar-hover))]",
-                        isMenuManagerActive
-                          ? "bg-[hsl(var(--sidebar-active))] text-sidebar-foreground font-medium"
-                          : "text-sidebar-foreground-muted hover:text-sidebar-foreground"
+                        "relative w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150",
+                        "bg-[hsl(var(--sidebar-button-bg))] text-sidebar-foreground shadow-sm",
+                        "hover:bg-[hsl(var(--sidebar-button-hover))] hover:shadow-sm",
+                        isMenuManagerActive && "!bg-[hsl(var(--sidebar-active))] text-white shadow-md"
                       )}
                     >
-                      <Menu className="w-4 h-4 flex-shrink-0" />
+                      {/* Blue selection indicator */}
+                      {isMenuManagerActive && (
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-[hsl(210,100%,50%)] rounded-r-full" />
+                      )}
+                      <Menu className={cn("w-4 h-4 flex-shrink-0", isMenuManagerActive && "text-white")} />
                       {!collapsed && (
                         <>
-                          <span className="flex-1 text-left">Cardápio</span>
+                          <span className={cn("flex-1 text-left", isMenuManagerActive && "text-white")}>Cardápio</span>
                           <ChevronRight 
                             className={cn(
-                              "w-3.5 h-3.5 text-sidebar-foreground-muted/60 transition-transform duration-200",
+                              "w-3.5 h-3.5 transition-transform duration-200",
+                              isMenuManagerActive ? "text-white/70" : "text-sidebar-foreground/60",
                               menuManagerOpen && "rotate-90"
                             )} 
                           />
@@ -272,22 +278,26 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
                           transition={{ duration: 0.2, ease: "easeInOut" }}
                           className="overflow-hidden"
                         >
-                          <div className={cn("ml-3.5 pl-3 border-l border-sidebar-border/40 mt-0.5 space-y-0.5", collapsed && "hidden")}>
+                          <div className={cn("ml-4 pl-3 border-l-2 border-[hsl(var(--sidebar-border))] mt-1 space-y-1", collapsed && "hidden")}>
                             {menuManagerSubItems.map((subItem) => {
                               const Icon = subItem.icon;
-                              const isActive = location.pathname.startsWith(subItem.url);
+                              const isSubActive = location.pathname.startsWith(subItem.url);
                               return (
                                 <NavLink
                                   key={subItem.url}
                                   to={subItem.url}
                                   className={cn(
-                                    "flex items-center gap-2 px-2 py-1.5 rounded-md text-[12px] transition-all duration-150",
-                                    "text-sidebar-foreground-muted hover:text-sidebar-foreground hover:bg-[hsl(var(--sidebar-hover))]"
+                                    "relative flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[12px] font-medium transition-all duration-150",
+                                    "bg-[hsl(var(--sidebar-button-bg))]/80 text-sidebar-foreground",
+                                    "hover:bg-[hsl(var(--sidebar-button-hover))]"
                                   )}
-                                  activeClassName="bg-[hsl(var(--sidebar-active))] text-sidebar-foreground font-medium"
+                                  activeClassName="!bg-[hsl(var(--sidebar-active))] text-white"
                                 >
-                                  <Icon className="w-3.5 h-3.5 flex-shrink-0" />
-                                  <span>{subItem.title}</span>
+                                  {isSubActive && (
+                                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-[hsl(210,100%,50%)] rounded-r-full" />
+                                  )}
+                                  <Icon className={cn("w-3.5 h-3.5 flex-shrink-0", isSubActive && "text-white")} />
+                                  <span className={isSubActive ? "text-white" : ""}>{subItem.title}</span>
                                 </NavLink>
                               );
                             })}
@@ -308,14 +318,15 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border/50 p-2 bg-transparent">
-        <div className="space-y-0.5">
+      <SidebarFooter className="border-t border-sidebar-border/40 p-3 bg-transparent">
+        <div className="space-y-1.5">
           {storeSlug && (
             <button
               onClick={() => window.open(`/cardapio/${storeSlug}`, '_blank')}
               className={cn(
-                "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] transition-all duration-150",
-                "text-sidebar-foreground-muted hover:text-sidebar-foreground hover:bg-[hsl(var(--sidebar-hover))]"
+                "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150",
+                "bg-[hsl(var(--sidebar-button-bg))] text-sidebar-foreground shadow-sm",
+                "hover:bg-[hsl(var(--sidebar-button-hover))]"
               )}
             >
               <ExternalLink className="w-4 h-4" />
@@ -325,8 +336,9 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
           <button
             onClick={handleSignOut}
             className={cn(
-              "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] transition-all duration-150",
-              "text-red-500/80 hover:text-red-500 hover:bg-red-500/10"
+              "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150",
+              "bg-red-500/10 text-red-600 dark:text-red-400",
+              "hover:bg-red-500/20"
             )}
           >
             <LogOut className="w-4 h-4" />
