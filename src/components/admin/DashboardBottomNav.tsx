@@ -2,11 +2,10 @@ import { useLocation, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
   LayoutDashboard, 
-  Monitor, 
   ShoppingBag, 
-  Settings, 
+  Monitor, 
   MoreHorizontal,
-  ChefHat
+  Package
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCallback } from "react";
@@ -14,27 +13,22 @@ import { useCallback } from "react";
 interface DashboardBottomNavProps {
   isStoreOpen: boolean;
   pendingOrdersCount: number;
-  useComandaMode?: boolean;
   onMoreClick: () => void;
 }
 
 const navItems = [
   { path: "/dashboard", icon: LayoutDashboard, label: "Início" },
-  { path: "/dashboard/pdv", icon: Monitor, label: "PDV" },
   { path: "/dashboard/orders", icon: ShoppingBag, label: "Pedidos", showBadge: true },
-  { path: "/dashboard/comandas", icon: ChefHat, label: "Cozinha", requiresComanda: true },
+  { path: "/dashboard/pdv", icon: Monitor, label: "PDV" },
+  { path: "/dashboard/products", icon: Package, label: "Cardápio" },
 ];
 
 export function DashboardBottomNav({ 
   isStoreOpen, 
   pendingOrdersCount,
-  useComandaMode = true,
   onMoreClick
 }: DashboardBottomNavProps) {
   const location = useLocation();
-  
-  // Filter items based on comanda mode
-  const visibleItems = navItems.filter(item => !item.requiresComanda || useComandaMode);
   
   // Haptic feedback
   const triggerHaptic = useCallback(() => {
@@ -80,7 +74,7 @@ export function DashboardBottomNav({
       </div>
 
       <div className="flex items-center justify-around h-14 px-2">
-        {visibleItems.map((item) => {
+        {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const Icon = item.icon;
           const showBadge = item.showBadge && pendingOrdersCount > 0;
@@ -95,7 +89,7 @@ export function DashboardBottomNav({
                 isActive ? "text-gray-900" : "text-gray-700/70"
               )}
             >
-              {/* Active indicator - left blue border style */}
+              {/* Active indicator */}
               {isActive && (
                 <motion.div
                   layoutId="bottomNavIndicator"

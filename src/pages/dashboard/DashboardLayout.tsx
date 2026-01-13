@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { QuickActionButtons } from "@/components/admin/QuickActionButtons";
 import { DashboardBottomNav } from "@/components/admin/DashboardBottomNav";
+import { MobileMoreDrawer } from "@/components/admin/MobileMoreDrawer";
 import { PageTransition } from "@/components/admin/PageTransition";
 import { Button } from "@/components/ui/button";
 import {
@@ -529,11 +530,12 @@ export default function DashboardLayout() {
     return content;
   };
 
-  // Hide sidebar on mobile when in fullscreen PDV mode or on PDV page
+  // Hide sidebar on mobile completely (use bottom nav instead)
+  // Show mobile bottom nav unless on PDV page or in fullscreen mode
   const showMobileNav = isMobile && !isFullscreen && !isPDVPage;
   
-  // Hide sidebar only when in fullscreen mode (on any page, but button is only on PDV)
-  const hideSidebar = isFullscreen;
+  // Hide sidebar only when in fullscreen mode OR on mobile (mobile uses bottom nav)
+  const hideSidebar = isFullscreen || isMobile;
 
   return (
     <TooltipProvider>
@@ -794,121 +796,8 @@ export default function DashboardLayout() {
         </motion.aside>
         )}
 
-        {/* Mobile Sidebar Sheet */}
-        <AnimatePresence>
-          {sidebarOpen && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="md:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
-                onClick={() => setSidebarOpen(false)}
-              />
-              <motion.aside
-                initial={{ x: "100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "100%" }}
-                transition={{ type: "spring", damping: 28, stiffness: 350 }}
-                className="md:hidden fixed right-0 top-0 bottom-0 w-64 bg-amber-400 z-50 flex flex-col shadow-xl"
-              >
-                <div className="h-12 border-b border-amber-500/50 px-3 flex items-center justify-between flex-shrink-0">
-                  <span className="font-semibold text-[13px] text-gray-900">Menu</span>
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 hover:bg-amber-500/50" onClick={() => setSidebarOpen(false)}>
-                    <X className="w-4 h-4 text-gray-900" />
-                  </Button>
-                </div>
-                
-                {/* Store Status */}
-                <button
-                  onClick={() => {
-                    if (!store) return;
-                    if (store.is_open_override) {
-                      setShowCloseStoreDialog(true);
-                    } else {
-                      handleToggleStoreStatus(true);
-                    }
-                  }}
-                  className={cn(
-                    "flex items-center gap-2 px-3 py-2",
-                    store?.is_open_override 
-                      ? "bg-green-500/20"
-                      : "bg-red-500/20"
-                  )}
-                >
-                  <motion.div
-                    animate={{ 
-                      scale: store?.is_open_override ? [1, 1.3, 1] : 1,
-                    }}
-                    transition={{ 
-                      duration: 1.5, 
-                      repeat: store?.is_open_override ? Infinity : 0
-                    }}
-                    className={cn(
-                      "w-2.5 h-2.5 rounded-full",
-                      store?.is_open_override ? "bg-green-600" : "bg-red-600"
-                    )}
-                  />
-                  <span className={cn(
-                    "text-xs font-semibold",
-                    store?.is_open_override ? "text-green-700" : "text-red-700"
-                  )}>
-                    {store?.is_open_override ? "Loja Aberta" : "Loja Fechada"}
-                  </span>
-                </button>
-                
-                <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
-                  {menuItems.map(item => {
-                    const isActive = location.pathname === item.path;
-                    return (
-                      <Link
-                        key={item.path}
-                        to={item.path}
-                        onClick={() => setSidebarOpen(false)}
-                        className={cn(
-                          "relative flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[13px] font-medium transition-colors",
-                          isActive
-                            ? "bg-amber-500/80 text-gray-900"
-                            : "text-gray-800 hover:bg-amber-500/50"
-                        )}
-                      >
-                        {isActive && (
-                          <div className="absolute left-0 top-1 bottom-1 w-[3px] bg-blue-500 rounded-r-full" />
-                        )}
-                        <item.icon className="w-4 h-4" />
-                        <span>{item.label}</span>
-                      </Link>
-                    );
-                  })}
-                </nav>
-                <div className="border-t border-amber-500/50 p-2 space-y-0.5 flex-shrink-0">
-                  <div className="flex items-center justify-between px-2.5 py-1.5">
-                    <span className="text-xs text-gray-700">Tema</span>
-                    <ThemeToggle variant="simple" />
-                  </div>
-                  {store && (
-                    <a
-                      href={`/cardapio/${store.slug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-xs text-gray-700 w-full px-2.5 py-1.5 rounded-md hover:bg-amber-500/50"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      <span>Ver cardápio</span>
-                    </a>
-                  )}
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-2 text-xs text-red-600 w-full px-2.5 py-1.5 rounded-md hover:bg-red-500/20"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    <span>Sair</span>
-                  </button>
-                </div>
-              </motion.aside>
-            </>
-          )}
-        </AnimatePresence>
+        {/* Mobile Sidebar Sheet - Only shown on desktop when toggled */}
+        {/* Mobile navigation now handled by MobileMoreDrawer */}
 
         {/* Main Content - Independent Scroll */}
         <main className={cn(
@@ -957,10 +846,17 @@ export default function DashboardLayout() {
           <DashboardBottomNav
             isStoreOpen={store?.is_open_override ?? false}
             pendingOrdersCount={pendingOrdersCount}
-            useComandaMode={store?.use_comanda_mode}
             onMoreClick={() => setSidebarOpen(true)}
           />
         )}
+
+        {/* Mobile More Drawer */}
+        <MobileMoreDrawer
+          open={sidebarOpen && isMobile}
+          onClose={() => setSidebarOpen(false)}
+          store={store}
+          onLogout={handleLogout}
+        />
       </div>
     </TooltipProvider>
   );
