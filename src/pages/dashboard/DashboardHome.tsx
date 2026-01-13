@@ -385,7 +385,7 @@ export default function DashboardHome() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Card className="bg-[#fafafa] border border-gray-300 dark:bg-white/[0.03] dark:border-white/[0.15]">
+          <Card className="bg-emerald-50 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/30">
             <CardContent className="p-2 md:p-3">
               <div className="flex items-start justify-between">
                 <div>
@@ -408,7 +408,7 @@ export default function DashboardHome() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.03 }}
         >
-          <Card className="bg-[#fafafa] border border-gray-300 dark:bg-white/[0.03] dark:border-white/[0.15]">
+          <Card className="bg-emerald-50 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/30">
             <CardContent className="p-2 md:p-3">
               <div className="flex items-start justify-between">
                 <div>
