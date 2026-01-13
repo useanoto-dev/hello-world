@@ -347,52 +347,54 @@ export default function DashboardHome() {
   const revenueVariation = getVariation(stats.todayRevenue, stats.yesterdayRevenue);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 md:space-y-4">
       {/* Header Compacto */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
         <div>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-[10px] md:text-[11px] text-muted-foreground">
             {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
           </p>
         </div>
         
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           {subscription?.status === "trial" && trialDaysLeft > 0 && (
-            <div className="px-2 py-1 bg-amber-200 rounded-md">
-              <span className="text-[10px] text-black font-medium">
+            <div className="px-1.5 py-0.5 bg-amber-200 rounded-md">
+              <span className="text-[9px] text-black font-medium">
                 {trialDaysLeft}d trial
               </span>
             </div>
           )}
-          <Button variant="outline" size="sm" onClick={copyStoreLink} className="h-7 text-[10px] px-2 bg-[#fafafa] dark:bg-neutral-700 border-gray-300 dark:border-neutral-600 hover:bg-[#fafafa] dark:hover:bg-neutral-700">
-            <Copy className="w-3 h-3 mr-1" />
-            Copiar link
+          <Button variant="outline" size="sm" onClick={copyStoreLink} className="h-6 text-[9px] px-1.5 bg-[#fafafa] dark:bg-neutral-700 border-gray-300 dark:border-neutral-600 hover:bg-[#fafafa] dark:hover:bg-neutral-700">
+            <Copy className="w-2.5 h-2.5 mr-0.5" />
+            <span className="hidden sm:inline">Copiar link</span>
+            <span className="sm:hidden">Link</span>
           </Button>
-          <Button asChild variant="outline" size="sm" className="h-7 text-[10px] px-2 bg-[#fafafa] dark:bg-neutral-700 border-gray-300 dark:border-neutral-600 hover:bg-[#fafafa] dark:hover:bg-neutral-700">
+          <Button asChild variant="outline" size="sm" className="h-6 text-[9px] px-1.5 bg-[#fafafa] dark:bg-neutral-700 border-gray-300 dark:border-neutral-600 hover:bg-[#fafafa] dark:hover:bg-neutral-700">
             <a href={`/cardapio/${store?.slug}`} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="w-3 h-3 mr-1" />
-              Ver cardápio
+              <ExternalLink className="w-2.5 h-2.5 mr-0.5" />
+              <span className="hidden sm:inline">Ver cardápio</span>
+              <span className="sm:hidden">Ver</span>
             </a>
           </Button>
         </div>
       </div>
 
       {/* Stats Grid - Compact */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 md:gap-2">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <Card className="bg-[#fafafa] border border-gray-300 dark:bg-white/[0.03] dark:border-white/[0.15]">
-            <CardContent className="p-3">
+            <CardContent className="p-2 md:p-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Pedidos hoje</p>
-                  <p className="text-lg font-semibold mt-0.5 dark:text-[#4ade80] dark:drop-shadow-[0_0_6px_rgba(74,222,128,0.4)]">{stats.todayOrders}</p>
+                  <p className="text-[8px] md:text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Pedidos</p>
+                  <p className="text-base md:text-lg font-semibold mt-0.5 dark:text-[#4ade80] dark:drop-shadow-[0_0_6px_rgba(74,222,128,0.4)]">{stats.todayOrders}</p>
                 </div>
                 {ordersVariation > 0 && (
-                  <div className="flex items-center gap-0.5 text-[9px] font-medium px-1 py-0.5 rounded text-emerald-600 bg-emerald-500/10 dark:text-[#4ade80] dark:bg-[#4ade80]/10">
-                    <ArrowUpRight className="w-2.5 h-2.5" />
+                  <div className="flex items-center gap-0.5 text-[8px] font-medium px-1 py-0.5 rounded text-emerald-600 bg-emerald-500/10 dark:text-[#4ade80] dark:bg-[#4ade80]/10">
+                    <ArrowUpRight className="w-2 h-2" />
                     {ordersVariation}%
                   </div>
                 )}
@@ -407,17 +409,17 @@ export default function DashboardHome() {
           transition={{ delay: 0.03 }}
         >
           <Card className="bg-[#fafafa] border border-gray-300 dark:bg-white/[0.03] dark:border-white/[0.15]">
-            <CardContent className="p-3">
+            <CardContent className="p-2 md:p-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Faturamento</p>
-                  <p className="text-lg font-semibold mt-0.5 dark:text-[#4ade80] dark:drop-shadow-[0_0_6px_rgba(74,222,128,0.4)]">
+                  <p className="text-[8px] md:text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Faturamento</p>
+                  <p className="text-base md:text-lg font-semibold mt-0.5 dark:text-[#4ade80] dark:drop-shadow-[0_0_6px_rgba(74,222,128,0.4)]">
                     R$ {stats.todayRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                   </p>
                 </div>
                 {revenueVariation > 0 && (
-                  <div className="flex items-center gap-0.5 text-[9px] font-medium px-1 py-0.5 rounded text-emerald-600 bg-emerald-500/10 dark:text-[#4ade80] dark:bg-[#4ade80]/10">
-                    <ArrowUpRight className="w-2.5 h-2.5" />
+                  <div className="flex items-center gap-0.5 text-[8px] font-medium px-1 py-0.5 rounded text-emerald-600 bg-emerald-500/10 dark:text-[#4ade80] dark:bg-[#4ade80]/10">
+                    <ArrowUpRight className="w-2 h-2" />
                     {revenueVariation}%
                   </div>
                 )}
@@ -432,10 +434,10 @@ export default function DashboardHome() {
           transition={{ delay: 0.06 }}
         >
           <Card className="bg-[#fafafa] border border-gray-300 dark:bg-white/[0.03] dark:border-white/[0.15]">
-            <CardContent className="p-3">
+            <CardContent className="p-2 md:p-3">
               <div>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Produtos</p>
-                <p className="text-lg font-semibold mt-0.5 dark:text-white">{stats.totalProducts}</p>
+                <p className="text-[8px] md:text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Produtos</p>
+                <p className="text-base md:text-lg font-semibold mt-0.5 dark:text-white">{stats.totalProducts}</p>
               </div>
             </CardContent>
           </Card>
@@ -450,14 +452,14 @@ export default function DashboardHome() {
             "bg-[#fafafa] border border-gray-300 dark:bg-white/[0.03] dark:border-white/[0.15]",
             stats.pendingOrders > 0 && "border-amber-500 bg-amber-500/5 dark:border-amber-500/30"
           )}>
-            <CardContent className="p-3">
+            <CardContent className="p-2 md:p-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Pendentes</p>
-                  <p className="text-lg font-semibold mt-0.5 dark:text-white">{stats.pendingOrders}</p>
+                  <p className="text-[8px] md:text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Pendentes</p>
+                  <p className="text-base md:text-lg font-semibold mt-0.5 dark:text-white">{stats.pendingOrders}</p>
                 </div>
                 {stats.pendingOrders > 0 && (
-                  <Button asChild size="sm" variant="ghost" className="h-5 text-[9px] px-1.5">
+                  <Button asChild size="sm" variant="ghost" className="h-5 text-[8px] px-1">
                     <Link to="/dashboard/orders">Ver</Link>
                   </Button>
                 )}
