@@ -639,89 +639,7 @@ export default function Landing() {
               initial={{ opacity: 0, x: -40 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="text-center lg:text-left order-1 lg:order-1"
-            >
-              {/* Glow behind mascot */}
-              <div 
-                className="absolute w-96 h-96 rounded-full"
-                style={{ 
-                  background: `radial-gradient(circle, ${COLORS.primary}30 0%, transparent 70%)`,
-                  filter: "blur(60px)"
-                }}
-              />
-              
-              {/* Smoke particles behind the moto */}
-              <div className="absolute left-0 bottom-16 z-0">
-                {[...Array(6)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute rounded-full"
-                    style={{
-                      width: 8 + i * 4,
-                      height: 8 + i * 4,
-                      background: `rgba(200, 220, 240, ${0.6 - i * 0.08})`,
-                      left: -20 - i * 15,
-                      bottom: 10 + (i % 2) * 8,
-                    }}
-                    animate={{
-                      x: [-10, -40 - i * 10],
-                      y: [0, -15 - i * 5, -10],
-                      opacity: [0.7, 0.4, 0],
-                      scale: [0.8, 1.3, 1.8],
-                    }}
-                    transition={{
-                      duration: 2 + i * 0.3,
-                      delay: i * 0.15,
-                      repeat: Infinity,
-                      ease: "easeOut"
-                    }}
-                  />
-                ))}
-              </div>
-              
-              {/* Mascot */}
-              <motion.img
-                src={anotoMascotMoto}
-                alt="Mascote Anotô na Moto"
-                className="w-80 h-80 object-contain relative z-10"
-                animate={{ 
-                  y: [0, -8, 0],
-                  rotate: [0, 1, 0, -1, 0]
-                }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              />
-              
-              {/* Speech Bubble */}
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.5, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ delay: 0.8, type: "spring", damping: 15 }}
-                className="absolute -top-2 right-4 z-20"
-              >
-                <motion.div 
-                  className="px-5 py-3 rounded-2xl relative"
-                  style={{ ...GLASS.cardElevated }}
-                  animate={{ y: [0, -5, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <span className="font-bold text-base" style={{ color: COLORS.foreground }}>
-                    Pediu, Chegou! 🛵
-                  </span>
-                  {/* Bubble tail */}
-                  <div 
-                    className="absolute -bottom-2 left-8 w-4 h-4 rotate-45"
-                    style={{ backgroundColor: "rgba(255, 255, 255, 0.95)" }}
-                  />
-                </motion.div>
-              </motion.div>
-            </motion.div>
-
-            {/* Mascot on RIGHT with smoke animation */}
-            <motion.div
-              initial={{ opacity: 0, x: 60 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 1, delay: 0.2, type: "spring", damping: 20 }}
-              className="relative hidden lg:flex justify-center items-center order-2 lg:order-2"
+              className="text-center lg:text-left order-2 lg:order-1"
             >
               {/* Badge */}
               <motion.div 
@@ -794,12 +712,94 @@ export default function Landing() {
                   { icon: Check, text: "7 dias grátis" },
                   { icon: Shield, text: "Sem cartão" },
                   { icon: Zap, text: "Setup em 3 min" }
-                ].map((item, i) => (
+                ].map((item) => (
                   <span key={item.text} className="flex items-center gap-2 text-sm" style={{ color: COLORS.mutedForeground }}>
                     <item.icon className="w-4 h-4" style={{ color: COLORS.success }} />
                     {item.text}
                   </span>
                 ))}
+              </motion.div>
+            </motion.div>
+
+            {/* Mascot on RIGHT with smoke animation */}
+            <motion.div
+              initial={{ opacity: 0, x: 60 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 1, delay: 0.2, type: "spring", damping: 20 }}
+              className="relative flex justify-center items-center order-1 lg:order-2"
+            >
+              {/* Glow behind mascot */}
+              <div 
+                className="absolute w-72 h-72 lg:w-96 lg:h-96 rounded-full"
+                style={{ 
+                  background: `radial-gradient(circle, ${COLORS.primary}30 0%, transparent 70%)`,
+                  filter: "blur(60px)"
+                }}
+              />
+              
+              {/* Smoke particles behind the moto */}
+              <div className="absolute left-0 bottom-16 z-0">
+                {[...Array(6)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute rounded-full"
+                    style={{
+                      width: 8 + i * 4,
+                      height: 8 + i * 4,
+                      background: `rgba(200, 220, 240, ${0.6 - i * 0.08})`,
+                      left: -20 - i * 15,
+                      bottom: 10 + (i % 2) * 8,
+                    }}
+                    animate={{
+                      x: [-10, -40 - i * 10],
+                      y: [0, -15 - i * 5, -10],
+                      opacity: [0.7, 0.4, 0],
+                      scale: [0.8, 1.3, 1.8],
+                    }}
+                    transition={{
+                      duration: 2 + i * 0.3,
+                      delay: i * 0.15,
+                      repeat: Infinity,
+                      ease: "easeOut"
+                    }}
+                  />
+                ))}
+              </div>
+              
+              {/* Mascot */}
+              <motion.img
+                src={anotoMascotMoto}
+                alt="Mascote Anotô na Moto"
+                className="w-64 h-64 sm:w-72 sm:h-72 lg:w-80 lg:h-80 object-contain relative z-10"
+                animate={{ 
+                  y: [0, -8, 0],
+                  rotate: [0, 1, 0, -1, 0]
+                }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              />
+              
+              {/* Speech Bubble */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.5, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ delay: 0.8, type: "spring", damping: 15 }}
+                className="absolute -top-2 right-4 lg:right-8 z-20"
+              >
+                <motion.div 
+                  className="px-5 py-3 rounded-2xl relative"
+                  style={{ ...GLASS.cardElevated }}
+                  animate={{ y: [0, -5, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <span className="font-bold text-base" style={{ color: COLORS.foreground }}>
+                    Pediu, Chegou! 🛵
+                  </span>
+                  {/* Bubble tail */}
+                  <div 
+                    className="absolute -bottom-2 left-8 w-4 h-4 rotate-45"
+                    style={{ backgroundColor: "rgba(255, 255, 255, 0.95)" }}
+                  />
+                </motion.div>
               </motion.div>
             </motion.div>
           </div>
