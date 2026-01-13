@@ -213,7 +213,7 @@ export default function ExplorePage() {
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ scale: 1.02, y: -4 }}
       whileTap={{ scale: 0.98 }}
-      onClick={() => navigate(`/cardapio/${store.slug}`)}
+      onClick={() => navigate(`/cardapio/${store.slug}`, { state: { fromExplore: true } })}
       className="cursor-pointer rounded-2xl overflow-hidden"
       style={{
         backgroundColor: COLORS.card,
