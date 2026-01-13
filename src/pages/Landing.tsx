@@ -97,51 +97,30 @@ const AnimatedCard = ({ children, delay = 0, className = "" }: { children: React
   );
 };
 
-// Typewriter effect hook com loop infinito
-const useTypewriter = (text: string, typeSpeed: number = 80, deleteSpeed: number = 40, pauseTime: number = 2000) => {
+// Typewriter effect hook - digita uma vez e para com cursor piscando
+const useTypewriter = (text: string, typeSpeed: number = 80) => {
   const [displayText, setDisplayText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
   
   useEffect(() => {
-    let timeout: NodeJS.Timeout;
-    
-    if (!isDeleting) {
-      // Digitando
-      if (displayText.length < text.length) {
-        timeout = setTimeout(() => {
-          setDisplayText(text.slice(0, displayText.length + 1));
-        }, typeSpeed);
-      } else {
-        // Terminou de digitar, pausa antes de apagar
-        timeout = setTimeout(() => {
-          setIsDeleting(true);
-        }, pauseTime);
-      }
+    if (displayText.length < text.length) {
+      const timeout = setTimeout(() => {
+        setDisplayText(text.slice(0, displayText.length + 1));
+      }, typeSpeed);
+      return () => clearTimeout(timeout);
     } else {
-      // Apagando
-      if (displayText.length > 0) {
-        timeout = setTimeout(() => {
-          setDisplayText(text.slice(0, displayText.length - 1));
-        }, deleteSpeed);
-      } else {
-        // Terminou de apagar, pausa antes de digitar novamente
-        timeout = setTimeout(() => {
-          setIsDeleting(false);
-        }, 500);
-      }
+      setIsComplete(true);
     }
-    
-    return () => clearTimeout(timeout);
-  }, [displayText, isDeleting, text, typeSpeed, deleteSpeed, pauseTime]);
+  }, [displayText, text, typeSpeed]);
   
-  return { displayText, isDeleting };
+  return { displayText, isComplete };
 };
 
 // Section Title com animação
 const SectionTitle = ({ badge, title, subtitle }: { badge?: string; title: string; subtitle?: string }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
-  const { displayText } = useTypewriter(title, 80, 50, 2000);
+  const { displayText } = useTypewriter(title, 80);
   
   return (
     <motion.div
