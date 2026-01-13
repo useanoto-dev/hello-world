@@ -73,7 +73,7 @@ export function DashboardBottomNav({
         </motion.div>
       </div>
 
-      <div className="flex items-center justify-around h-14 px-2">
+      <div className="flex items-center justify-around pt-3 pb-1 px-2">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const Icon = item.icon;
