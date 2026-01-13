@@ -1,14 +1,47 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { X, Check, Eye, EyeOff } from "lucide-react";
+import { X, Check, Eye, EyeOff, MapPin, Loader2 } from "lucide-react";
 import { MascotSpinner } from "@/components/MascotSpinner";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { applyMask, removeMask } from "@/hooks/useInputMask";
+
+// Brazilian states
+const STATES = [
+  { uf: "AC", name: "Acre" },
+  { uf: "AL", name: "Alagoas" },
+  { uf: "AP", name: "Amapá" },
+  { uf: "AM", name: "Amazonas" },
+  { uf: "BA", name: "Bahia" },
+  { uf: "CE", name: "Ceará" },
+  { uf: "DF", name: "Distrito Federal" },
+  { uf: "ES", name: "Espírito Santo" },
+  { uf: "GO", name: "Goiás" },
+  { uf: "MA", name: "Maranhão" },
+  { uf: "MT", name: "Mato Grosso" },
+  { uf: "MS", name: "Mato Grosso do Sul" },
+  { uf: "MG", name: "Minas Gerais" },
+  { uf: "PA", name: "Pará" },
+  { uf: "PB", name: "Paraíba" },
+  { uf: "PR", name: "Paraná" },
+  { uf: "PE", name: "Pernambuco" },
+  { uf: "PI", name: "Piauí" },
+  { uf: "RJ", name: "Rio de Janeiro" },
+  { uf: "RN", name: "Rio Grande do Norte" },
+  { uf: "RS", name: "Rio Grande do Sul" },
+  { uf: "RO", name: "Rondônia" },
+  { uf: "RR", name: "Roraima" },
+  { uf: "SC", name: "Santa Catarina" },
+  { uf: "SP", name: "São Paulo" },
+  { uf: "SE", name: "Sergipe" },
+  { uf: "TO", name: "Tocantins" },
+];
 
 // Validation helpers
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -115,6 +148,11 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }: Signup
   const [fullName, setFullName] = useState("");
   const [storeName, setStoreName] = useState("");
   const [phone, setPhone] = useState("");
+  const [cep, setCep] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [cepLoading, setCepLoading] = useState(false);
+  const [cepValid, setCepValid] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -124,21 +162,79 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }: Signup
     fullName: false,
     storeName: false,
     phone: false,
+    cep: false,
+    city: false,
+    state: false,
     email: false,
     password: false,
     acceptTerms: false,
   });
 
+  const isValidCep = (c: string) => c.replace(/\D/g, "").length === 8;
+  const isValidCity = (c: string) => c.trim().length >= 2;
+  const isValidState = (s: string) => s.length === 2;
+
   const validations = {
     fullName: { isValid: isValidName(fullName), isTouched: touched.fullName },
     storeName: { isValid: isValidName(storeName), isTouched: touched.storeName },
     phone: { isValid: isValidPhone(phone), isTouched: touched.phone },
+    cep: { isValid: isValidCep(cep), isTouched: touched.cep },
+    city: { isValid: isValidCity(city), isTouched: touched.city },
+    state: { isValid: isValidState(state), isTouched: touched.state },
     email: { isValid: isValidEmail(email), isTouched: touched.email },
     password: { isValid: isValidPassword(password), isTouched: touched.password },
   };
 
   const handleBlur = (field: keyof typeof touched) => {
     setTouched(prev => ({ ...prev, [field]: true }));
+  };
+
+  // Format CEP as user types
+  const formatCep = (value: string) => {
+    const digits = value.replace(/\D/g, "");
+    if (digits.length <= 5) return digits;
+    return `${digits.slice(0, 5)}-${digits.slice(5, 8)}`;
+  };
+
+  // Fetch address from CEP API
+  const fetchAddressFromCep = useCallback(async (cepValue: string) => {
+    const cleanCep = cepValue.replace(/\D/g, "");
+    if (cleanCep.length !== 8) return;
+
+    setCepLoading(true);
+    setCepValid(false);
+
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+      const data = await response.json();
+
+      if (data.erro) {
+        toast.error("CEP não encontrado");
+        return;
+      }
+
+      setCity(data.localidade || "");
+      setState(data.uf || "");
+      setCepValid(true);
+      toast.success("Cidade e estado preenchidos!");
+    } catch (error) {
+      console.error("Error fetching CEP:", error);
+      toast.error("Erro ao buscar CEP");
+    } finally {
+      setCepLoading(false);
+    }
+  }, []);
+
+  const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCep(e.target.value);
+    setCep(formatted);
+    
+    const cleanCep = formatted.replace(/\D/g, "");
+    if (cleanCep.length === 8) {
+      fetchAddressFromCep(cleanCep);
+    } else {
+      setCepValid(false);
+    }
   };
 
   const getInputClass = (validation: FieldValidation, hasIcon?: boolean) => {
@@ -156,6 +252,9 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }: Signup
       fullName: true,
       storeName: true,
       phone: true,
+      cep: true,
+      city: true,
+      state: true,
       email: true,
       password: true,
       acceptTerms: true,
@@ -173,6 +272,11 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }: Signup
 
     if (!isValidPhone(phone)) {
       toast.error("Celular inválido");
+      return;
+    }
+
+    if (!state || !city) {
+      toast.error("Preencha a cidade e estado do seu estabelecimento");
       return;
     }
 
@@ -203,6 +307,9 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }: Signup
             full_name: fullName,
             store_name: storeName,
             phone: removeMask(phone),
+            cep: cep.replace(/\D/g, ""),
+            city: city,
+            state: state,
           },
         },
       });
@@ -351,6 +458,92 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }: Signup
                     maxLength={15}
                   />
                   <ValidationIcon validation={validations.phone} />
+                </div>
+
+                {/* CEP com busca automática */}
+                <div className="space-y-1">
+                  <Label className="text-xs text-gray-500 font-medium">Endereço do Estabelecimento</Label>
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      placeholder="CEP (ex: 01310-100)"
+                      value={cep}
+                      onChange={handleCepChange}
+                      onBlur={() => handleBlur("cep")}
+                      className={getInputClass(validations.cep)}
+                      disabled={loading}
+                      maxLength={9}
+                    />
+                    <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2">
+                      <AnimatePresence mode="wait">
+                        {cepLoading ? (
+                          <motion.div
+                            key="loading"
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.5 }}
+                          >
+                            <Loader2 className="w-5 h-5 text-amber-500 animate-spin" />
+                          </motion.div>
+                        ) : cepValid ? (
+                          <motion.div
+                            key="valid"
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.5 }}
+                          >
+                            <Check className="w-5 h-5 text-green-500" />
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            key="icon"
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.5 }}
+                          >
+                            <MapPin className="w-5 h-5 text-gray-400" />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-gray-400">Digite o CEP para preencher cidade e estado automaticamente</p>
+                </div>
+
+                {/* Estado e Cidade */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="relative">
+                    <Select
+                      value={state}
+                      onValueChange={(value) => {
+                        setState(value);
+                        handleBlur("state");
+                      }}
+                      disabled={loading}
+                    >
+                      <SelectTrigger className={`h-12 sm:h-14 ${validations.state.isTouched && !validations.state.isValid ? 'border-red-400' : ''}`}>
+                        <SelectValue placeholder="Estado" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-60">
+                        {STATES.map((s) => (
+                          <SelectItem key={s.uf} value={s.uf}>
+                            {s.uf} - {s.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      placeholder="Cidade"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      onBlur={() => handleBlur("city")}
+                      className={getInputClass(validations.city)}
+                      disabled={loading}
+                    />
+                  </div>
                 </div>
 
                 {/* E-mail */}

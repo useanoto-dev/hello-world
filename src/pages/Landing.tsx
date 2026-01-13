@@ -634,12 +634,12 @@ export default function Landing() {
           className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
         >
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Mascot on LEFT with smoke animation */}
+            {/* Text Content on LEFT */}
             <motion.div
-              initial={{ opacity: 0, x: -60 }}
+              initial={{ opacity: 0, x: -40 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 1, delay: 0.2, type: "spring", damping: 20 }}
-              className="relative hidden lg:flex justify-center items-center order-1"
+              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="text-center lg:text-left order-1 lg:order-1"
             >
               {/* Glow behind mascot */}
               <div 
@@ -716,12 +716,12 @@ export default function Landing() {
               </motion.div>
             </motion.div>
 
-            {/* Text Content on RIGHT */}
+            {/* Mascot on RIGHT with smoke animation */}
             <motion.div
-              initial={{ opacity: 0, x: 40 }}
+              initial={{ opacity: 0, x: 60 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="text-center lg:text-left order-2"
+              transition={{ duration: 1, delay: 0.2, type: "spring", damping: 20 }}
+              className="relative hidden lg:flex justify-center items-center order-2 lg:order-2"
             >
               {/* Badge */}
               <motion.div 

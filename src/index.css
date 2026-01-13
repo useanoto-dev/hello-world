@@ -127,13 +127,13 @@
     /* Surface for cards */
     --surface: 224 15% 11%;
     
-    /* Sidebar dark mode - Dark with Yellow accents */
-    --sidebar-bg: 40 100% 50%;
-    --sidebar-border: 38 100% 42%;
-    --sidebar-hover: 38 100% 45%;
+    /* Sidebar dark mode - Yellow background with high contrast text */
+    --sidebar-bg: 45 100% 51%;
+    --sidebar-border: 45 100% 42%;
+    --sidebar-hover: 45 100% 45%;
     --sidebar-active: 210 100% 50%;
-    --sidebar-foreground: 0 0% 10%;
-    --sidebar-foreground-muted: 0 0% 25%;
+    --sidebar-foreground: 0 0% 5%;
+    --sidebar-foreground-muted: 0 0% 20%;
     
     /* Admin specific - Green accent in dark */
     --admin-accent: 152 80% 50%;
