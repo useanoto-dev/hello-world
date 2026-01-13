@@ -385,17 +385,17 @@ export default function Landing() {
       {/* Hero - Apple Style Minimal */}
       <section className="pt-28 pb-8 sm:pt-36 sm:pb-12 px-4">
         <div className="max-w-5xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-10 items-center">
+          <div className="grid sm:grid-cols-2 gap-10 items-center">
             {/* Text */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
-              className="text-center lg:text-left order-1">
+              className="text-center sm:text-left order-1">
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4"
                 style={{ backgroundColor: COLORS.primary }}>
                 <Sparkles className="w-3.5 h-3.5 text-black" />
                 <span className="text-xs font-medium text-black">#1 em Cardápios Digitais</span>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight leading-tight text-center lg:text-left">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight leading-tight text-center sm:text-left">
                 <span className="block">Seu delivery</span>
                 <span className="block text-3xl sm:text-4xl lg:text-5xl" style={{ background: `linear-gradient(135deg, ${COLORS.primaryDark}, ${COLORS.primary})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                   sem comissão
@@ -403,11 +403,11 @@ export default function Landing() {
                 <span className="block lg:inline">em 3 minutos</span>
               </h1>
               
-              <p className="mt-4 text-sm sm:text-base max-w-md mx-auto lg:mx-0 leading-relaxed" style={{ color: COLORS.muted }}>
+              <p className="mt-4 text-sm sm:text-base max-w-md mx-auto sm:mx-0 leading-relaxed" style={{ color: COLORS.muted }}>
                 Crie seu cardápio digital, receba pedidos via WhatsApp e gerencie tudo em um lugar. <strong className="font-medium" style={{ color: COLORS.foreground }}>Zero taxas.</strong>
               </p>
               
-              <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+              <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center sm:justify-start">
                 <Button size="lg" onClick={() => setShowSignupModal(true)}
                   className="text-sm px-6 py-5 rounded-full shadow-lg"
                   style={{ backgroundColor: COLORS.primary, color: COLORS.foreground, fontWeight: 600, boxShadow: "0 8px 30px rgba(255, 193, 7, 0.35)" }}>
@@ -416,7 +416,7 @@ export default function Landing() {
                 </Button>
               </div>
               
-              <div className="mt-6 flex flex-wrap items-center justify-center lg:justify-start gap-4">
+              <div className="mt-6 flex flex-wrap items-center justify-center sm:justify-start gap-4">
                 {[{ icon: Check, text: "7 dias grátis" }, { icon: Shield, text: "Sem cartão" }, { icon: Zap, text: "Setup 3 min" }].map((item) => (
                   <span key={item.text} className="flex items-center gap-1.5 text-xs" style={{ color: COLORS.muted }}>
                     <item.icon className="w-3.5 h-3.5" style={{ color: COLORS.success }} />
