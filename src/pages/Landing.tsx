@@ -663,7 +663,7 @@ export default function Landing() {
               initial={{ opacity: 0, x: -40 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="text-center lg:text-left order-2 lg:order-1"
+              className="text-center lg:text-left order-1 lg:order-1"
             >
               {/* Badge */}
               <motion.div 
@@ -750,7 +750,7 @@ export default function Landing() {
               initial={{ opacity: 0, x: 60 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 1, delay: 0.2, type: "spring", damping: 20 }}
-              className="relative flex justify-center items-center order-1 lg:order-2"
+              className="relative flex justify-center items-center order-2 lg:order-2"
             >
               {/* Glow behind mascot */}
               <div 
