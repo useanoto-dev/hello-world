@@ -391,7 +391,7 @@ export default function Landing() {
               className="text-center lg:text-left order-1">
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4"
                 style={{ backgroundColor: `${COLORS.primary}15` }}>
-                <Sparkles className="w-3.5 h-3.5" style={{ color: COLORS.primaryDark }} />
+                <Sparkles className="w-3.5 h-3.5" style={{ color: "#1a5c3a" }} />
                 <span className="text-xs font-medium" style={{ color: COLORS.primaryDark }}>#1 em Cardápios Digitais</span>
               </div>
 
