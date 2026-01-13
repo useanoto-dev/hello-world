@@ -754,7 +754,7 @@ export default function Landing() {
             >
               {/* Glow behind mascot */}
               <div 
-                className="absolute w-72 h-72 lg:w-96 lg:h-96 rounded-full"
+                className="absolute w-40 h-40 sm:w-56 sm:h-56 lg:w-96 lg:h-96 rounded-full"
                 style={{ 
                   background: `radial-gradient(circle, ${COLORS.primary}30 0%, transparent 70%)`,
                   filter: "blur(60px)"
@@ -794,7 +794,7 @@ export default function Landing() {
               <motion.img
                 src={anotoMascotMoto}
                 alt="Mascote Anotô na Moto"
-                className="w-64 h-64 sm:w-72 sm:h-72 lg:w-80 lg:h-80 object-contain relative z-10"
+                className="w-44 h-44 sm:w-56 sm:h-56 lg:w-80 lg:h-80 object-contain relative z-10"
                 animate={{ 
                   y: [0, -8, 0],
                   rotate: [0, 1, 0, -1, 0]
