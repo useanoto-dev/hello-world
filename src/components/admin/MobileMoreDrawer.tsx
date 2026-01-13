@@ -68,16 +68,16 @@ export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreD
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 28, stiffness: 350 }}
-        className="fixed bottom-0 left-0 right-0 z-50 bg-amber-400 rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col"
+        className="fixed bottom-0 left-0 right-0 z-50 bg-[#2B2E31] rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {/* Handle bar */}
         <div className="flex justify-center pt-3 pb-2">
-          <div className="w-10 h-1 rounded-full bg-amber-600/40" />
+          <div className="w-10 h-1 rounded-full bg-gray-600" />
         </div>
         
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pb-4 border-b border-amber-500/50">
+        <div className="flex items-center justify-between px-5 pb-4 border-b border-[#3a3d41]">
           <div className="flex items-center gap-3">
             {store?.logo_url ? (
               <img 
@@ -86,22 +86,22 @@ export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreD
                 className="w-10 h-10 rounded-xl object-cover"
               />
             ) : (
-              <div className="w-10 h-10 rounded-xl bg-white/90 flex items-center justify-center shadow-sm">
-                <span className="text-amber-600 font-bold text-lg">
+              <div className="w-10 h-10 rounded-xl bg-amber-400 flex items-center justify-center shadow-sm">
+                <span className="text-gray-900 font-bold text-lg">
                   {store?.name?.charAt(0) || "A"}
                 </span>
               </div>
             )}
             <div>
-              <h2 className="font-bold text-gray-900">{store?.name || "Minha Loja"}</h2>
-              <p className="text-xs text-gray-700">Painel de Controle</p>
+              <h2 className="font-bold text-amber-400">{store?.name || "Minha Loja"}</h2>
+              <p className="text-xs text-gray-400">Painel de Controle</p>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-amber-500/50 transition-colors"
+            className="p-2 rounded-full bg-amber-400"
           >
-            <X className="w-5 h-5 text-gray-800" />
+            <X className="w-5 h-5 text-gray-900" />
           </button>
         </div>
 
@@ -113,10 +113,10 @@ export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreD
                 key={item.path}
                 to={item.path}
                 onClick={onClose}
-                className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-amber-500/50 transition-colors"
+                className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-amber-400"
               >
-                <item.icon className="w-6 h-6 text-gray-800" />
-                <span className="text-[11px] font-medium text-gray-800 text-center leading-tight">
+                <item.icon className="w-6 h-6 text-gray-900" />
+                <span className="text-[11px] font-medium text-gray-900 text-center leading-tight">
                   {item.label}
                 </span>
               </Link>
@@ -125,16 +125,16 @@ export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreD
         </div>
 
         {/* Footer Actions */}
-        <div className="border-t border-amber-500/50 px-4 py-3 flex items-center justify-between">
+        <div className="border-t border-[#3a3d41] px-4 py-3 flex items-center justify-between">
           {/* Theme Toggle */}
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-amber-500/50 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-400"
           >
             {theme === "dark" ? (
-              <Sun className="w-4 h-4 text-gray-800" />
+              <Sun className="w-4 h-4 text-gray-900" />
             ) : (
-              <Moon className="w-4 h-4 text-gray-800" />
+              <Moon className="w-4 h-4 text-gray-900" />
             )}
           </button>
           
@@ -144,7 +144,7 @@ export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreD
               href={`/cardapio/${store.slug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-amber-500/50 transition-colors text-gray-800"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-400 text-gray-900"
             >
               <ExternalLink className="w-4 h-4" />
               <span className="text-xs font-medium">Ver cardápio</span>
@@ -157,7 +157,7 @@ export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreD
               onClose();
               onLogout();
             }}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-500/20 transition-colors text-red-600"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500 text-white"
           >
             <LogOut className="w-4 h-4" />
             <span className="text-xs font-medium">Sair</span>
