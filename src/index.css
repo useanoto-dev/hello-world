@@ -66,14 +66,17 @@
     /* Surface for cards/elevated elements */
     --surface: 220 14% 97%;
     
-    /* Sidebar tokens - Bright Yellow macOS style */
-    --sidebar-bg: 48 100% 50%;
-    --sidebar-border: 45 100% 42%;
-    --sidebar-hover: 45 100% 45%;
+    /* Sidebar tokens - Apple frosted glass style */
+    --sidebar-bg: 220 10% 96%;
+    --sidebar-bg-end: 220 10% 94%;
+    --sidebar-border: 220 10% 88%;
+    --sidebar-hover: 45 100% 55%;
     --sidebar-active: 210 100% 50%;
-    --sidebar-foreground: 0 0% 10%;
-    --sidebar-foreground-muted: 0 0% 30%;
-    --sidebar-accent: 210 100% 50%;
+    --sidebar-foreground: 220 13% 18%;
+    --sidebar-foreground-muted: 220 9% 46%;
+    --sidebar-accent: 45 100% 50%;
+    --sidebar-button-bg: 45 100% 52%;
+    --sidebar-button-hover: 45 100% 48%;
     
     /* Admin specific - Uses primary sparingly */
     --admin-accent: 43 96% 50%;
@@ -127,13 +130,17 @@
     /* Surface for cards */
     --surface: 224 15% 11%;
     
-    /* Sidebar dark mode - Yellow background with high contrast text */
-    --sidebar-bg: 45 100% 51%;
-    --sidebar-border: 45 100% 42%;
-    --sidebar-hover: 45 100% 45%;
-    --sidebar-active: 210 100% 50%;
-    --sidebar-foreground: 0 0% 5%;
-    --sidebar-foreground-muted: 0 0% 20%;
+    /* Sidebar dark mode - Apple frosted glass dark */
+    --sidebar-bg: 220 15% 14%;
+    --sidebar-bg-end: 220 15% 11%;
+    --sidebar-border: 220 15% 20%;
+    --sidebar-hover: 45 100% 50%;
+    --sidebar-active: 210 100% 55%;
+    --sidebar-foreground: 210 20% 98%;
+    --sidebar-foreground-muted: 215 14% 60%;
+    --sidebar-accent: 45 100% 55%;
+    --sidebar-button-bg: 45 100% 50%;
+    --sidebar-button-hover: 45 100% 45%;
     
     /* Admin specific - Green accent in dark */
     --admin-accent: 152 80% 50%;
