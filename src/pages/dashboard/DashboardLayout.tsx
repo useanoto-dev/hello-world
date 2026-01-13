@@ -379,9 +379,7 @@ export default function DashboardLayout() {
             onClick={() => toggleMenuExpand(item.path)}
             className={cn(
               "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium outline-none transition-all duration-200",
-              (isActive || isSubItemActive)
-                ? "bg-amber-500/80 text-gray-900" 
-                : "text-gray-800 hover:bg-amber-500/50"
+              "bg-amber-400 text-gray-900 hover:bg-amber-300"
             )}
           >
             <item.icon className="flex-shrink-0 w-4 h-4" />
