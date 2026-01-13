@@ -1,7 +1,8 @@
-import { Plus, Minus, ShoppingCart, Trash2, CreditCard, Printer, X, MessageSquare, Gift, Tag } from "lucide-react";
+import { Plus, Minus, ShoppingCart, Trash2, CreditCard, Printer, X, MessageSquare, Gift, Tag, Maximize, Minimize } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatCurrency } from "@/lib/formatters";
 import { Table, getItemPrice } from "@/hooks/usePDVData";
 import { CartItem } from "@/hooks/usePDVCart";
@@ -27,6 +28,10 @@ interface PDVCartPanelProps {
   loyaltyDiscount: number;
   finalTotal: number;
   onOpenPayment: () => void;
+  // Fullscreen controls
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
+  fullscreenSupported?: boolean;
 }
 
 export function PDVCartPanel({
@@ -47,9 +52,43 @@ export function PDVCartPanel({
   loyaltyDiscount,
   finalTotal,
   onOpenPayment,
+  isFullscreen,
+  onToggleFullscreen,
+  fullscreenSupported,
 }: PDVCartPanelProps) {
   return (
     <div className="w-80 flex-shrink-0 flex flex-col bg-card border rounded-lg">
+      {/* Fullscreen Button - Top of Cart */}
+      {fullscreenSupported && onToggleFullscreen && (
+        <div className="p-2 border-b bg-muted/30">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onToggleFullscreen}
+                className="w-full gap-2 h-8"
+              >
+                {isFullscreen ? (
+                  <>
+                    <Minimize className="w-4 h-4" />
+                    <span className="text-xs">Sair Tela Cheia</span>
+                  </>
+                ) : (
+                  <>
+                    <Maximize className="w-4 h-4" />
+                    <span className="text-xs">Modo Tela Cheia</span>
+                  </>
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {isFullscreen ? "Sair da tela cheia (F11)" : "Expandir para tela cheia (F11)"}
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      )}
+
       {/* Cart Header */}
       <div className="p-4 border-b">
         <div className="flex items-center justify-between">
