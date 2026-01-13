@@ -378,8 +378,8 @@ export default function DashboardLayout() {
           <button
             onClick={() => toggleMenuExpand(item.path)}
             className={cn(
-              "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium outline-none transition-all duration-200",
-              "bg-amber-400 text-gray-900 hover:bg-amber-300"
+              "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium outline-none",
+              "bg-amber-400 text-gray-900"
             )}
           >
             <item.icon className="flex-shrink-0 w-4 h-4" />
@@ -404,8 +404,8 @@ export default function DashboardLayout() {
                   <Link
                     to={item.path}
                     className={cn(
-                      "relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[13px] transition-all duration-200",
-                      "bg-amber-500 text-gray-900 font-medium hover:bg-amber-400"
+                      "relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[13px]",
+                      "bg-amber-500 text-gray-900 font-medium"
                     )}
                     onMouseEnter={() => prefetchRoute(item.path)}
                   >
@@ -424,8 +424,8 @@ export default function DashboardLayout() {
                         key={subItem.path}
                         to={subItem.path}
                         className={cn(
-                          "relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[13px] transition-all duration-200",
-                          "bg-amber-500 text-gray-900 font-medium hover:bg-amber-400"
+                          "relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[13px]",
+                          "bg-amber-500 text-gray-900 font-medium"
                         )}
                         onMouseEnter={() => prefetchRoute(subItem.path)}
                       >
@@ -450,8 +450,8 @@ export default function DashboardLayout() {
         to={item.path}
         onClick={handleClick}
         className={cn(
-          "ripple-container relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium outline-none transition-all duration-200",
-          "bg-amber-400 text-gray-900 hover:bg-amber-300",
+          "ripple-container relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium outline-none",
+          "bg-amber-400 text-gray-900",
           sidebarCollapsed && "justify-center px-2"
         )}
         onMouseEnter={() => prefetchRoute(item.path)}
