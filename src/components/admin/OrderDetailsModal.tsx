@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Phone, MapPin, CreditCard, Printer, Trash2, Check, X, Clock, Truck, RefreshCw, MessageSquare, Loader2 } from "lucide-react";
-import { format } from "date-fns";
+import { format, isToday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -118,6 +118,11 @@ export function OrderDetailsModal({
 
   const StatusIcon = statusConfig[order.status]?.icon || Clock;
   const nextStatus = getNextStatus(order.status);
+  const orderDate = new Date(order.created_at);
+  const isOrderFromToday = isToday(orderDate);
+  
+  // Can only cancel if: not already canceled, and (order is from today OR order is not completed)
+  const canCancel = order.status !== "canceled" && (isOrderFromToday || order.status !== "completed");
 
   const getOrderTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
@@ -311,17 +316,37 @@ export function OrderDetailsModal({
                     Concluir
                   </Button>
                 )}
+                {canCancel && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="h-8 text-xs"
+                    onClick={() => {
+                      onUpdateStatus(order.id, "canceled");
+                      onOpenChange(false);
+                    }}
+                  >
+                    <X className="w-3 h-3 mr-1" />
+                    Cancelar
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {/* Show cancel button for completed orders from today only */}
+            {order.status === "completed" && canCancel && (
+              <div className="flex gap-2">
                 <Button
                   variant="destructive"
                   size="sm"
-                  className="h-8 text-xs"
+                  className="flex-1 h-8 text-xs"
                   onClick={() => {
                     onUpdateStatus(order.id, "canceled");
                     onOpenChange(false);
                   }}
                 >
                   <X className="w-3 h-3 mr-1" />
-                  Cancelar
+                  Cancelar Pedido
                 </Button>
               </div>
             )}

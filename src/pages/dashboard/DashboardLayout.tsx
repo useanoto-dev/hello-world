@@ -804,8 +804,8 @@ export default function DashboardLayout() {
 
           <div className={cn(
             "md:p-5 p-2.5",
-            showMobileNav ? "pt-2 pb-6" : "pt-3",
-            "md:pt-16"
+            showMobileNav ? "pt-2 pb-24" : "pt-3",
+            "md:pt-16 md:pb-5"
           )}>
             {/* Trial/Subscription Warning */}
             {isSubscriptionInactive && location.pathname !== "/dashboard/subscription" && (
