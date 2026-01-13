@@ -345,7 +345,7 @@ export default function Landing() {
                 <span className="text-xs font-medium" style={{ color: COLORS.primaryDark }}>#1 em Cardápios Digitais</span>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight leading-tight">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight leading-tight text-center lg:text-justify">
                 Seu delivery{" "}
                 <span style={{ background: `linear-gradient(135deg, ${COLORS.primaryDark}, ${COLORS.primary})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                   sem comissão
