@@ -39,7 +39,7 @@ export function DashboardBottomNav({
 
   return (
     <nav 
-      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-amber-400 border-t-2 border-amber-500"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#2B2E31] border-t border-[#3a3d41]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
       {/* Store Status Indicator */}
@@ -50,7 +50,7 @@ export function DashboardBottomNav({
           className={cn(
             "px-3 py-1 rounded-full text-[10px] font-bold shadow-lg flex items-center gap-1.5",
             isStoreOpen 
-              ? "bg-green-500 text-white" 
+              ? "bg-[#39FF14] text-gray-900" 
               : "bg-red-500 text-white"
           )}
         >
@@ -66,7 +66,7 @@ export function DashboardBottomNav({
             }}
             className={cn(
               "w-2 h-2 rounded-full",
-              isStoreOpen ? "bg-white" : "bg-white/70"
+              isStoreOpen ? "bg-gray-900" : "bg-white/70"
             )}
           />
           {isStoreOpen ? "Aberta" : "Fechada"}
@@ -85,18 +85,13 @@ export function DashboardBottomNav({
               to={item.path}
               onClick={triggerHaptic}
               className={cn(
-                "relative flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-colors",
-                isActive ? "text-gray-900" : "text-gray-700/70"
+                "relative flex flex-col items-center justify-center flex-1 h-full gap-0.5 rounded-lg mx-0.5",
+                isActive 
+                  ? "bg-amber-400 text-gray-900" 
+                  : "text-amber-400"
               )}
             >
-              {/* Active indicator */}
-              {isActive && (
-                <motion.div
-                  layoutId="bottomNavIndicator"
-                  className="absolute inset-0 bg-amber-500/30 rounded-lg"
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                />
-              )}
+              {/* Active indicator - removed, using bg color instead */}
               
               <div className="relative z-10">
                 <Icon className={cn(
@@ -129,7 +124,7 @@ export function DashboardBottomNav({
             triggerHaptic();
             onMoreClick();
           }}
-          className="relative flex flex-col items-center justify-center flex-1 h-full gap-0.5 text-gray-700/70"
+          className="relative flex flex-col items-center justify-center flex-1 h-full gap-0.5 text-amber-400 rounded-lg mx-0.5"
         >
           <MoreHorizontal className="h-5 w-5" />
           <span className="text-[10px] font-medium">Mais</span>
