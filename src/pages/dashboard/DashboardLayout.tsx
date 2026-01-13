@@ -1,4 +1,4 @@
-// Dashboard Layout - Anotô SaaS - Professional Design
+// Dashboard Layout - Anotô SaaS - Professional Design with macOS-style sidebar
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { Outlet, useNavigate, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -6,9 +6,11 @@ import {
   LayoutDashboard, Image, ShoppingBag,
   Settings, CreditCard, LogOut, Menu, X, ExternalLink, Package,
   ChefHat, TicketPercent, Users, ChevronLeft, ChevronRight, TrendingUp,
-  Monitor, UtensilsCrossed, ChevronDown, Workflow, Warehouse, Plug
+  Monitor, UtensilsCrossed, ChevronDown, Workflow, Warehouse, Plug, Maximize, Minimize
 } from "lucide-react";
 import { QuickActionButtons } from "@/components/admin/QuickActionButtons";
+import { DashboardBottomNav } from "@/components/admin/DashboardBottomNav";
+import { PageTransition } from "@/components/admin/PageTransition";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -30,6 +32,8 @@ import { getMenuThemeClasses, getCustomColorStyles, MENU_THEMES } from "@/compon
 import { preloadDashboardRoutes } from "@/hooks/useRoutePreloader";
 import { useStockNotifications } from "@/hooks/useStockNotifications";
 import { usePendingOrdersCount } from "@/hooks/usePendingOrdersCount";
+import { useFullscreen } from "@/hooks/useFullscreen";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Store {
   id: string;
@@ -85,6 +89,8 @@ const allMenuItems: MenuItem[] = [
 export default function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const isMobile = useIsMobile();
+  const { isFullscreen, toggleFullscreen, isSupported: fullscreenSupported } = useFullscreen();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
@@ -93,6 +99,9 @@ export default function DashboardLayout() {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [animatingIcon, setAnimatingIcon] = useState<string | null>(null);
   const [showCloseStoreDialog, setShowCloseStoreDialog] = useState(false);
+
+  // Check if on PDV page for fullscreen button
+  const isPDVPage = location.pathname === "/dashboard/pdv";
 
   // Auto-expand menu if current path is a subitem
   useEffect(() => {
@@ -152,18 +161,22 @@ export default function DashboardLayout() {
     };
   }, [store?.id]);
 
-  // Atalho de teclado para PDV (Shift+F8)
+  // Atalho de teclado para PDV (Shift+F8) e Fullscreen (F11)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.shiftKey && e.key === 'F8') {
         e.preventDefault();
         navigate('/dashboard/pdv');
       }
+      if (e.key === 'F11' && isPDVPage) {
+        e.preventDefault();
+        toggleFullscreen();
+      }
     };
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [navigate]);
+  }, [navigate, isPDVPage, toggleFullscreen]);
 
   // Load sidebar state from localStorage
   useEffect(() => {
@@ -275,11 +288,11 @@ export default function DashboardLayout() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex">
-        <div className="w-14 bg-sidebar border-r border-sidebar-border p-2 space-y-2">
-          <Skeleton className="h-8 w-8 rounded-md" />
-          <Skeleton className="h-7 w-7 rounded-md" />
-          <Skeleton className="h-7 w-7 rounded-md" />
-          <Skeleton className="h-7 w-7 rounded-md" />
+        <div className="w-14 bg-amber-400 border-r border-amber-500 p-2 space-y-2">
+          <Skeleton className="h-8 w-8 rounded-md bg-amber-300" />
+          <Skeleton className="h-7 w-7 rounded-md bg-amber-300" />
+          <Skeleton className="h-7 w-7 rounded-md bg-amber-300" />
+          <Skeleton className="h-7 w-7 rounded-md bg-amber-300" />
         </div>
         <div className="flex-1 p-5">
           <Skeleton className="h-5 w-40 mb-3" />
@@ -347,23 +360,33 @@ export default function DashboardLayout() {
       }
     };
 
+    // macOS Finder style - active indicator with blue left border
+    const activeIndicator = (isActive || isSubItemActive) && (
+      <motion.div
+        layoutId="sidebarActiveIndicator"
+        className="absolute left-0 top-1 bottom-1 w-[3px] bg-blue-500 rounded-r-full"
+        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+      />
+    );
+
     // If has sub-items, render as expandable
     if (hasSubItems && !sidebarCollapsed) {
       return (
-        <div>
+        <div className="relative">
+          {activeIndicator}
           <button
             onClick={() => toggleMenuExpand(item.path)}
             className={cn(
               "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium outline-none transition-all duration-200",
               (isActive || isSubItemActive)
-                ? "bg-amber-500 text-black shadow-md border border-amber-600" 
-                : "bg-amber-400 text-black hover:bg-amber-500 border border-amber-500/50 shadow-sm"
+                ? "bg-amber-500/80 text-gray-900" 
+                : "text-gray-800 hover:bg-amber-500/50"
             )}
           >
-            <item.icon className="flex-shrink-0 w-4 h-4 text-black" />
+            <item.icon className="flex-shrink-0 w-4 h-4" />
             <span className="truncate flex-1 text-left">{item.label}</span>
             <ChevronDown className={cn(
-              "w-3.5 h-3.5 text-black/60 transition-transform duration-200",
+              "w-3.5 h-3.5 opacity-60 transition-transform duration-200",
               isExpanded && "rotate-180"
             )} />
           </button>
@@ -377,19 +400,22 @@ export default function DashboardLayout() {
                 transition={{ duration: 0.15 }}
                 className="overflow-hidden"
               >
-                <div className="ml-3.5 mt-0.5 space-y-0.5 border-l border-amber-500/50 pl-2">
+                <div className="ml-3.5 mt-0.5 space-y-0.5 border-l-2 border-amber-600/30 pl-2">
                   {/* Main item link */}
                   <Link
                     to={item.path}
                     className={cn(
-                      "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[13px] transition-all duration-200",
+                      "relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[13px] transition-all duration-200",
                       isActive 
-                        ? "bg-amber-500 text-black font-medium shadow-md border border-amber-600" 
-                        : "bg-amber-400/80 text-black hover:bg-amber-500 border border-amber-500/40 shadow-sm"
+                        ? "bg-amber-500/80 text-gray-900 font-medium" 
+                        : "text-gray-700 hover:bg-amber-500/50"
                     )}
                     onMouseEnter={() => prefetchRoute(item.path)}
                   >
-                    <Package className="w-3.5 h-3.5 text-black" />
+                    {isActive && (
+                      <div className="absolute left-0 top-1 bottom-1 w-[3px] bg-blue-500 rounded-r-full" />
+                    )}
+                    <Package className="w-3.5 h-3.5" />
                     <span>Produtos</span>
                   </Link>
                   
@@ -401,14 +427,17 @@ export default function DashboardLayout() {
                         key={subItem.path}
                         to={subItem.path}
                         className={cn(
-                          "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[13px] transition-all duration-200",
+                          "relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[13px] transition-all duration-200",
                           isSubActive 
-                            ? "bg-amber-500 text-black font-medium shadow-md border border-amber-600" 
-                            : "bg-amber-400/80 text-black hover:bg-amber-500 border border-amber-500/40 shadow-sm"
+                            ? "bg-amber-500/80 text-gray-900 font-medium" 
+                            : "text-gray-700 hover:bg-amber-500/50"
                         )}
                         onMouseEnter={() => prefetchRoute(subItem.path)}
                       >
-                        <subItem.icon className="w-3.5 h-3.5 text-black" />
+                        {isSubActive && (
+                          <div className="absolute left-0 top-1 bottom-1 w-[3px] bg-blue-500 rounded-r-full" />
+                        )}
+                        <subItem.icon className="w-3.5 h-3.5" />
                         <span>{subItem.label}</span>
                       </Link>
                     );
@@ -426,19 +455,27 @@ export default function DashboardLayout() {
         to={item.path}
         onClick={handleClick}
         className={cn(
-          "ripple-container flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium outline-none transition-all duration-200 relative",
+          "ripple-container relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium outline-none transition-all duration-200",
           isActive 
-            ? "bg-amber-500 text-black shadow-md border border-amber-600" 
-            : "bg-amber-400 text-black hover:bg-amber-500 border border-amber-500/50 shadow-sm",
+            ? "bg-amber-500/80 text-gray-900" 
+            : "text-gray-800 hover:bg-amber-500/50",
           sidebarCollapsed && "justify-center px-2"
         )}
         onMouseEnter={() => prefetchRoute(item.path)}
         onTouchStart={() => prefetchRoute(item.path)}
       >
+        {/* Blue left border indicator */}
+        {isActive && (
+          <motion.div
+            layoutId="sidebarActiveIndicator"
+            className="absolute left-0 top-1 bottom-1 w-[3px] bg-blue-500 rounded-r-full"
+            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+          />
+        )}
+        
         <div className="relative">
           <item.icon className={cn(
-            "flex-shrink-0 text-black",
-            sidebarCollapsed ? "w-[18px] h-[18px]" : "w-4 h-4",
+            "flex-shrink-0",
             sidebarCollapsed ? "w-[18px] h-[18px]" : "w-4 h-4",
             sidebarCollapsed && animatingIcon === item.path && "animate-icon-spin"
           )} />
@@ -492,10 +529,16 @@ export default function DashboardLayout() {
     return content;
   };
 
+  // Hide sidebar on mobile when in fullscreen PDV mode
+  const showMobileNav = isMobile && !isFullscreen;
+
   return (
     <TooltipProvider>
-      <div className="h-screen bg-background flex w-full overflow-hidden">
-        {/* Sidebar - Desktop - Clean & Minimal */}
+      <div className={cn(
+        "h-screen bg-background flex w-full overflow-hidden",
+        showMobileNav && "pb-14" // Padding for bottom nav
+      )}>
+        {/* Sidebar - Desktop - Yellow macOS style */}
         <motion.aside 
           layout
           initial={false}
@@ -506,7 +549,7 @@ export default function DashboardLayout() {
           }}
           className={cn(
             "hidden md:flex flex-col h-screen flex-shrink-0 relative group/sidebar",
-            "bg-gray-800 border-r border-amber-400/50"
+            "bg-amber-400 border-r border-amber-500"
           )}
         >
           {/* Collapse Toggle Button */}
@@ -514,8 +557,8 @@ export default function DashboardLayout() {
             onClick={toggleSidebar}
             className={cn(
               "absolute -right-2.5 top-14 z-50 flex h-5 w-5 items-center justify-center",
-              "rounded-full bg-amber-400 border border-amber-500 shadow-md",
-              "text-gray-900 hover:bg-amber-300",
+              "rounded-full bg-white border border-gray-200 shadow-md",
+              "text-gray-600 hover:bg-gray-50",
               "transition-all duration-150 opacity-0 group-hover/sidebar:opacity-100",
               "focus:opacity-100 focus:outline-none"
             )}
@@ -535,7 +578,7 @@ export default function DashboardLayout() {
               "h-12 flex items-center flex-shrink-0 overflow-hidden",
               "transition-all duration-200",
               sidebarCollapsed ? "justify-center px-2" : "px-3",
-              "border-b border-amber-400/30"
+              "border-b border-amber-500/50"
             )}
           >
             <Link to="/dashboard" className="flex items-center gap-2.5 min-w-0">
@@ -551,8 +594,8 @@ export default function DashboardLayout() {
                     className="w-8 h-8 rounded-md object-cover"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-lg bg-amber-400 flex items-center justify-center shadow-sm">
-                    <span className="text-gray-900 font-bold text-sm">
+                  <div className="w-8 h-8 rounded-lg bg-white/90 flex items-center justify-center shadow-sm">
+                    <span className="text-amber-600 font-bold text-sm">
                       {store?.name?.charAt(0) || "A"}
                     </span>
                   </div>
@@ -565,7 +608,7 @@ export default function DashboardLayout() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -8 }}
                     transition={{ duration: 0.15 }}
-                    className="font-bold text-[13px] text-white truncate"
+                    className="font-bold text-[13px] text-gray-900 truncate"
                   >
                     {store?.name || "Anotô?"}
                   </motion.span>
@@ -581,10 +624,8 @@ export default function DashboardLayout() {
                 onClick={() => {
                   if (!store) return;
                   if (store.is_open_override) {
-                    // Show confirmation before closing
                     setShowCloseStoreDialog(true);
                   } else {
-                    // Open immediately
                     handleToggleStoreStatus(true);
                   }
                 }}
@@ -592,8 +633,8 @@ export default function DashboardLayout() {
                   "flex items-center gap-2 w-full transition-colors",
                   sidebarCollapsed ? "justify-center p-1.5" : "px-3 py-1.5",
                   store?.is_open_override 
-                    ? "bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:hover:bg-emerald-800/40"
-                    : "bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800/40"
+                    ? "bg-green-500/20 hover:bg-green-500/30"
+                    : "bg-red-500/20 hover:bg-red-500/30"
                 )}
               >
                 <motion.div
@@ -620,8 +661,8 @@ export default function DashboardLayout() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       className={cn(
-                        "text-[11px] font-medium",
-                        store?.is_open_override ? "text-emerald-700 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
+                        "text-[11px] font-semibold",
+                        store?.is_open_override ? "text-green-700" : "text-red-700"
                       )}
                     >
                       {store?.is_open_override ? "Loja Aberta" : "Loja Fechada"}
@@ -669,9 +710,46 @@ export default function DashboardLayout() {
             className={cn(
               "p-1.5 space-y-0.5 flex-shrink-0 overflow-hidden",
               sidebarCollapsed && "flex flex-col items-center",
-              "border-t border-amber-400/30"
+              "border-t border-amber-500/50"
             )}
           >
+            {/* Fullscreen Button for PDV */}
+            {isPDVPage && fullscreenSupported && (
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={toggleFullscreen}
+                    className={cn(
+                      "flex items-center gap-2 text-xs text-gray-700 hover:text-gray-900 transition-colors rounded-lg hover:bg-amber-500/50",
+                      sidebarCollapsed ? "p-1.5 justify-center" : "px-2.5 py-1.5 w-full"
+                    )}
+                  >
+                    {isFullscreen ? (
+                      <Minimize className="w-3.5 h-3.5 flex-shrink-0" />
+                    ) : (
+                      <Maximize className="w-3.5 h-3.5 flex-shrink-0" />
+                    )}
+                    <AnimatePresence mode="wait">
+                      {!sidebarCollapsed && (
+                        <motion.span
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                        >
+                          {isFullscreen ? "Sair Tela Cheia" : "Tela Cheia"}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </button>
+                </TooltipTrigger>
+                {sidebarCollapsed && (
+                  <TooltipContent side="right" className="text-xs font-medium">
+                    {isFullscreen ? "Sair da Tela Cheia (F11)" : "Modo Tela Cheia (F11)"}
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            )}
+
             {/* Theme Toggle */}
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
@@ -693,11 +771,11 @@ export default function DashboardLayout() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(
-                      "flex items-center gap-2 text-xs text-gray-300 hover:text-amber-400 transition-colors rounded-lg hover:bg-gray-700/50",
+                      "flex items-center gap-2 text-xs text-gray-700 hover:text-gray-900 transition-colors rounded-lg hover:bg-amber-500/50",
                       sidebarCollapsed ? "p-1.5 justify-center" : "px-2.5 py-1.5"
                     )}
                   >
-                    <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 text-amber-400/70" />
+                    <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
                     <AnimatePresence mode="wait">
                       {!sidebarCollapsed && (
                         <motion.span
@@ -723,11 +801,11 @@ export default function DashboardLayout() {
                 <button
                   onClick={handleLogout}
                   className={cn(
-                    "flex items-center gap-2 text-xs text-gray-300 hover:text-red-400 transition-colors w-full rounded-lg hover:bg-red-900/30",
+                    "flex items-center gap-2 text-xs text-red-600 hover:text-red-700 transition-colors w-full rounded-lg hover:bg-red-500/20",
                     sidebarCollapsed ? "p-1.5 justify-center" : "px-2.5 py-1.5"
                   )}
                 >
-                  <LogOut className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
+                  <LogOut className="w-3.5 h-3.5 flex-shrink-0" />
                   <AnimatePresence mode="wait">
                     {!sidebarCollapsed && (
                       <motion.span
@@ -748,24 +826,7 @@ export default function DashboardLayout() {
           </div>
         </motion.aside>
 
-        {/* Mobile Header */}
-        <div className="md:hidden fixed top-0 left-0 right-0 z-50 h-12 bg-background/95 backdrop-blur-sm border-b border-border px-3 flex items-center justify-between">
-          <Link to="/dashboard" className="flex items-center gap-2">
-            {store?.logo_url ? (
-              <img src={store.logo_url} alt={store.name} className="w-7 h-7 rounded-md object-cover" />
-            ) : (
-              <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center">
-                <span className="text-primary font-semibold text-sm">{store?.name?.charAt(0) || "A"}</span>
-              </div>
-            )}
-            <span className="font-semibold text-[13px]">{store?.name || "Anotô?"}</span>
-          </Link>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setSidebarOpen(true)}>
-            <Menu className="w-4 h-4" />
-          </Button>
-        </div>
-
-        {/* Mobile Sidebar */}
+        {/* Mobile Sidebar Sheet */}
         <AnimatePresence>
           {sidebarOpen && (
             <>
@@ -781,40 +842,96 @@ export default function DashboardLayout() {
                 animate={{ x: 0 }}
                 exit={{ x: "100%" }}
                 transition={{ type: "spring", damping: 28, stiffness: 350 }}
-                className="md:hidden fixed right-0 top-0 bottom-0 w-56 bg-sidebar z-50 flex flex-col shadow-xl"
+                className="md:hidden fixed right-0 top-0 bottom-0 w-64 bg-amber-400 z-50 flex flex-col shadow-xl"
               >
-                <div className="h-12 border-b border-sidebar-border px-3 flex items-center justify-between flex-shrink-0">
-                  <span className="font-semibold text-[13px] text-sidebar-foreground">Menu</span>
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setSidebarOpen(false)}>
-                    <X className="w-4 h-4" />
+                <div className="h-12 border-b border-amber-500/50 px-3 flex items-center justify-between flex-shrink-0">
+                  <span className="font-semibold text-[13px] text-gray-900">Menu</span>
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 hover:bg-amber-500/50" onClick={() => setSidebarOpen(false)}>
+                    <X className="w-4 h-4 text-gray-900" />
                   </Button>
                 </div>
-                <nav className="flex-1 p-1.5 space-y-0.5 overflow-y-auto">
-                  {menuItems.map(item => (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      onClick={() => setSidebarOpen(false)}
-                      className={cn(
-                        "flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[13px] font-medium transition-colors",
-                        location.pathname === item.path
-                          ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                      )}
-                    >
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.label}</span>
-                    </Link>
-                  ))}
+                
+                {/* Store Status */}
+                <button
+                  onClick={() => {
+                    if (!store) return;
+                    if (store.is_open_override) {
+                      setShowCloseStoreDialog(true);
+                    } else {
+                      handleToggleStoreStatus(true);
+                    }
+                  }}
+                  className={cn(
+                    "flex items-center gap-2 px-3 py-2",
+                    store?.is_open_override 
+                      ? "bg-green-500/20"
+                      : "bg-red-500/20"
+                  )}
+                >
+                  <motion.div
+                    animate={{ 
+                      scale: store?.is_open_override ? [1, 1.3, 1] : 1,
+                    }}
+                    transition={{ 
+                      duration: 1.5, 
+                      repeat: store?.is_open_override ? Infinity : 0
+                    }}
+                    className={cn(
+                      "w-2.5 h-2.5 rounded-full",
+                      store?.is_open_override ? "bg-green-600" : "bg-red-600"
+                    )}
+                  />
+                  <span className={cn(
+                    "text-xs font-semibold",
+                    store?.is_open_override ? "text-green-700" : "text-red-700"
+                  )}>
+                    {store?.is_open_override ? "Loja Aberta" : "Loja Fechada"}
+                  </span>
+                </button>
+                
+                <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
+                  {menuItems.map(item => {
+                    const isActive = location.pathname === item.path;
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={() => setSidebarOpen(false)}
+                        className={cn(
+                          "relative flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[13px] font-medium transition-colors",
+                          isActive
+                            ? "bg-amber-500/80 text-gray-900"
+                            : "text-gray-800 hover:bg-amber-500/50"
+                        )}
+                      >
+                        {isActive && (
+                          <div className="absolute left-0 top-1 bottom-1 w-[3px] bg-blue-500 rounded-r-full" />
+                        )}
+                        <item.icon className="w-4 h-4" />
+                        <span>{item.label}</span>
+                      </Link>
+                    );
+                  })}
                 </nav>
-                <div className="border-t border-sidebar-border p-1.5 space-y-0.5 flex-shrink-0">
+                <div className="border-t border-amber-500/50 p-2 space-y-0.5 flex-shrink-0">
                   <div className="flex items-center justify-between px-2.5 py-1.5">
-                    <span className="text-xs text-sidebar-foreground/60">Tema</span>
+                    <span className="text-xs text-gray-700">Tema</span>
                     <ThemeToggle variant="simple" />
                   </div>
+                  {store && (
+                    <a
+                      href={`/cardapio/${store.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-xs text-gray-700 w-full px-2.5 py-1.5 rounded-md hover:bg-amber-500/50"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Ver cardápio</span>
+                    </a>
+                  )}
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-2 text-xs text-destructive w-full px-2.5 py-1.5 rounded-md hover:bg-destructive/10"
+                    className="flex items-center gap-2 text-xs text-red-600 w-full px-2.5 py-1.5 rounded-md hover:bg-red-500/20"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     <span>Sair</span>
@@ -826,14 +943,21 @@ export default function DashboardLayout() {
         </AnimatePresence>
 
         {/* Main Content - Independent Scroll */}
-        <main className="flex-1 h-screen overflow-y-auto bg-background relative">
+        <main className={cn(
+          "flex-1 h-screen overflow-y-auto bg-background relative",
+          isFullscreen && "md:ml-0"
+        )}>
           {/* Quick Action Buttons - Top Right */}
           <QuickActionButtons 
             store={store} 
             onStoreUpdate={(updates) => setStore(prev => prev ? { ...prev, ...updates } : null)} 
           />
 
-          <div className="md:p-5 p-3 pt-20 md:pt-16">
+          <div className={cn(
+            "md:p-5 p-3",
+            showMobileNav ? "pt-3 pb-4" : "pt-3",
+            "md:pt-16"
+          )}>
             {/* Trial/Subscription Warning */}
             {isSubscriptionInactive && location.pathname !== "/dashboard/subscription" && (
               <div className="mb-4 p-2.5 bg-destructive/10 border border-destructive/20 rounded-md flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -851,10 +975,24 @@ export default function DashboardLayout() {
               </div>
             )}
 
-            {/* Page Content */}
-            <Outlet context={{ store, subscription, refreshStore: checkAuth }} />
+            {/* Page Content with Transition */}
+            <AnimatePresence mode="wait">
+              <PageTransition key={location.pathname}>
+                <Outlet context={{ store, subscription, refreshStore: checkAuth }} />
+              </PageTransition>
+            </AnimatePresence>
           </div>
         </main>
+
+        {/* Mobile Bottom Navigation */}
+        {showMobileNav && (
+          <DashboardBottomNav
+            isStoreOpen={store?.is_open_override ?? false}
+            pendingOrdersCount={pendingOrdersCount}
+            useComandaMode={store?.use_comanda_mode}
+            onMoreClick={() => setSidebarOpen(true)}
+          />
+        )}
       </div>
     </TooltipProvider>
   );
