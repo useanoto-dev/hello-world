@@ -207,6 +207,7 @@ const FloatingParticle = ({ delay, duration, x, y }: { delay: number; duration: 
 export default function Landing() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [menuAnimating, setMenuAnimating] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -495,13 +496,14 @@ export default function Landing() {
     <div style={{ minHeight: "100vh", backgroundColor: COLORS.background, color: COLORS.foreground }}>
       {/* iOS-style Header - Centered Pill */}
       <header 
-        className="fixed top-2 sm:top-4 left-1/2 -translate-x-1/2 z-50 w-[92%] sm:w-[95%] max-w-5xl transition-[border-radius] duration-300"
+        className="fixed top-2 sm:top-4 left-1/2 -translate-x-1/2 z-50 w-[92%] sm:w-[95%] max-w-5xl"
         style={{ 
           ...GLASS.header,
-          borderRadius: mobileMenuOpen ? "24px" : "9999px",
+          borderRadius: (mobileMenuOpen || menuAnimating) ? "24px" : "9999px",
           overflow: "hidden",
           border: "1px solid rgba(255, 255, 255, 0.6)",
           boxShadow: "0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)",
+          transition: "border-radius 0.3s ease-out",
         }}
       >
         <div className="px-3 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between">
@@ -594,6 +596,9 @@ export default function Landing() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              onAnimationStart={() => setMenuAnimating(true)}
+              onAnimationComplete={() => setMenuAnimating(false)}
               className="md:hidden overflow-hidden"
               style={{ backgroundColor: "#ffffff" }}
             >
