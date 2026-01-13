@@ -14,6 +14,7 @@ import { useRoutePreloader } from "@/hooks/useRoutePreloader";
 
 // Eager loaded pages (critical path)
 import Landing from "@/pages/Landing";
+import ExplorePage from "@/pages/ExplorePage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
@@ -91,6 +92,7 @@ function AnimatedRoutes() {
       <Suspense fallback={null}>
         <Routes location={location}>
           <Route path="/" element={<Landing />} />
+          <Route path="/explorar" element={<ExplorePage />} />
           <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
           <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
           <Route path="/privacidade" element={<PrivacyPolicy />} />

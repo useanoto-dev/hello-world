@@ -531,6 +531,16 @@ export default function Landing() {
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate("/explorar")}
+              className="p-2 rounded-full transition-colors hover:bg-amber-50"
+              style={{ color: COLORS.foreground, background: "none", border: "none" }}
+              title="Explorar Cardápios"
+            >
+              <Store className="w-5 h-5" />
+            </motion.button>
             <Button 
               variant="ghost" 
               size="sm"
@@ -553,6 +563,14 @@ export default function Landing() {
 
           {/* Mobile */}
           <div className="md:hidden flex items-center gap-2">
+            <button 
+              onClick={() => navigate("/explorar")}
+              className="p-2 rounded-full transition-colors hover:bg-amber-50"
+              style={{ color: COLORS.foreground, background: "none", border: "none" }}
+              title="Explorar Cardápios"
+            >
+              <Store className="w-5 h-5" />
+            </button>
             <button 
               onClick={() => setShowLoginModal(true)}
               style={{ color: COLORS.foreground, background: "none", border: "none" }}
