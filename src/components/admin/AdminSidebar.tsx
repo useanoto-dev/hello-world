@@ -124,7 +124,7 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
     navigate('/');
   };
 
-  // macOS-style menu item component with blue selection indicator
+  // macOS-style menu item component with blue selection indicator and yellow buttons
   const MenuItem = ({ item, isActive, end = false }: { 
     item: { title: string; url: string; icon: React.ComponentType<{ className?: string }> }; 
     isActive?: boolean;
@@ -140,22 +140,25 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
             to={item.url}
             end={end}
             className={cn(
-              "group relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150",
-              "bg-[hsl(var(--sidebar-button-bg))] text-sidebar-foreground",
-              "hover:bg-[hsl(var(--sidebar-button-hover))] hover:shadow-sm",
-              "shadow-sm"
+              "group relative flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200",
+              // Yellow button style
+              "bg-gradient-to-b from-amber-400 to-amber-500 text-amber-950",
+              "hover:from-amber-500 hover:to-amber-600 hover:shadow-md hover:shadow-amber-500/25",
+              "shadow-sm shadow-amber-600/20",
+              "border border-amber-500/30"
             )}
-            activeClassName="!bg-[hsl(var(--sidebar-active))] text-white shadow-md"
+            activeClassName="!from-amber-500 !to-amber-600 !shadow-lg !shadow-amber-500/30"
           >
-            {/* Blue selection indicator */}
+            {/* Blue selection indicator - left bar */}
             {active && (
-              <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-[hsl(210,100%,50%)] rounded-r-full" />
+              <motion.span 
+                layoutId="sidebar-indicator"
+                className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full shadow-lg shadow-blue-500/50"
+                transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+              />
             )}
-            <Icon className={cn(
-              "w-4 h-4 flex-shrink-0 transition-colors",
-              active ? "text-white" : "text-sidebar-foreground"
-            )} />
-            {!collapsed && <span className={active ? "text-white" : ""}>{item.title}</span>}
+            <Icon className="w-4 h-4 flex-shrink-0 text-amber-900" />
+            {!collapsed && <span className="text-amber-900">{item.title}</span>}
           </NavLink>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -166,23 +169,23 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
     <Sidebar 
       collapsible="icon" 
       className={cn(
-        "border-r border-sidebar-border/60",
-        // Apple frosted glass effect
-        "bg-gradient-to-b from-[hsl(var(--sidebar-bg))] to-[hsl(var(--sidebar-bg-end))]",
-        "backdrop-blur-2xl backdrop-saturate-150",
-        "shadow-[inset_-1px_0_0_0_rgba(255,255,255,0.1)]"
+        "border-r border-white/20",
+        // Apple frosted glass effect - gray translucent
+        "bg-[hsl(var(--sidebar-bg))]",
+        "backdrop-blur-xl backdrop-saturate-[1.8]",
+        "shadow-[inset_-1px_0_0_0_rgba(255,255,255,0.15),inset_1px_0_0_0_rgba(255,255,255,0.05)]"
       )}
     >
       <SidebarContent className="bg-transparent">
         {/* Header - Store info */}
-        <div className="px-3 py-4 border-b border-sidebar-border/50">
-          <div className="flex items-center gap-2.5">
+        <div className="px-3 py-4 border-b border-white/10">
+          <div className="flex items-center gap-3">
             <div className={cn(
-              "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
-              "bg-gradient-to-br from-amber-400 to-orange-500",
-              "shadow-sm shadow-amber-500/20"
+              "w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0",
+              "bg-gradient-to-br from-amber-400 to-amber-600",
+              "shadow-md shadow-amber-500/30"
             )}>
-              <Pizza className="w-4 h-4 text-white" />
+              <Pizza className="w-5 h-5 text-white" />
             </div>
             {!collapsed && (
               <motion.div
@@ -190,20 +193,20 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.15 }}
               >
-                <h2 className="font-semibold text-sm text-sidebar-foreground leading-tight">Pizzaria</h2>
-                <p className="text-[11px] text-sidebar-foreground-muted leading-tight">Portuguesa</p>
+                <h2 className="font-bold text-sm text-gray-800 dark:text-gray-100 leading-tight">Pizzaria</h2>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">Portuguesa</p>
               </motion.div>
             )}
           </div>
         </div>
 
         {/* Quick Access */}
-        <SidebarGroup className="py-2">
-          <SidebarGroupLabel className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground-muted/60">
+        <SidebarGroup className="py-3">
+          <SidebarGroupLabel className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
             Acesso Rápido
           </SidebarGroupLabel>
-          <SidebarGroupContent className="px-2.5">
-            <SidebarMenu className="gap-1.5">
+          <SidebarGroupContent className="px-2.5 mt-1">
+            <SidebarMenu className="gap-2">
               {quickAccessItems.map((item) => (
                 <MenuItem key={item.title} item={item} />
               ))}
@@ -212,12 +215,12 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
         </SidebarGroup>
 
         {/* Operational */}
-        <SidebarGroup className="py-2">
-          <SidebarGroupLabel className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground-muted/60">
+        <SidebarGroup className="py-3">
+          <SidebarGroupLabel className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
             Operacional
           </SidebarGroupLabel>
-          <SidebarGroupContent className="px-2.5">
-            <SidebarMenu className="gap-1.5">
+          <SidebarGroupContent className="px-2.5 mt-1">
+            <SidebarMenu className="gap-2">
               {operationalItems.map((item) => (
                 <MenuItem key={item.title} item={item} />
               ))}
@@ -226,12 +229,12 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
         </SidebarGroup>
 
         {/* Management */}
-        <SidebarGroup className="py-2 flex-1">
-          <SidebarGroupLabel className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground-muted/60">
+        <SidebarGroup className="py-3 flex-1">
+          <SidebarGroupLabel className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
             Gestão
           </SidebarGroupLabel>
-          <SidebarGroupContent className="px-2.5">
-            <SidebarMenu className="gap-1.5">
+          <SidebarGroupContent className="px-2.5 mt-1">
+            <SidebarMenu className="gap-2">
               {/* Dashboard and Pedidos */}
               {managementItems.slice(0, 2).map((item) => (
                 <MenuItem key={item.title} item={item} end={item.url === "/dashboard"} />
@@ -243,24 +246,29 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
                   <CollapsibleTrigger asChild>
                     <button
                       className={cn(
-                        "relative w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150",
-                        "bg-[hsl(var(--sidebar-button-bg))] text-sidebar-foreground shadow-sm",
-                        "hover:bg-[hsl(var(--sidebar-button-hover))] hover:shadow-sm",
-                        isMenuManagerActive && "!bg-[hsl(var(--sidebar-active))] text-white shadow-md"
+                        "relative w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200",
+                        // Yellow button style
+                        "bg-gradient-to-b from-amber-400 to-amber-500 text-amber-950",
+                        "hover:from-amber-500 hover:to-amber-600 hover:shadow-md hover:shadow-amber-500/25",
+                        "shadow-sm shadow-amber-600/20",
+                        "border border-amber-500/30"
                       )}
                     >
                       {/* Blue selection indicator */}
                       {isMenuManagerActive && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-[hsl(210,100%,50%)] rounded-r-full" />
+                        <motion.span 
+                          layoutId="sidebar-indicator-menu"
+                          className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full shadow-lg shadow-blue-500/50"
+                          transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                        />
                       )}
-                      <Menu className={cn("w-4 h-4 flex-shrink-0", isMenuManagerActive && "text-white")} />
+                      <Menu className="w-4 h-4 flex-shrink-0 text-amber-900" />
                       {!collapsed && (
                         <>
-                          <span className={cn("flex-1 text-left", isMenuManagerActive && "text-white")}>Cardápio</span>
+                          <span className="flex-1 text-left text-amber-900">Cardápio</span>
                           <ChevronRight 
                             className={cn(
-                              "w-3.5 h-3.5 transition-transform duration-200",
-                              isMenuManagerActive ? "text-white/70" : "text-sidebar-foreground/60",
+                              "w-3.5 h-3.5 transition-transform duration-200 text-amber-800",
                               menuManagerOpen && "rotate-90"
                             )} 
                           />
@@ -278,7 +286,7 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
                           transition={{ duration: 0.2, ease: "easeInOut" }}
                           className="overflow-hidden"
                         >
-                          <div className={cn("ml-4 pl-3 border-l-2 border-[hsl(var(--sidebar-border))] mt-1 space-y-1", collapsed && "hidden")}>
+                          <div className={cn("ml-4 pl-3 border-l-2 border-amber-400/40 mt-2 space-y-1.5", collapsed && "hidden")}>
                             {menuManagerSubItems.map((subItem) => {
                               const Icon = subItem.icon;
                               const isSubActive = location.pathname.startsWith(subItem.url);
@@ -287,17 +295,19 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
                                   key={subItem.url}
                                   to={subItem.url}
                                   className={cn(
-                                    "relative flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[12px] font-medium transition-all duration-150",
-                                    "bg-[hsl(var(--sidebar-button-bg))]/80 text-sidebar-foreground",
-                                    "hover:bg-[hsl(var(--sidebar-button-hover))]"
+                                    "relative flex items-center gap-2 px-2.5 py-2 rounded-lg text-[12px] font-semibold transition-all duration-200",
+                                    // Yellow sub-button style
+                                    "bg-gradient-to-b from-amber-300/90 to-amber-400/90 text-amber-900",
+                                    "hover:from-amber-400 hover:to-amber-500 hover:shadow-sm",
+                                    "border border-amber-400/30"
                                   )}
-                                  activeClassName="!bg-[hsl(var(--sidebar-active))] text-white"
+                                  activeClassName="!from-amber-400 !to-amber-500 !shadow-md"
                                 >
                                   {isSubActive && (
-                                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-[hsl(210,100%,50%)] rounded-r-full" />
+                                    <span className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1 h-4 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full shadow-md shadow-blue-500/40" />
                                   )}
-                                  <Icon className={cn("w-3.5 h-3.5 flex-shrink-0", isSubActive && "text-white")} />
-                                  <span className={isSubActive ? "text-white" : ""}>{subItem.title}</span>
+                                  <Icon className="w-3.5 h-3.5 flex-shrink-0 text-amber-800" />
+                                  <span className="text-amber-900">{subItem.title}</span>
                                 </NavLink>
                               );
                             })}
@@ -318,27 +328,31 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border/40 p-3 bg-transparent">
-        <div className="space-y-1.5">
+      <SidebarFooter className="border-t border-white/10 p-3 bg-transparent">
+        <div className="space-y-2">
           {storeSlug && (
             <button
               onClick={() => window.open(`/cardapio/${storeSlug}`, '_blank')}
               className={cn(
-                "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150",
-                "bg-[hsl(var(--sidebar-button-bg))] text-sidebar-foreground shadow-sm",
-                "hover:bg-[hsl(var(--sidebar-button-hover))]"
+                "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200",
+                // Yellow button style for footer
+                "bg-gradient-to-b from-amber-400 to-amber-500 text-amber-950",
+                "hover:from-amber-500 hover:to-amber-600 hover:shadow-md hover:shadow-amber-500/25",
+                "shadow-sm shadow-amber-600/20",
+                "border border-amber-500/30"
               )}
             >
-              <ExternalLink className="w-4 h-4" />
-              {!collapsed && <span>Ver Cardápio</span>}
+              <ExternalLink className="w-4 h-4 text-amber-900" />
+              {!collapsed && <span className="text-amber-900">Ver Cardápio</span>}
             </button>
           )}
           <button
             onClick={handleSignOut}
             className={cn(
-              "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150",
-              "bg-red-500/10 text-red-600 dark:text-red-400",
-              "hover:bg-red-500/20"
+              "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200",
+              "bg-gradient-to-b from-red-500/20 to-red-600/20 text-red-600 dark:text-red-400",
+              "hover:from-red-500/30 hover:to-red-600/30",
+              "border border-red-500/20"
             )}
           >
             <LogOut className="w-4 h-4" />
