@@ -498,7 +498,8 @@ export default function Landing() {
         className="fixed top-2 sm:top-4 left-1/2 -translate-x-1/2 z-50 w-[92%] sm:w-[95%] max-w-5xl"
         style={{ 
           ...GLASS.header,
-          borderRadius: "9999px",
+          borderRadius: mobileMenuOpen ? "24px" : "9999px",
+          overflow: "hidden",
           border: "1px solid rgba(255, 255, 255, 0.6)",
           boxShadow: "0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)",
         }}
