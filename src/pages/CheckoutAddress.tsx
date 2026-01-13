@@ -12,9 +12,10 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { validateCPF } from '@/lib/validators';
 
-const STORAGE_KEY = 'saved_customer_data';
+const STORAGE_KEY = 'customer_profile';
 
 interface SavedData {
+  // Campos originais do checkout
   customerName: string;
   customerPhone: string;
   customerCpf?: string;
@@ -23,6 +24,14 @@ interface SavedData {
   complement: string;
   reference: string;
   deliveryAreaId?: string;
+  // Campos extras do perfil para sincronização
+  name?: string;
+  phone?: string;
+  cpf?: string;
+  cep?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
 }
 
 interface DeliveryArea {
@@ -126,9 +135,10 @@ export default function CheckoutAddress() {
         const data: SavedData = JSON.parse(saved);
         setFormData(prev => ({
           ...prev,
-          customerName: data.customerName || '',
-          customerPhone: data.customerPhone || '',
-          customerCpf: data.customerCpf || '',
+          // Prioriza campos do checkout, fallback para campos do perfil
+          customerName: data.customerName || data.name || '',
+          customerPhone: data.customerPhone || data.phone || '',
+          customerCpf: data.customerCpf || data.cpf || '',
           street: data.street || '',
           number: data.number || '',
           complement: data.complement || '',
@@ -188,9 +198,18 @@ export default function CheckoutAddress() {
       return;
     }
 
-    // Salva dados se opção habilitada
+    // Salva dados se opção habilitada - sincroniza com perfil do ExplorePage
     if (saveData) {
+      // Carrega dados existentes do perfil para não perder campos extras
+      let existingProfile: Partial<SavedData> = {};
+      try {
+        const existing = localStorage.getItem(STORAGE_KEY);
+        if (existing) existingProfile = JSON.parse(existing);
+      } catch {}
+      
       const dataToSave: SavedData = {
+        ...existingProfile,
+        // Campos do checkout
         customerName: formData.customerName,
         customerPhone: formData.customerPhone.replace(/\D/g, ''),
         customerCpf: cpfClean,
@@ -199,6 +218,11 @@ export default function CheckoutAddress() {
         complement: formData.complement,
         reference: formData.reference,
         deliveryAreaId: formData.deliveryAreaId,
+        // Sincroniza com campos do perfil
+        name: formData.customerName,
+        phone: formData.customerPhone.replace(/\D/g, ''),
+        cpf: cpfClean,
+        neighborhood: selectedArea?.name || existingProfile.neighborhood || '',
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
     }

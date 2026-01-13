@@ -57,7 +57,22 @@ const PROFILE_STORAGE_KEY = "customer_profile";
 const getStoredProfile = (): CustomerProfile => {
   try {
     const stored = localStorage.getItem(PROFILE_STORAGE_KEY);
-    if (stored) return JSON.parse(stored);
+    if (stored) {
+      const data = JSON.parse(stored);
+      // Sincroniza com campos do checkout (customerName, customerPhone, etc)
+      return {
+        name: data.name || data.customerName || "",
+        phone: data.phone || data.customerPhone || "",
+        cpf: data.cpf || data.customerCpf || "",
+        cep: data.cep || "",
+        street: data.street || "",
+        number: data.number || "",
+        complement: data.complement || "",
+        neighborhood: data.neighborhood || "",
+        city: data.city || "",
+        state: data.state || "",
+      };
+    }
   } catch {}
   return {
     name: "",
@@ -74,7 +89,23 @@ const getStoredProfile = (): CustomerProfile => {
 };
 
 const saveProfile = (profile: CustomerProfile) => {
-  localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
+  // Carrega dados existentes para não perder campos do checkout
+  let existingData: Record<string, unknown> = {};
+  try {
+    const existing = localStorage.getItem(PROFILE_STORAGE_KEY);
+    if (existing) existingData = JSON.parse(existing);
+  } catch {}
+  
+  const dataToSave = {
+    ...existingData,
+    // Campos do perfil
+    ...profile,
+    // Sincroniza com campos do checkout
+    customerName: profile.name,
+    customerPhone: profile.phone,
+    customerCpf: profile.cpf,
+  };
+  localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(dataToSave));
 };
 
 export default function ExplorePage() {
