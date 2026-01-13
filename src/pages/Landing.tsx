@@ -373,10 +373,6 @@ export default function Landing() {
                   {item}
                 </button>
               ))}
-              <Button className="w-full mt-3 rounded-full text-sm" onClick={() => { setMobileMenuOpen(false); setShowSignupModal(true); }}
-                style={{ backgroundColor: COLORS.primary, color: COLORS.foreground }}>
-                Começar grátis
-              </Button>
             </div>
           </motion.div>
         )}
