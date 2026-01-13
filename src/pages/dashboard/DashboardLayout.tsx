@@ -361,11 +361,11 @@ export default function DashboardLayout() {
       }
     };
 
-    // macOS Finder style - active indicator with blue left border
+    // Blue selection indicator with glow
     const activeIndicator = (isActive || isSubItemActive) && (
       <motion.div
         layoutId="sidebarActiveIndicator"
-        className="absolute left-0 top-1 bottom-1 w-[3px] bg-blue-500 rounded-r-full"
+        className="absolute -left-0.5 top-1.5 bottom-1.5 w-1.5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full shadow-lg shadow-blue-500/50"
         transition={{ type: "spring", stiffness: 500, damping: 30 }}
       />
     );
@@ -378,14 +378,16 @@ export default function DashboardLayout() {
           <button
             onClick={() => toggleMenuExpand(item.path)}
             className={cn(
-              "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium outline-none transition-all duration-200",
-              (isActive || isSubItemActive)
-                ? "bg-amber-500/80 text-gray-900" 
-                : "text-gray-800 hover:bg-amber-500/50"
+              "w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-xl text-[13px] font-semibold outline-none transition-all duration-200",
+              // Yellow button style
+              "bg-gradient-to-b from-amber-400 to-amber-500 text-amber-950",
+              "hover:from-amber-500 hover:to-amber-600 hover:shadow-md hover:shadow-amber-500/25",
+              "shadow-sm shadow-amber-600/20",
+              "border border-amber-500/30"
             )}
           >
-            <item.icon className="flex-shrink-0 w-4 h-4" />
-            <span className="truncate flex-1 text-left">{item.label}</span>
+            <item.icon className="flex-shrink-0 w-4 h-4 text-amber-900" />
+            <span className="truncate flex-1 text-left text-amber-900">{item.label}</span>
             <ChevronDown className={cn(
               "w-3.5 h-3.5 opacity-60 transition-transform duration-200",
               isExpanded && "rotate-180"
@@ -401,22 +403,23 @@ export default function DashboardLayout() {
                 transition={{ duration: 0.15 }}
                 className="overflow-hidden"
               >
-                <div className="ml-3.5 mt-0.5 space-y-0.5 border-l-2 border-amber-600/30 pl-2">
+                <div className="ml-3.5 mt-1.5 space-y-1.5 border-l-2 border-amber-400/50 pl-2.5">
                   {/* Main item link */}
                   <Link
                     to={item.path}
                     className={cn(
-                      "relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[13px] transition-all duration-200",
-                      isActive 
-                        ? "bg-amber-500/80 text-gray-900 font-medium" 
-                        : "text-gray-700 hover:bg-amber-500/50"
+                      "relative flex items-center gap-2 px-2.5 py-2 rounded-lg text-[12px] font-semibold transition-all duration-200",
+                      // Yellow sub-button style
+                      "bg-gradient-to-b from-amber-300/90 to-amber-400/90 text-amber-900",
+                      "hover:from-amber-400 hover:to-amber-500 hover:shadow-sm",
+                      "border border-amber-400/30"
                     )}
                     onMouseEnter={() => prefetchRoute(item.path)}
                   >
                     {isActive && (
-                      <div className="absolute left-0 top-1 bottom-1 w-[3px] bg-blue-500 rounded-r-full" />
+                      <span className="absolute -left-0.5 top-1.5 bottom-1.5 w-1 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full shadow-md shadow-blue-500/40" />
                     )}
-                    <Package className="w-3.5 h-3.5" />
+                    <Package className="w-3.5 h-3.5 text-amber-800" />
                     <span>Produtos</span>
                   </Link>
                   
@@ -428,17 +431,18 @@ export default function DashboardLayout() {
                         key={subItem.path}
                         to={subItem.path}
                         className={cn(
-                          "relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[13px] transition-all duration-200",
-                          isSubActive 
-                            ? "bg-amber-500/80 text-gray-900 font-medium" 
-                            : "text-gray-700 hover:bg-amber-500/50"
+                          "relative flex items-center gap-2 px-2.5 py-2 rounded-lg text-[12px] font-semibold transition-all duration-200",
+                          // Yellow sub-button style
+                          "bg-gradient-to-b from-amber-300/90 to-amber-400/90 text-amber-900",
+                          "hover:from-amber-400 hover:to-amber-500 hover:shadow-sm",
+                          "border border-amber-400/30"
                         )}
                         onMouseEnter={() => prefetchRoute(subItem.path)}
                       >
                         {isSubActive && (
-                          <div className="absolute left-0 top-1 bottom-1 w-[3px] bg-blue-500 rounded-r-full" />
+                          <span className="absolute -left-0.5 top-1.5 bottom-1.5 w-1 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full shadow-md shadow-blue-500/40" />
                         )}
-                        <subItem.icon className="w-3.5 h-3.5" />
+                        <subItem.icon className="w-3.5 h-3.5 text-amber-800" />
                         <span>{subItem.label}</span>
                       </Link>
                     );
@@ -456,27 +460,29 @@ export default function DashboardLayout() {
         to={item.path}
         onClick={handleClick}
         className={cn(
-          "ripple-container relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium outline-none transition-all duration-200",
-          isActive 
-            ? "bg-amber-500/80 text-gray-900" 
-            : "text-gray-800 hover:bg-amber-500/50",
+          "ripple-container relative flex items-center gap-2.5 px-2.5 py-2.5 rounded-xl text-[13px] font-semibold outline-none transition-all duration-200",
+          // Yellow button style
+          "bg-gradient-to-b from-amber-400 to-amber-500 text-amber-950",
+          "hover:from-amber-500 hover:to-amber-600 hover:shadow-md hover:shadow-amber-500/25",
+          "shadow-sm shadow-amber-600/20",
+          "border border-amber-500/30",
           sidebarCollapsed && "justify-center px-2"
         )}
         onMouseEnter={() => prefetchRoute(item.path)}
         onTouchStart={() => prefetchRoute(item.path)}
       >
-        {/* Blue left border indicator */}
+        {/* Blue indicator */}
         {isActive && (
           <motion.div
             layoutId="sidebarActiveIndicator"
-            className="absolute left-0 top-1 bottom-1 w-[3px] bg-blue-500 rounded-r-full"
+            className="absolute -left-0.5 top-1.5 bottom-1.5 w-1.5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full shadow-lg shadow-blue-500/50"
             transition={{ type: "spring", stiffness: 500, damping: 30 }}
           />
         )}
         
         <div className="relative">
           <item.icon className={cn(
-            "flex-shrink-0",
+            "flex-shrink-0 text-amber-900",
             sidebarCollapsed ? "w-[18px] h-[18px]" : "w-4 h-4",
             sidebarCollapsed && animatingIcon === item.path && "animate-icon-spin"
           )} />
@@ -543,7 +549,7 @@ export default function DashboardLayout() {
         "h-screen bg-background flex w-full overflow-hidden",
         showMobileNav && "pb-14" // Padding for bottom nav
       )}>
-        {/* Sidebar - Desktop - Yellow macOS style - Hidden on PDV */}
+        {/* Sidebar - Desktop - Apple frosted glass style with yellow buttons */}
         {!hideSidebar && (
           <motion.aside 
             layout
@@ -555,7 +561,11 @@ export default function DashboardLayout() {
             }}
             className={cn(
               "hidden md:flex flex-col h-screen flex-shrink-0 relative group/sidebar",
-              "bg-amber-400 border-r border-amber-500"
+              // Apple frosted glass - gray translucent
+              "bg-gray-200/85 dark:bg-gray-800/90",
+              "backdrop-blur-xl backdrop-saturate-[1.8]",
+              "border-r border-white/30 dark:border-white/10",
+              "shadow-[inset_-1px_0_0_0_rgba(255,255,255,0.2)]"
             )}
           >
           {/* Collapse Toggle Button */}
@@ -584,7 +594,7 @@ export default function DashboardLayout() {
               "h-12 flex items-center flex-shrink-0 overflow-hidden",
               "transition-all duration-200",
               sidebarCollapsed ? "justify-center px-2" : "px-3",
-              "border-b border-amber-500/50"
+              "border-b border-white/20 dark:border-white/10"
             )}
           >
             <Link to="/dashboard" className="flex items-center gap-2.5 min-w-0">
@@ -705,7 +715,7 @@ export default function DashboardLayout() {
           </AlertDialog>
 
           {/* Menu - Scrollable */}
-          <nav className="flex-1 p-1.5 space-y-0.5 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <nav className="flex-1 p-2 space-y-1.5 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {menuItems.map(item => (
               <NavItem key={item.path} item={item} />
             ))}
@@ -714,9 +724,9 @@ export default function DashboardLayout() {
           {/* Footer - Fixed Bottom */}
           <div 
             className={cn(
-              "p-1.5 space-y-0.5 flex-shrink-0 overflow-hidden",
+              "p-2 space-y-1.5 flex-shrink-0 overflow-hidden",
               sidebarCollapsed && "flex flex-col items-center",
-              "border-t border-amber-500/50"
+              "border-t border-white/20 dark:border-white/10"
             )}
           >
             {/* Theme Toggle */}
@@ -740,17 +750,21 @@ export default function DashboardLayout() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(
-                      "flex items-center gap-2 text-xs text-gray-700 hover:text-gray-900 transition-colors rounded-lg hover:bg-amber-500/50",
-                      sidebarCollapsed ? "p-1.5 justify-center" : "px-2.5 py-1.5"
+                      "flex items-center gap-2 text-xs font-medium transition-all duration-200 rounded-xl",
+                      "bg-gradient-to-b from-amber-400 to-amber-500 text-amber-900",
+                      "hover:from-amber-500 hover:to-amber-600 hover:shadow-md",
+                      "shadow-sm border border-amber-500/30",
+                      sidebarCollapsed ? "p-2 justify-center" : "px-3 py-2"
                     )}
                   >
-                    <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
+                    <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 text-amber-800" />
                     <AnimatePresence mode="wait">
                       {!sidebarCollapsed && (
                         <motion.span
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
+                          className="text-amber-900"
                         >
                           Ver cardápio
                         </motion.span>
@@ -770,8 +784,11 @@ export default function DashboardLayout() {
                 <button
                   onClick={handleLogout}
                   className={cn(
-                    "flex items-center gap-2 text-xs text-red-600 hover:text-red-700 transition-colors w-full rounded-lg hover:bg-red-500/20",
-                    sidebarCollapsed ? "p-1.5 justify-center" : "px-2.5 py-1.5"
+                    "flex items-center gap-2 text-xs font-medium w-full rounded-xl transition-all duration-200",
+                    "bg-gradient-to-b from-red-500/20 to-red-600/20 text-red-600 dark:text-red-400",
+                    "hover:from-red-500/30 hover:to-red-600/30",
+                    "border border-red-500/20",
+                    sidebarCollapsed ? "p-2 justify-center" : "px-3 py-2"
                   )}
                 >
                   <LogOut className="w-3.5 h-3.5 flex-shrink-0" />
