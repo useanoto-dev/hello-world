@@ -405,9 +405,7 @@ export default function DashboardLayout() {
                     to={item.path}
                     className={cn(
                       "relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[13px] transition-all duration-200",
-                      isActive 
-                        ? "bg-amber-500/80 text-gray-900 font-medium" 
-                        : "text-gray-700 hover:bg-amber-500/50"
+                      "bg-amber-500 text-gray-900 font-medium hover:bg-amber-400"
                     )}
                     onMouseEnter={() => prefetchRoute(item.path)}
                   >
@@ -427,9 +425,7 @@ export default function DashboardLayout() {
                         to={subItem.path}
                         className={cn(
                           "relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[13px] transition-all duration-200",
-                          isSubActive 
-                            ? "bg-amber-500/80 text-gray-900 font-medium" 
-                            : "text-gray-700 hover:bg-amber-500/50"
+                          "bg-amber-500 text-gray-900 font-medium hover:bg-amber-400"
                         )}
                         onMouseEnter={() => prefetchRoute(subItem.path)}
                       >
