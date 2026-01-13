@@ -495,7 +495,7 @@ export default function Landing() {
     <div style={{ minHeight: "100vh", backgroundColor: COLORS.background, color: COLORS.foreground }}>
       {/* iOS-style Header - Centered Pill */}
       <header 
-        className="fixed top-2 sm:top-4 left-1/2 -translate-x-1/2 z-50 w-[92%] sm:w-[95%] max-w-5xl"
+        className="fixed top-2 sm:top-4 left-1/2 -translate-x-1/2 z-50 w-[92%] sm:w-[95%] max-w-5xl transition-[border-radius] duration-300"
         style={{ 
           ...GLASS.header,
           borderRadius: mobileMenuOpen ? "24px" : "9999px",
