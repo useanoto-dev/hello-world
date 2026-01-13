@@ -67,9 +67,9 @@
     --surface: 220 14% 97%;
     
     /* Sidebar tokens - Apple frosted glass style (gray glass + yellow buttons + blue indicator) */
-    --sidebar-bg: 220 8% 92% / 0.85;
-    --sidebar-bg-end: 220 8% 88% / 0.8;
-    --sidebar-border: 220 10% 80%;
+    --sidebar-bg: 220 8% 85%;
+    --sidebar-bg-end: 220 8% 82%;
+    --sidebar-border: 220 10% 75%;
     --sidebar-hover: 45 100% 48%;
     --sidebar-active: 45 100% 50%;
     --sidebar-foreground: 220 15% 15%;
@@ -132,8 +132,8 @@
     --surface: 224 15% 11%;
     
     /* Sidebar dark mode - Apple frosted glass dark (gray glass + yellow buttons + blue indicator) */
-    --sidebar-bg: 220 12% 18% / 0.9;
-    --sidebar-bg-end: 220 12% 14% / 0.85;
+    --sidebar-bg: 220 12% 18%;
+    --sidebar-bg-end: 220 12% 14%;
     --sidebar-border: 220 12% 25%;
     --sidebar-hover: 45 95% 48%;
     --sidebar-active: 45 95% 55%;

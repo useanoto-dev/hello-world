@@ -170,10 +170,10 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
       collapsible="icon" 
       className={cn(
         "border-r border-white/20",
-        // Apple frosted glass effect - gray translucent
-        "bg-[hsl(var(--sidebar-bg))]",
+        // Apple frosted glass effect - gray translucent background
+        "!bg-[hsl(220,8%,85%,0.92)] dark:!bg-[hsl(220,12%,18%,0.95)]",
         "backdrop-blur-xl backdrop-saturate-[1.8]",
-        "shadow-[inset_-1px_0_0_0_rgba(255,255,255,0.15),inset_1px_0_0_0_rgba(255,255,255,0.05)]"
+        "shadow-[inset_-1px_0_0_0_rgba(255,255,255,0.2),inset_1px_0_0_0_rgba(255,255,255,0.08)]"
       )}
     >
       <SidebarContent className="bg-transparent">
