@@ -2,10 +2,18 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Search, MapPin, Star, ArrowLeft, Store, Loader2, ChevronRight } from "lucide-react";
+import { Search, MapPin, Star, ArrowLeft, Store, Loader2, ChevronRight, User, X, Phone, FileText, Home, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 
 // Cores fixas (não usa CSS variables)
 const COLORS = {
@@ -31,6 +39,44 @@ interface StoreWithRating {
   review_count: number;
 }
 
+interface CustomerProfile {
+  name: string;
+  phone: string;
+  cpf: string;
+  cep: string;
+  street: string;
+  number: string;
+  complement: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+}
+
+const PROFILE_STORAGE_KEY = "customer_profile";
+
+const getStoredProfile = (): CustomerProfile => {
+  try {
+    const stored = localStorage.getItem(PROFILE_STORAGE_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return {
+    name: "",
+    phone: "",
+    cpf: "",
+    cep: "",
+    street: "",
+    number: "",
+    complement: "",
+    neighborhood: "",
+    city: "",
+    state: "",
+  };
+};
+
+const saveProfile = (profile: CustomerProfile) => {
+  localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
+};
+
 export default function ExplorePage() {
   const navigate = useNavigate();
   const [cep, setCep] = useState("");
@@ -42,6 +88,12 @@ export default function ExplorePage() {
   const [topRatedStores, setTopRatedStores] = useState<StoreWithRating[]>([]);
   const [cepError, setCepError] = useState("");
   const [hasSearched, setHasSearched] = useState(false);
+  
+  // Profile drawer state
+  const [showProfileDrawer, setShowProfileDrawer] = useState(false);
+  const [profile, setProfile] = useState<CustomerProfile>(getStoredProfile);
+  const [isLoadingProfileCep, setIsLoadingProfileCep] = useState(false);
+  const [profileCepError, setProfileCepError] = useState("");
 
   // Buscar top rated stores ao carregar
   useEffect(() => {
@@ -111,6 +163,23 @@ export default function ExplorePage() {
     return `${numbers.slice(0, 5)}-${numbers.slice(5, 8)}`;
   };
 
+  // Formatar telefone
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, "");
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+  };
+
+  // Formatar CPF
+  const formatCpf = (value: string) => {
+    const numbers = value.replace(/\D/g, "");
+    if (numbers.length <= 3) return numbers;
+    if (numbers.length <= 6) return `${numbers.slice(0, 3)}.${numbers.slice(3)}`;
+    if (numbers.length <= 9) return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`;
+    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9, 11)}`;
+  };
+
   // Buscar endereço pelo CEP
   const fetchAddressFromCep = useCallback(async (cepValue: string) => {
     const cleanCep = cepValue.replace(/\D/g, "");
@@ -138,6 +207,36 @@ export default function ExplorePage() {
     }
   }, []);
 
+  // Buscar endereço pelo CEP do perfil
+  const fetchProfileAddressFromCep = useCallback(async (cepValue: string) => {
+    const cleanCep = cepValue.replace(/\D/g, "");
+    if (cleanCep.length !== 8) return;
+
+    setIsLoadingProfileCep(true);
+    setProfileCepError("");
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+      const data = await response.json();
+      
+      if (data.erro) {
+        setProfileCepError("CEP não encontrado");
+        return;
+      }
+      
+      setProfile(prev => ({
+        ...prev,
+        street: data.logradouro || "",
+        neighborhood: data.bairro || "",
+        city: data.localidade || "",
+        state: data.uf || "",
+      }));
+    } catch (error) {
+      setProfileCepError("Erro ao buscar CEP");
+    } finally {
+      setIsLoadingProfileCep(false);
+    }
+  }, []);
+
   // Handler do CEP
   const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatCep(e.target.value);
@@ -150,6 +249,24 @@ export default function ExplorePage() {
       setCity("");
       setState("");
     }
+  };
+
+  // Handler do CEP do perfil
+  const handleProfileCepChange = (value: string) => {
+    const formatted = formatCep(value);
+    setProfile(prev => ({ ...prev, cep: formatted }));
+    setProfileCepError("");
+    
+    if (formatted.replace(/\D/g, "").length === 8) {
+      fetchProfileAddressFromCep(formatted);
+    }
+  };
+
+  // Salvar perfil
+  const handleSaveProfile = () => {
+    saveProfile(profile);
+    toast.success("Perfil salvo com sucesso!");
+    setShowProfileDrawer(false);
   };
 
   // Buscar lojas por cidade
@@ -273,17 +390,38 @@ export default function ExplorePage() {
           borderBottom: `1px solid ${COLORS.border}`
         }}
       >
-        <div className="max-w-3xl mx-auto flex items-center gap-3">
+        <div className="max-w-3xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/")}
+              className="p-2 rounded-full transition-colors hover:bg-gray-100"
+              style={{ background: "none", border: "none" }}
+            >
+              <ArrowLeft className="w-5 h-5" style={{ color: COLORS.foreground }} />
+            </button>
+            <h1 className="text-lg font-semibold" style={{ color: COLORS.foreground }}>
+              Explorar Cardápios
+            </h1>
+          </div>
+          
+          {/* Profile Button */}
           <button
-            onClick={() => navigate("/")}
-            className="p-2 rounded-full transition-colors hover:bg-gray-100"
-            style={{ background: "none", border: "none" }}
+            onClick={() => setShowProfileDrawer(true)}
+            className="p-2 rounded-full transition-colors hover:bg-amber-50 relative"
+            style={{ 
+              background: profile.name ? COLORS.primaryLight : "none", 
+              border: "none" 
+            }}
+            title="Meu Perfil"
           >
-            <ArrowLeft className="w-5 h-5" style={{ color: COLORS.foreground }} />
+            <User className="w-5 h-5" style={{ color: profile.name ? COLORS.primaryDark : COLORS.foreground }} />
+            {profile.name && (
+              <div 
+                className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full"
+                style={{ backgroundColor: "#10B981" }}
+              />
+            )}
           </button>
-          <h1 className="text-lg font-semibold" style={{ color: COLORS.foreground }}>
-            Explorar Cardápios
-          </h1>
         </div>
       </header>
 
@@ -427,6 +565,167 @@ export default function ExplorePage() {
           </motion.div>
         )}
       </main>
+
+      {/* Profile Drawer */}
+      <Drawer open={showProfileDrawer} onOpenChange={setShowProfileDrawer}>
+        <DrawerContent className="max-h-[90vh]">
+          <DrawerHeader className="border-b pb-4">
+            <DrawerTitle className="flex items-center gap-2">
+              <User className="w-5 h-5" style={{ color: COLORS.primaryDark }} />
+              Meu Perfil
+            </DrawerTitle>
+          </DrawerHeader>
+          
+          <div className="p-4 overflow-y-auto space-y-6">
+            {/* Personal Info */}
+            <div className="space-y-4">
+              <h3 className="font-medium text-sm flex items-center gap-2" style={{ color: COLORS.mutedForeground }}>
+                <User className="w-4 h-4" />
+                Dados Pessoais
+              </h3>
+              
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-sm">Nome</Label>
+                  <Input
+                    value={profile.name}
+                    onChange={(e) => setProfile(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="Seu nome completo"
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-sm">Telefone</Label>
+                    <Input
+                      value={profile.phone}
+                      onChange={(e) => setProfile(prev => ({ ...prev, phone: formatPhone(e.target.value) }))}
+                      placeholder="(00) 00000-0000"
+                      maxLength={15}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm">CPF</Label>
+                    <Input
+                      value={profile.cpf}
+                      onChange={(e) => setProfile(prev => ({ ...prev, cpf: formatCpf(e.target.value) }))}
+                      placeholder="000.000.000-00"
+                      maxLength={14}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Address */}
+            <div className="space-y-4">
+              <h3 className="font-medium text-sm flex items-center gap-2" style={{ color: COLORS.mutedForeground }}>
+                <Home className="w-4 h-4" />
+                Endereço
+              </h3>
+              
+              <div className="space-y-3">
+                <div className="relative">
+                  <Label className="text-sm">CEP</Label>
+                  <Input
+                    value={profile.cep}
+                    onChange={(e) => handleProfileCepChange(e.target.value)}
+                    placeholder="00000-000"
+                    maxLength={9}
+                    className={`mt-1 ${profileCepError ? "border-red-500" : ""}`}
+                  />
+                  {isLoadingProfileCep && (
+                    <Loader2 className="absolute right-3 top-8 w-4 h-4 animate-spin" style={{ color: COLORS.mutedForeground }} />
+                  )}
+                  {profileCepError && (
+                    <p className="text-xs text-red-500 mt-1">{profileCepError}</p>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-sm">Cidade</Label>
+                    <Input
+                      value={profile.city}
+                      onChange={(e) => setProfile(prev => ({ ...prev, city: e.target.value }))}
+                      placeholder="Cidade"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm">Estado</Label>
+                    <Input
+                      value={profile.state}
+                      onChange={(e) => setProfile(prev => ({ ...prev, state: e.target.value }))}
+                      placeholder="UF"
+                      maxLength={2}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <Label className="text-sm">Rua</Label>
+                  <Input
+                    value={profile.street}
+                    onChange={(e) => setProfile(prev => ({ ...prev, street: e.target.value }))}
+                    placeholder="Rua, Avenida..."
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label className="text-sm">Bairro</Label>
+                  <Input
+                    value={profile.neighborhood}
+                    onChange={(e) => setProfile(prev => ({ ...prev, neighborhood: e.target.value }))}
+                    placeholder="Bairro"
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-sm">Número</Label>
+                    <Input
+                      value={profile.number}
+                      onChange={(e) => setProfile(prev => ({ ...prev, number: e.target.value }))}
+                      placeholder="Nº"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm">Complemento</Label>
+                    <Input
+                      value={profile.complement}
+                      onChange={(e) => setProfile(prev => ({ ...prev, complement: e.target.value }))}
+                      placeholder="Apto, Bloco..."
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Save Button */}
+            <Button
+              onClick={handleSaveProfile}
+              className="w-full rounded-full"
+              style={{ backgroundColor: COLORS.primary, color: COLORS.foreground }}
+            >
+              <Check className="w-4 h-4 mr-2" />
+              Salvar Perfil
+            </Button>
+            
+            <p className="text-xs text-center" style={{ color: COLORS.mutedForeground }}>
+              Seus dados são salvos apenas neste dispositivo
+            </p>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
