@@ -24,7 +24,7 @@ import anotoMascotMoto from "@/assets/anoto-mascot-moto.png";
 
 // Cores fixas da landing
 const COLORS = {
-  background: "#FAFAFA",
+  background: "#FFFFFF",
   backgroundAlt: "#FFFFFF",
   foreground: "#1D1D1F",
   primary: "#FFC107",
