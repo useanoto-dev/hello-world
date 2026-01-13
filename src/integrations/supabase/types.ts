@@ -1626,31 +1626,43 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          cep: string | null
+          city: string | null
           created_at: string | null
           email: string
           full_name: string | null
           id: string
           is_owner: boolean | null
+          phone: string | null
+          state: string | null
           store_id: string | null
           updated_at: string | null
         }
         Insert: {
           avatar_url?: string | null
+          cep?: string | null
+          city?: string | null
           created_at?: string | null
           email: string
           full_name?: string | null
           id: string
           is_owner?: boolean | null
+          phone?: string | null
+          state?: string | null
           store_id?: string | null
           updated_at?: string | null
         }
         Update: {
           avatar_url?: string | null
+          cep?: string | null
+          city?: string | null
           created_at?: string | null
           email?: string
           full_name?: string | null
           id?: string
           is_owner?: boolean | null
+          phone?: string | null
+          state?: string | null
           store_id?: string | null
           updated_at?: string | null
         }

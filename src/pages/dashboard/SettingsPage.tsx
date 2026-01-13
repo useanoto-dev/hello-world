@@ -1607,31 +1607,111 @@ export default function SettingsPage() {
 
         {/* TAB: Perfil */}
         <TabsContent value="perfil" className="mt-3 space-y-3">
-          {/* Informações do Usuário */}
+          {/* Informações da Conta */}
           <Card>
             <CardHeader className="pb-2 pt-3 px-3">
               <CardTitle className="text-xs font-medium flex items-center gap-1.5">
                 <User className="w-3 h-3" />
-                Informações do Usuário
+                Informações da Conta
               </CardTitle>
+              <p className="text-[10px] text-muted-foreground">
+                Atualize suas informações pessoais
+              </p>
             </CardHeader>
-            <CardContent className="space-y-2 px-3 pb-3">
+            <CardContent className="space-y-3 px-3 pb-3">
               <div className="space-y-1">
-                <Label className="text-[9px]">Nome</Label>
-                <Input
-                  value={profile?.full_name || ""}
-                  disabled
-                  className="h-6 text-[9px] bg-muted"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[9px]">Email</Label>
+                <Label className="text-[9px]">Email (não editável)</Label>
                 <Input
                   value={profile?.email || ""}
                   disabled
                   className="h-6 text-[9px] bg-muted"
                 />
               </div>
+
+              <div className="space-y-1">
+                <Label className="text-[9px]">Nome Completo</Label>
+                <Input
+                  value={profileData.full_name}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, full_name: e.target.value }))}
+                  className="h-6 text-[9px]"
+                  placeholder="Seu nome completo"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-[9px]">Telefone/Celular</Label>
+                <MaskedInput
+                  maskType="phone"
+                  value={profileData.phone}
+                  onValueChange={(rawValue) => setProfileData(prev => ({ ...prev, phone: rawValue }))}
+                  className="h-6 text-[9px]"
+                  placeholder="(00) 00000-0000"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-[9px]">CEP</Label>
+                  <div className="relative">
+                    <Input
+                      value={profileData.cep}
+                      onChange={(e) => handleCepChange(e.target.value)}
+                      className="h-6 text-[9px]"
+                      placeholder="00000-000"
+                      maxLength={9}
+                    />
+                    {cepLoading && (
+                      <Loader2 className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 animate-spin text-muted-foreground" />
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-[9px]">Cidade</Label>
+                  <Input
+                    value={profileData.city}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, city: e.target.value }))}
+                    className="h-6 text-[9px]"
+                    placeholder="Sua cidade"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-[9px]">Estado</Label>
+                  <Select
+                    value={profileData.state}
+                    onValueChange={(value) => setProfileData(prev => ({ ...prev, state: value }))}
+                  >
+                    <SelectTrigger className="h-6 text-[9px]">
+                      <SelectValue placeholder="UF" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"].map((uf) => (
+                        <SelectItem key={uf} value={uf} className="text-[9px]">{uf}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <Button
+                size="sm"
+                className="w-full h-7 text-[10px]"
+                disabled={savingProfile}
+                onClick={handleSaveProfile}
+              >
+                {savingProfile ? (
+                  <>
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-3 h-3 mr-1" />
+                    Salvar Informações
+                  </>
+                )}
+              </Button>
             </CardContent>
           </Card>
 
