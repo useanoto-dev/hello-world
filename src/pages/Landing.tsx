@@ -138,7 +138,12 @@ const SectionTitle = ({ badge, title, subtitle }: { badge?: string; title: strin
       )}
       <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: COLORS.foreground }}>
         {displayText}
-        <span className="animate-pulse ml-0.5" style={{ color: COLORS.primary }}>|</span>
+        <motion.span 
+          animate={{ opacity: [1, 0] }} 
+          transition={{ duration: 0.8, repeat: Infinity, repeatType: "reverse" }}
+          className="ml-0.5 font-light" 
+          style={{ color: COLORS.primary }}
+        >|</motion.span>
       </h2>
       {subtitle && (
         <p className="mt-2 text-sm max-w-md mx-auto" style={{ color: COLORS.muted }}>{subtitle}</p>
