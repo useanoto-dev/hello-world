@@ -12,11 +12,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-xl group-[.toaster]:rounded-xl group-[.toaster]:animate-slide-up",
+            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-xl group-[.toaster]:rounded-lg group-[.toaster]:animate-slide-up",
           description: "group-[.toast]:text-muted-foreground",
           actionButton: "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
           cancelButton: "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
-          success: "group-[.toaster]:!bg-green-500 group-[.toaster]:!text-white group-[.toaster]:!border-green-600",
+          success: "group-[.toaster]:!bg-emerald-400 group-[.toaster]:!text-white group-[.toaster]:!border-emerald-500",
           error: "group-[.toaster]:!bg-orange-500 group-[.toaster]:!text-white group-[.toaster]:!border-orange-600",
           warning: "group-[.toaster]:!bg-orange-500 group-[.toaster]:!text-white group-[.toaster]:!border-orange-600",
           info: "group-[.toaster]:!bg-blue-500 group-[.toaster]:!text-white group-[.toaster]:!border-blue-600",
