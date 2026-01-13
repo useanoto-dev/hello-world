@@ -594,7 +594,7 @@ export default function Landing() {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               className="md:hidden overflow-hidden"
-              style={{ backgroundColor: "rgba(255, 255, 255, 0.98)" }}
+              style={{ backgroundColor: "#ffffff" }}
             >
               <div className="px-4 py-4 space-y-2">
                 {["Recursos", "Funcionalidades", "Preços", "Depoimentos"].map((item) => (
