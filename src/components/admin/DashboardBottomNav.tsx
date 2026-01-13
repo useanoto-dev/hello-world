@@ -84,7 +84,7 @@ export function DashboardBottomNav({
               key={item.path}
               to={item.path}
               onClick={triggerHaptic}
-              className="relative flex flex-col items-center justify-center flex-1 h-full gap-0.5 rounded-lg mx-0.5 bg-amber-400 text-gray-900"
+              className="relative flex flex-col items-center justify-center flex-1 h-12 gap-0.5 rounded-lg mx-0.5 bg-amber-400 text-gray-900"
             >
               {/* Active indicator - removed, using bg color instead */}
               
@@ -119,7 +119,7 @@ export function DashboardBottomNav({
             triggerHaptic();
             onMoreClick();
           }}
-          className="relative flex flex-col items-center justify-center flex-1 h-full gap-0.5 bg-amber-400 text-gray-900 rounded-lg mx-0.5"
+          className="relative flex flex-col items-center justify-center flex-1 h-12 gap-0.5 bg-amber-400 text-gray-900 rounded-lg mx-0.5"
         >
           <MoreHorizontal className="h-5 w-5" />
           <span className="text-[10px] font-medium">Mais</span>
