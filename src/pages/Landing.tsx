@@ -333,7 +333,7 @@ export default function Landing() {
       </header>
 
       {/* Hero - Apple Style Minimal */}
-      <section className="pt-28 pb-16 sm:pt-36 sm:pb-20 px-4">
+      <section className="pt-28 pb-8 sm:pt-36 sm:pb-12 px-4">
         <div className="max-w-5xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-10 items-center">
             {/* Text */}
