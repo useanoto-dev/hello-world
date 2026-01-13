@@ -147,6 +147,17 @@ export default function SettingsPage() {
   const [changingPassword, setChangingPassword] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
 
+  // Profile edit state
+  const [profileData, setProfileData] = useState({
+    full_name: "",
+    phone: "",
+    cep: "",
+    city: "",
+    state: "",
+  });
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [cepLoading, setCepLoading] = useState(false);
+
   // Define which fields belong to which tab with labels
   const tabFieldsConfig = useMemo(() => ({
     geral: [
@@ -265,6 +276,91 @@ export default function SettingsPage() {
   useEffect(() => {
     fetchSettings();
   }, [profile?.store_id]);
+
+  // Load profile data when profile changes
+  useEffect(() => {
+    if (profile) {
+      const userData = (profile as any);
+      setProfileData({
+        full_name: userData.full_name || "",
+        phone: userData.phone || "",
+        cep: userData.cep || "",
+        city: userData.city || "",
+        state: userData.state || "",
+      });
+    }
+  }, [profile]);
+
+  // Fetch address from CEP API
+  const fetchAddressFromCep = useCallback(async (cepValue: string) => {
+    const cleanCep = cepValue.replace(/\D/g, "");
+    if (cleanCep.length !== 8) return;
+
+    setCepLoading(true);
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+      const data = await response.json();
+      if (data.erro) {
+        toast.error("CEP não encontrado");
+        return;
+      }
+      setProfileData(prev => ({
+        ...prev,
+        city: data.localidade || "",
+        state: data.uf || "",
+      }));
+      toast.success("Cidade e estado atualizados!");
+    } catch (error) {
+      console.error("Error fetching CEP:", error);
+      toast.error("Erro ao buscar CEP");
+    } finally {
+      setCepLoading(false);
+    }
+  }, []);
+
+  // Format CEP as user types
+  const formatCep = (value: string) => {
+    const digits = value.replace(/\D/g, "");
+    if (digits.length <= 5) return digits;
+    return `${digits.slice(0, 5)}-${digits.slice(5, 8)}`;
+  };
+
+  const handleCepChange = (value: string) => {
+    const formatted = formatCep(value);
+    setProfileData(prev => ({ ...prev, cep: formatted }));
+    
+    const cleanCep = formatted.replace(/\D/g, "");
+    if (cleanCep.length === 8) {
+      fetchAddressFromCep(cleanCep);
+    }
+  };
+
+  // Save profile data
+  const handleSaveProfile = async () => {
+    if (!profile) return;
+    
+    setSavingProfile(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: profileData.full_name,
+          phone: profileData.phone.replace(/\D/g, ""),
+          cep: profileData.cep.replace(/\D/g, ""),
+          city: profileData.city,
+          state: profileData.state,
+        })
+        .eq("id", profile.id);
+
+      if (error) throw error;
+      toast.success("Perfil atualizado com sucesso!");
+    } catch (error: any) {
+      console.error("Error saving profile:", error);
+      toast.error("Erro ao salvar perfil");
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   const fetchSettings = async () => {
     try {
