@@ -9,6 +9,7 @@ import { PDVManualDiscount } from "@/components/pdv/PDVManualDiscount";
 import { PDVTablesPanel } from "@/components/pdv/PDVTablesPanel";
 import { PDVProductsPanel } from "@/components/pdv/PDVProductsPanel";
 import { PDVCartPanel } from "@/components/pdv/PDVCartPanel";
+import { PDVFullscreenHeader } from "@/components/pdv/PDVFullscreenHeader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -574,7 +575,13 @@ export default function PDVPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex gap-4 p-4">
+    <div className={isFullscreen ? "h-screen flex flex-col" : "h-[calc(100vh-4rem)] flex flex-col"}>
+      {/* Fullscreen Header - Only show in fullscreen mode */}
+      {isFullscreen && (
+        <PDVFullscreenHeader onExitFullscreen={toggleFullscreen} />
+      )}
+
+      <div className="flex-1 flex gap-4 p-4 overflow-hidden">
       {/* Left Panel - Tables */}
       <PDVTablesPanel
         tables={tables}
@@ -616,6 +623,7 @@ export default function PDVPage() {
         onToggleFullscreen={toggleFullscreen}
         fullscreenSupported={fullscreenSupported}
       />
+      </div>
 
       {/* Complements Modal */}
       <Dialog open={isComplementsOpen} onOpenChange={setIsComplementsOpen}>
