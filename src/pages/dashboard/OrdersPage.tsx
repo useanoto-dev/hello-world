@@ -4,14 +4,14 @@ import { useOutletContext } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ShoppingBag, Clock, Check, Truck, X, RefreshCw,
-  ChevronLeft, ChevronRight, Eye, Printer
+  ChevronLeft, ChevronRight, Eye, Printer, Filter, Calendar
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format, addDays, subDays, startOfDay, endOfDay, isToday, getHours } from "date-fns";
+import { format, addDays, subDays, startOfDay, endOfDay, isToday, getHours, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
@@ -64,10 +64,15 @@ export default function OrdersPage() {
   const { store } = useOutletContext<{ store: any }>();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string>("all");
+  const [filter, setFilter] = useState<string>("active");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [periodFilter, setPeriodFilter] = useState<string>("day");
+  const [showPeriodMenu, setShowPeriodMenu] = useState(false);
+  const [customDateStart, setCustomDateStart] = useState<Date | null>(null);
+  const [customDateEnd, setCustomDateEnd] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState<"start" | "end" | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   
   useStockNotifications({ storeId: store?.id, enabled: !!store?.id });
@@ -78,20 +83,38 @@ export default function OrdersPage() {
       const unsubscribe = subscribeToOrders();
       return unsubscribe;
     }
-  }, [store?.id, selectedDate]);
+  }, [store?.id, selectedDate, periodFilter, customDateStart, customDateEnd]);
+
+  const getDateRange = () => {
+    const now = new Date();
+    switch (periodFilter) {
+      case "week":
+        return { start: startOfWeek(now, { weekStartsOn: 0 }), end: endOfWeek(now, { weekStartsOn: 0 }) };
+      case "month":
+        return { start: startOfMonth(now), end: endOfMonth(now) };
+      case "year":
+        return { start: startOfYear(now), end: endOfYear(now) };
+      case "custom":
+        if (customDateStart && customDateEnd) {
+          return { start: startOfDay(customDateStart), end: endOfDay(customDateEnd) };
+        }
+        return { start: startOfDay(now), end: endOfDay(now) };
+      default:
+        return { start: startOfDay(selectedDate), end: endOfDay(selectedDate) };
+    }
+  };
 
   const loadOrders = async () => {
     try {
       setLoading(true);
-      const dayStart = startOfDay(selectedDate);
-      const dayEnd = endOfDay(selectedDate);
+      const { start, end } = getDateRange();
       
       const { data, error } = await supabase
         .from("orders")
         .select("*")
         .eq("store_id", store.id)
-        .gte("created_at", dayStart.toISOString())
-        .lte("created_at", dayEnd.toISOString())
+        .gte("created_at", start.toISOString())
+        .lte("created_at", end.toISOString())
         .order("created_at", { ascending: false });
         
       if (error) throw error;
@@ -211,9 +234,10 @@ export default function OrdersPage() {
     
     if (store?.use_comanda_mode === false) return true;
     
-    if (filter === "all") return true;
     if (filter === "active") return !["completed", "canceled"].includes(order.status);
-    return order.status === filter;
+    if (filter === "pending") return order.status === "pending";
+    if (filter === "completed") return order.status === "completed";
+    return true;
   });
 
   const orderSourceCounts = {
@@ -394,58 +418,128 @@ export default function OrdersPage() {
         </Card>
       )}
 
-      {/* Filters - Compact Pills */}
+      {/* Status Filters */}
       {store?.use_comanda_mode !== false && (
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap items-center gap-2">
           {[
-            { value: "all", label: "Todos" },
-            { value: "active", label: "Ativos" },
-            { value: "pending", label: "Pend." },
-            { value: "completed", label: "Concl." }
+            { value: "active", label: "Ativos", color: "bg-green-500 hover:bg-green-600 text-white", inactiveColor: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
+            { value: "pending", label: "Pendentes", color: "bg-yellow-500 hover:bg-yellow-600 text-white", inactiveColor: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" },
+            { value: "completed", label: "Concluídos", color: "bg-green-500 hover:bg-green-600 text-white", inactiveColor: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" }
           ].map(f => (
             <button
               key={f.value}
               onClick={() => setFilter(f.value)}
               className={cn(
-                "px-3 py-1.5 text-xs md:px-2 md:py-0.5 md:text-[10px] rounded-full transition-colors font-medium",
-                filter === f.value 
-                  ? "bg-primary text-primary-foreground" 
-                  : "bg-muted/50 text-muted-foreground"
+                "px-4 py-2 text-sm md:px-3 md:py-1 md:text-xs rounded-lg transition-all font-medium shadow-sm",
+                filter === f.value ? f.color : f.inactiveColor
               )}
             >
               {f.label}
-              <span className="ml-1 opacity-70">
-                {f.value === "all" ? orders.length : orders.filter(o => {
+              <span className="ml-1.5 opacity-80">
+                {orders.filter(o => {
                   if (f.value === "active") return !["completed", "canceled"].includes(o.status);
                   return o.status === f.value;
                 }).length}
               </span>
             </button>
           ))}
-          
-          <div className="w-px h-4 bg-border mx-0.5 self-center" />
-          
-          {[
-            { value: "all", label: "Todos", emoji: "" },
-            { value: "digital", label: "📱", emoji: "" },
-            { value: "pdv", label: "💻", emoji: "" },
-          ].map(s => (
+
+          {/* Period Filter Button */}
+          <div className="relative ml-auto">
             <button
-              key={s.value}
-              onClick={() => setSourceFilter(s.value)}
-              className={cn(
-                "px-3 py-1.5 text-xs md:px-2 md:py-0.5 md:text-[10px] rounded-full transition-colors font-medium",
-                sourceFilter === s.value 
-                  ? "bg-primary text-primary-foreground" 
-                  : "bg-muted/50 text-muted-foreground"
-              )}
+              onClick={() => setShowPeriodMenu(!showPeriodMenu)}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm md:px-3 md:py-1 md:text-xs rounded-lg bg-muted/80 hover:bg-muted transition-colors font-medium"
             >
-              {s.label}
-              <span className="ml-1 opacity-70">
-                {orderSourceCounts[s.value as keyof typeof orderSourceCounts]}
-              </span>
+              <Filter className="w-3.5 h-3.5" />
+              Filtrar
             </button>
-          ))}
+
+            {showPeriodMenu && (
+              <div className="absolute right-0 top-full mt-1 bg-popover border border-border rounded-lg shadow-lg z-50 min-w-[180px] py-1">
+                {[
+                  { value: "day", label: "Hoje" },
+                  { value: "week", label: "Esta Semana" },
+                  { value: "month", label: "Este Mês" },
+                  { value: "year", label: "Este Ano" },
+                  { value: "custom", label: "Período Personalizado" }
+                ].map(p => (
+                  <button
+                    key={p.value}
+                    onClick={() => {
+                      setPeriodFilter(p.value);
+                      if (p.value === "custom") {
+                        setShowDatePicker("start");
+                      } else {
+                        setShowPeriodMenu(false);
+                      }
+                    }}
+                    className={cn(
+                      "w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors",
+                      periodFilter === p.value && "bg-muted font-medium"
+                    )}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Custom Date Picker */}
+      {showDatePicker && (
+        <Card className="border-border/40 p-4">
+          <div className="flex flex-col gap-3">
+            <p className="text-sm font-medium">
+              {showDatePicker === "start" ? "Data Inicial" : "Data Final"}
+            </p>
+            <input
+              type="date"
+              className="w-full p-2 rounded-lg border border-border bg-background text-sm"
+              onChange={(e) => {
+                const date = new Date(e.target.value);
+                if (showDatePicker === "start") {
+                  setCustomDateStart(date);
+                  setShowDatePicker("end");
+                } else {
+                  setCustomDateEnd(date);
+                  setShowDatePicker(null);
+                  setShowPeriodMenu(false);
+                }
+              }}
+            />
+            {customDateStart && showDatePicker === "end" && (
+              <p className="text-xs text-muted-foreground">
+                De: {format(customDateStart, "dd/MM/yyyy", { locale: ptBR })}
+              </p>
+            )}
+          </div>
+        </Card>
+      )}
+
+      {/* Period Info Badge */}
+      {periodFilter !== "day" && (
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="text-xs">
+            <Calendar className="w-3 h-3 mr-1" />
+            {periodFilter === "week" && "Esta Semana"}
+            {periodFilter === "month" && "Este Mês"}
+            {periodFilter === "year" && "Este Ano"}
+            {periodFilter === "custom" && customDateStart && customDateEnd && 
+              `${format(customDateStart, "dd/MM", { locale: ptBR })} - ${format(customDateEnd, "dd/MM", { locale: ptBR })}`
+            }
+          </Badge>
+          <button
+            onClick={() => {
+              setPeriodFilter("day");
+              setCustomDateStart(null);
+              setCustomDateEnd(null);
+            }}
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            Limpar
+          </button>
         </div>
       )}
 
