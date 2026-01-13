@@ -458,8 +458,8 @@ export default function DashboardLayout() {
         className={cn(
           "ripple-container relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium outline-none transition-all duration-200",
           isActive 
-            ? "bg-white/10 text-amber-400" 
-            : "text-gray-300 hover:bg-white/5 hover:text-amber-400",
+            ? "bg-amber-400 text-gray-900" 
+            : "text-gray-300 hover:bg-amber-400 hover:text-gray-900",
           sidebarCollapsed && "justify-center px-2"
         )}
         onMouseEnter={() => prefetchRoute(item.path)}
@@ -474,7 +474,7 @@ export default function DashboardLayout() {
           />
         )}
         
-        <div className="relative text-amber-400">
+        <div className="relative">
           <item.icon className={cn(
             "flex-shrink-0",
             sidebarCollapsed ? "w-[18px] h-[18px]" : "w-4 h-4",
