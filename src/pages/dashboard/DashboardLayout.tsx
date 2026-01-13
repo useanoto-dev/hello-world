@@ -628,11 +628,11 @@ export default function DashboardLayout() {
                   }
                 }}
                 className={cn(
-                  "flex items-center gap-2 w-full transition-colors",
+                  "flex items-center gap-2 w-full",
                   sidebarCollapsed ? "justify-center p-1.5" : "px-3 py-1.5",
                   store?.is_open_override 
-                    ? "bg-green-500/20 hover:bg-green-500/30"
-                    : "bg-red-500/20 hover:bg-red-500/30"
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
                 )}
               >
                 <motion.div
@@ -732,7 +732,7 @@ export default function DashboardLayout() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(
-                      "flex items-center gap-2 text-xs text-gray-300 hover:text-amber-400 transition-colors rounded-lg hover:bg-white/5",
+                      "flex items-center gap-2 text-xs text-gray-300 rounded-lg",
                       sidebarCollapsed ? "p-1.5 justify-center" : "px-2.5 py-1.5"
                     )}
                   >
@@ -762,7 +762,7 @@ export default function DashboardLayout() {
                 <button
                   onClick={handleLogout}
                     className={cn(
-                      "flex items-center gap-2 text-xs text-red-400 hover:text-red-300 transition-colors w-full rounded-lg hover:bg-red-500/10",
+                      "flex items-center gap-2 text-xs text-red-400 w-full rounded-lg",
                       sidebarCollapsed ? "p-1.5 justify-center" : "px-2.5 py-1.5"
                     )}
                 >
