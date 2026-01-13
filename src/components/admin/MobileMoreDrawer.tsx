@@ -93,7 +93,7 @@ export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreD
               </div>
             )}
             <div>
-              <h2 className="font-bold text-amber-400">{store?.name || "Minha Loja"}</h2>
+              <h2 className="font-bold text-white">{store?.name || "Minha Loja"}</h2>
               <p className="text-xs text-gray-400">Painel de Controle</p>
             </div>
           </div>
