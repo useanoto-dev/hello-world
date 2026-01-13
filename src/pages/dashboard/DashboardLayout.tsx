@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Image, ShoppingBag,
   Settings, CreditCard, LogOut, Menu, X, ExternalLink, Package,
   ChefHat, TicketPercent, Users, ChevronLeft, ChevronRight, TrendingUp,
-  Monitor, UtensilsCrossed, ChevronDown, Workflow, Warehouse, Plug, Maximize, Minimize
+  Monitor, UtensilsCrossed, ChevronDown, Workflow, Warehouse, Plug, Maximize, Minimize, DollarSign
 } from "lucide-react";
 import { QuickActionButtons } from "@/components/admin/QuickActionButtons";
 import { DashboardBottomNav } from "@/components/admin/DashboardBottomNav";
@@ -69,6 +69,7 @@ const allMenuItems: MenuItem[] = [
   { icon: ChefHat, label: "Cozinha", path: "/dashboard/comandas", showAlways: false, requiresComandaMode: true },
   { icon: ShoppingBag, label: "Pedidos", path: "/dashboard/orders", showAlways: true },
   { icon: TrendingUp, label: "Analytics", path: "/dashboard/analytics", showAlways: true },
+  { icon: DollarSign, label: "Financeiro", path: "/dashboard/financeiro", showAlways: true },
   { icon: Users, label: "Clientes", path: "/dashboard/customers", showAlways: true },
   { 
     icon: Package, 
