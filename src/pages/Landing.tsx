@@ -97,10 +97,47 @@ const AnimatedCard = ({ children, delay = 0, className = "" }: { children: React
   );
 };
 
+// Typewriter effect hook
+const useTypewriter = (text: string, speed: number = 80, startDelay: number = 0, enabled: boolean = true) => {
+  const [displayText, setDisplayText] = useState("");
+  const [isComplete, setIsComplete] = useState(false);
+  
+  useEffect(() => {
+    if (!enabled) {
+      setDisplayText(text);
+      setIsComplete(true);
+      return;
+    }
+    
+    setDisplayText("");
+    setIsComplete(false);
+    
+    const startTimeout = setTimeout(() => {
+      let currentIndex = 0;
+      const interval = setInterval(() => {
+        if (currentIndex < text.length) {
+          setDisplayText(text.slice(0, currentIndex + 1));
+          currentIndex++;
+        } else {
+          setIsComplete(true);
+          clearInterval(interval);
+        }
+      }, speed);
+      
+      return () => clearInterval(interval);
+    }, startDelay);
+    
+    return () => clearTimeout(startTimeout);
+  }, [text, speed, startDelay, enabled]);
+  
+  return { displayText, isComplete };
+};
+
 // Section Title com animação
 const SectionTitle = ({ badge, title, subtitle }: { badge?: string; title: string; subtitle?: string }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
+  const { displayText, isComplete } = useTypewriter(title, 60, 300, isInView);
   
   return (
     <motion.div
@@ -117,7 +154,8 @@ const SectionTitle = ({ badge, title, subtitle }: { badge?: string; title: strin
         </span>
       )}
       <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: COLORS.foreground }}>
-        {title}
+        {displayText}
+        {!isComplete && <span className="animate-pulse">|</span>}
       </h2>
       {subtitle && (
         <p className="mt-2 text-sm max-w-md mx-auto" style={{ color: COLORS.muted }}>{subtitle}</p>
