@@ -529,11 +529,11 @@ export default function DashboardLayout() {
     return content;
   };
 
-  // Hide sidebar on mobile when in fullscreen PDV mode
+  // Hide sidebar on mobile when in fullscreen PDV mode or on PDV page
   const showMobileNav = isMobile && !isFullscreen && !isPDVPage;
   
-  // Hide sidebar completely on PDV page (it will have its own fullscreen button)
-  const hideSidebar = isPDVPage;
+  // Hide sidebar only when in fullscreen mode (on any page, but button is only on PDV)
+  const hideSidebar = isFullscreen;
 
   return (
     <TooltipProvider>
