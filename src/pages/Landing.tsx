@@ -562,7 +562,7 @@ export default function Landing() {
           </div>
 
           {/* Mobile */}
-          <div className="md:hidden flex items-center gap-2">
+          <div className="md:hidden flex items-center gap-4">
             <button 
               onClick={() => navigate("/explorar")}
               className="p-2 rounded-full transition-colors hover:bg-amber-50"
