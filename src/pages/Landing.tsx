@@ -390,9 +390,9 @@ export default function Landing() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
               className="text-center lg:text-left order-1">
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4"
-                style={{ backgroundColor: `${COLORS.primary}15` }}>
-                <Sparkles className="w-3.5 h-3.5" style={{ color: "#1a5c3a" }} />
-                <span className="text-xs font-medium" style={{ color: COLORS.primaryDark }}>#1 em Cardápios Digitais</span>
+                style={{ backgroundColor: COLORS.primary }}>
+                <Sparkles className="w-3.5 h-3.5 text-black" />
+                <span className="text-xs font-medium text-black">#1 em Cardápios Digitais</span>
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight leading-tight text-center lg:text-left">
