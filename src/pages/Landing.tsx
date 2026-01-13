@@ -378,7 +378,7 @@ export default function Landing() {
 
             {/* Mascot */}
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative flex justify-center items-center order-2">
+              className="relative hidden sm:flex justify-center items-center order-2">
               <div className="absolute w-48 h-48 sm:w-64 sm:h-64 rounded-full"
                 style={{ background: `radial-gradient(circle, ${COLORS.primary}25 0%, transparent 70%)`, filter: "blur(40px)" }} />
               <motion.img src={anotoMascotMoto} alt="Mascote" className="w-48 sm:w-64 lg:w-72 object-contain relative z-10"
