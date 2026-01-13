@@ -392,47 +392,6 @@ export default function Landing() {
           </div>
         </div>
       </section>
-
-      {/* Search */}
-      <section className="px-4 py-6">
-        <div className="max-w-xl mx-auto" data-search>
-          <div className="relative">
-            <div className="flex items-center gap-3 px-4 py-3 rounded-2xl shadow-sm border"
-              style={{ backgroundColor: "#fff", borderColor: COLORS.border }}>
-              <Search className="w-4 h-4" style={{ color: COLORS.muted }} />
-              <input type="text" placeholder="Buscar estabelecimento..." value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => searchQuery.length >= 2 && setShowResults(true)}
-                className="flex-1 text-sm outline-none bg-transparent" style={{ color: COLORS.foreground }} />
-              {isSearching && <div className="w-4 h-4 rounded-full border-2 animate-spin" style={{ borderColor: COLORS.primary, borderTopColor: "transparent" }} />}
-            </div>
-            {showResults && searchResults.length > 0 && (
-              <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}
-                className="absolute top-full left-0 right-0 mt-2 rounded-xl overflow-hidden shadow-lg z-50"
-                style={{ backgroundColor: "#fff", border: `1px solid ${COLORS.border}` }}>
-                <div className="py-1 max-h-64 overflow-y-auto">
-                  {searchResults.map((store) => (
-                    <button key={store.id} className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-amber-50 text-left"
-                      onClick={() => navigate(`/cardapio/${store.slug}`)}>
-                      <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center"
-                        style={{ background: store.logo_url ? "transparent" : COLORS.primary }}>
-                        {store.logo_url ? <img src={store.logo_url} alt="" className="w-full h-full object-cover" /> :
-                          <span className="text-xs font-bold">{store.name.charAt(0)}</span>}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">{store.name}</p>
-                        <p className="text-xs truncate" style={{ color: COLORS.muted }}>{store.address || "Cardápio Digital"}</p>
-                      </div>
-                      <ArrowRight className="w-3.5 h-3.5" style={{ color: COLORS.muted }} />
-                    </button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </div>
-        </div>
-      </section>
-
       {/* Integrações */}
       <section id="recursos" className="px-4 py-16 sm:py-20" style={{ background: `linear-gradient(180deg, ${COLORS.backgroundAlt} 0%, ${COLORS.primaryLight} 50%, ${COLORS.backgroundAlt} 100%)` }}>
         <div className="max-w-5xl mx-auto">
