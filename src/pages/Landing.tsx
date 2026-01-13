@@ -97,23 +97,47 @@ const AnimatedCard = ({ children, delay = 0, className = "" }: { children: React
   );
 };
 
-// Typewriter effect hook - digita uma vez e para com cursor piscando
-const useTypewriter = (text: string, typeSpeed: number = 80) => {
+// Typewriter effect hook - digita, pausa 4s, apaga e repete
+const useTypewriter = (text: string, typeSpeed: number = 80, deleteSpeed: number = 40, pauseTime: number = 4000) => {
   const [displayText, setDisplayText] = useState("");
-  const [isComplete, setIsComplete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   
   useEffect(() => {
-    if (displayText.length < text.length) {
-      const timeout = setTimeout(() => {
-        setDisplayText(text.slice(0, displayText.length + 1));
-      }, typeSpeed);
-      return () => clearTimeout(timeout);
+    let timeout: NodeJS.Timeout;
+    
+    if (isPaused) {
+      // Pausando antes de apagar
+      timeout = setTimeout(() => {
+        setIsPaused(false);
+        setIsDeleting(true);
+      }, pauseTime);
+    } else if (!isDeleting) {
+      // Digitando
+      if (displayText.length < text.length) {
+        timeout = setTimeout(() => {
+          setDisplayText(text.slice(0, displayText.length + 1));
+        }, typeSpeed);
+      } else {
+        // Terminou de digitar, inicia pausa
+        setIsPaused(true);
+      }
     } else {
-      setIsComplete(true);
+      // Apagando
+      if (displayText.length > 0) {
+        timeout = setTimeout(() => {
+          setDisplayText(text.slice(0, displayText.length - 1));
+        }, deleteSpeed);
+      } else {
+        // Terminou de apagar, começa a digitar de novo
+        setIsDeleting(false);
+      }
     }
-  }, [displayText, text, typeSpeed]);
+    
+    return () => clearTimeout(timeout);
+  }, [displayText, isDeleting, isPaused, text, typeSpeed, deleteSpeed, pauseTime]);
   
-  return { displayText, isComplete };
+  return { displayText, isDeleting };
 };
 
 // Section Title com animação
