@@ -4,8 +4,9 @@ import { useOutletContext } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ShoppingBag, Clock, Check, Truck, X, RefreshCw,
-  ChevronLeft, ChevronRight, Eye, Printer, Filter, Calendar
+  ChevronLeft, ChevronRight, Eye, Printer, Filter, Calendar as CalendarIcon
 } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -422,16 +423,16 @@ export default function OrdersPage() {
       {store?.use_comanda_mode !== false && (
         <div className="flex flex-wrap items-center gap-2">
           {[
-            { value: "active", label: "Ativos", color: "bg-green-500 hover:bg-green-600 text-white", inactiveColor: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
-            { value: "pending", label: "Pendentes", color: "bg-yellow-500 hover:bg-yellow-600 text-white", inactiveColor: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" },
-            { value: "completed", label: "Concluídos", color: "bg-green-500 hover:bg-green-600 text-white", inactiveColor: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" }
+            { value: "active", label: "Ativos", activeColor: "bg-green-500 text-white", inactiveColor: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
+            { value: "pending", label: "Pendentes", activeColor: "bg-yellow-500 text-white", inactiveColor: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" },
+            { value: "completed", label: "Concluídos", activeColor: "bg-green-500 text-white", inactiveColor: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" }
           ].map(f => (
             <button
               key={f.value}
               onClick={() => setFilter(f.value)}
               className={cn(
-                "px-4 py-2 text-sm md:px-3 md:py-1 md:text-xs rounded-lg transition-all font-medium shadow-sm",
-                filter === f.value ? f.color : f.inactiveColor
+                "px-4 py-2 text-sm md:px-3 md:py-1 md:text-xs rounded-lg font-medium shadow-sm",
+                filter === f.value ? f.activeColor : f.inactiveColor
               )}
             >
               {f.label}
@@ -487,33 +488,57 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {/* Custom Date Picker */}
+      {/* Custom Date Picker with Calendar */}
       {showDatePicker && (
         <Card className="border-border/40 p-4">
           <div className="flex flex-col gap-3">
-            <p className="text-sm font-medium">
-              {showDatePicker === "start" ? "Data Inicial" : "Data Final"}
-            </p>
-            <input
-              type="date"
-              className="w-full p-2 rounded-lg border border-border bg-background text-sm"
-              onChange={(e) => {
-                const date = new Date(e.target.value);
-                if (showDatePicker === "start") {
-                  setCustomDateStart(date);
-                  setShowDatePicker("end");
-                } else {
-                  setCustomDateEnd(date);
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium">
+                {showDatePicker === "start" ? "Selecione a Data Inicial" : "Selecione a Data Final"}
+              </p>
+              <button
+                onClick={() => {
                   setShowDatePicker(null);
                   setShowPeriodMenu(false);
-                }
-              }}
-            />
+                }}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                Cancelar
+              </button>
+            </div>
+            
             {customDateStart && showDatePicker === "end" && (
               <p className="text-xs text-muted-foreground">
-                De: {format(customDateStart, "dd/MM/yyyy", { locale: ptBR })}
+                De: {format(customDateStart, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
               </p>
             )}
+            
+            <div className="flex justify-center">
+              <Calendar
+                mode="single"
+                selected={showDatePicker === "start" ? customDateStart || undefined : customDateEnd || undefined}
+                onSelect={(date) => {
+                  if (date) {
+                    if (showDatePicker === "start") {
+                      setCustomDateStart(date);
+                      setShowDatePicker("end");
+                    } else {
+                      setCustomDateEnd(date);
+                      setShowDatePicker(null);
+                      setShowPeriodMenu(false);
+                    }
+                  }
+                }}
+                locale={ptBR}
+                disabled={(date) => {
+                  if (showDatePicker === "end" && customDateStart) {
+                    return date < customDateStart;
+                  }
+                  return false;
+                }}
+                className="rounded-md border"
+              />
+            </div>
           </div>
         </Card>
       )}
@@ -522,12 +547,12 @@ export default function OrdersPage() {
       {periodFilter !== "day" && (
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="text-xs">
-            <Calendar className="w-3 h-3 mr-1" />
+            <CalendarIcon className="w-3 h-3 mr-1" />
             {periodFilter === "week" && "Esta Semana"}
             {periodFilter === "month" && "Este Mês"}
             {periodFilter === "year" && "Este Ano"}
             {periodFilter === "custom" && customDateStart && customDateEnd && 
-              `${format(customDateStart, "dd/MM", { locale: ptBR })} - ${format(customDateEnd, "dd/MM", { locale: ptBR })}`
+              `${format(customDateStart, "dd/MM/yyyy", { locale: ptBR })} - ${format(customDateEnd, "dd/MM/yyyy", { locale: ptBR })}`
             }
           </Badge>
           <button
