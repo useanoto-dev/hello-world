@@ -110,9 +110,9 @@ export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreD
             )}
             <button 
               onClick={onClose}
-              className="p-2 rounded-full bg-amber-400"
+              className="p-2 rounded-full"
             >
-              <X className="w-5 h-5 text-gray-900" />
+              <X className="w-5 h-5 text-white" />
             </button>
           </div>
         </div>
