@@ -97,47 +97,51 @@ const AnimatedCard = ({ children, delay = 0, className = "" }: { children: React
   );
 };
 
-// Typewriter effect hook
-const useTypewriter = (text: string, speed: number = 80, startDelay: number = 0, enabled: boolean = true) => {
+// Typewriter effect hook com loop infinito
+const useTypewriter = (text: string, typeSpeed: number = 80, deleteSpeed: number = 40, pauseTime: number = 2000) => {
   const [displayText, setDisplayText] = useState("");
-  const [isComplete, setIsComplete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   useEffect(() => {
-    if (!enabled) {
-      setDisplayText(text);
-      setIsComplete(true);
-      return;
+    let timeout: NodeJS.Timeout;
+    
+    if (!isDeleting) {
+      // Digitando
+      if (displayText.length < text.length) {
+        timeout = setTimeout(() => {
+          setDisplayText(text.slice(0, displayText.length + 1));
+        }, typeSpeed);
+      } else {
+        // Terminou de digitar, pausa antes de apagar
+        timeout = setTimeout(() => {
+          setIsDeleting(true);
+        }, pauseTime);
+      }
+    } else {
+      // Apagando
+      if (displayText.length > 0) {
+        timeout = setTimeout(() => {
+          setDisplayText(text.slice(0, displayText.length - 1));
+        }, deleteSpeed);
+      } else {
+        // Terminou de apagar, pausa antes de digitar novamente
+        timeout = setTimeout(() => {
+          setIsDeleting(false);
+        }, 500);
+      }
     }
     
-    setDisplayText("");
-    setIsComplete(false);
-    
-    const startTimeout = setTimeout(() => {
-      let currentIndex = 0;
-      const interval = setInterval(() => {
-        if (currentIndex < text.length) {
-          setDisplayText(text.slice(0, currentIndex + 1));
-          currentIndex++;
-        } else {
-          setIsComplete(true);
-          clearInterval(interval);
-        }
-      }, speed);
-      
-      return () => clearInterval(interval);
-    }, startDelay);
-    
-    return () => clearTimeout(startTimeout);
-  }, [text, speed, startDelay, enabled]);
+    return () => clearTimeout(timeout);
+  }, [displayText, isDeleting, text, typeSpeed, deleteSpeed, pauseTime]);
   
-  return { displayText, isComplete };
+  return { displayText, isDeleting };
 };
 
 // Section Title com animação
 const SectionTitle = ({ badge, title, subtitle }: { badge?: string; title: string; subtitle?: string }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
-  const { displayText, isComplete } = useTypewriter(title, 60, 300, isInView);
+  const { displayText } = useTypewriter(title, 80, 50, 2000);
   
   return (
     <motion.div
@@ -155,7 +159,7 @@ const SectionTitle = ({ badge, title, subtitle }: { badge?: string; title: strin
       )}
       <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: COLORS.foreground }}>
         {displayText}
-        {!isComplete && <span className="animate-pulse">|</span>}
+        <span className="animate-pulse ml-0.5" style={{ color: COLORS.primary }}>|</span>
       </h2>
       {subtitle && (
         <p className="mt-2 text-sm max-w-md mx-auto" style={{ color: COLORS.muted }}>{subtitle}</p>
