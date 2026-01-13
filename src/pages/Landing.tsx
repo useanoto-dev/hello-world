@@ -396,11 +396,11 @@ export default function Landing() {
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight leading-tight text-center lg:text-left">
-                <span className="block sm:inline">Seu delivery</span>{" "}
-                <span className="block sm:inline text-3xl sm:text-4xl lg:text-5xl" style={{ background: `linear-gradient(135deg, ${COLORS.primaryDark}, ${COLORS.primary})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                <span className="block">Seu delivery</span>
+                <span className="block text-3xl sm:text-4xl lg:text-5xl" style={{ background: `linear-gradient(135deg, ${COLORS.primaryDark}, ${COLORS.primary})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                   sem comissão
                 </span>
-                <span className="block sm:inline"><br className="hidden sm:inline" />em 3 minutos</span>
+                <span className="block lg:inline">em 3 minutos</span>
               </h1>
               
               <p className="mt-4 text-sm sm:text-base max-w-md mx-auto lg:mx-0 leading-relaxed" style={{ color: COLORS.muted }}>
