@@ -156,10 +156,9 @@ export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreD
               onClose();
               onLogout();
             }}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500 text-white"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg"
           >
-            <LogOut className="w-4 h-4" />
-            <span className="text-xs font-medium">Sair</span>
+            <LogOut className="w-4 h-4 text-gray-400" />
           </button>
         </div>
       </motion.div>
