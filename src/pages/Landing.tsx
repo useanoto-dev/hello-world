@@ -503,7 +503,7 @@ export default function Landing() {
           overflow: "hidden",
           border: "1px solid rgba(255, 255, 255, 0.6)",
           boxShadow: "0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)",
-          transition: "border-radius 0.3s ease-out",
+          transition: "border-radius 0.18s ease-out",
         }}
       >
         <div className="px-3 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between">
@@ -596,7 +596,7 @@ export default function Landing() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.25, ease: "easeInOut" }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
               onAnimationStart={() => setMenuAnimating(true)}
               onAnimationComplete={() => setMenuAnimating(false)}
               className="md:hidden overflow-hidden"
