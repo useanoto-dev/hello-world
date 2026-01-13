@@ -679,7 +679,10 @@ export default function Landing() {
                 </span>
               </motion.div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
+              <h1 
+                className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight"
+                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: "-0.03em" }}
+              >
                 Seu delivery{" "}
                 <span 
                   className="relative"
@@ -701,7 +704,10 @@ export default function Landing() {
                 <br />em 3 minutos
               </h1>
               
-              <p className="mt-6 text-lg sm:text-xl max-w-xl mx-auto lg:mx-0" style={{ color: COLORS.mutedForeground }}>
+              <p 
+                className="mt-5 text-base sm:text-lg max-w-lg mx-auto lg:mx-0 leading-relaxed"
+                style={{ color: COLORS.mutedForeground, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              >
                 Crie seu cardápio digital, receba pedidos via WhatsApp e gerencie tudo em um único lugar. 
                 <strong className="font-semibold" style={{ color: COLORS.foreground }}> Zero taxas por pedido.</strong>
               </p>
