@@ -530,7 +530,10 @@ export default function DashboardLayout() {
   };
 
   // Hide sidebar on mobile when in fullscreen PDV mode
-  const showMobileNav = isMobile && !isFullscreen;
+  const showMobileNav = isMobile && !isFullscreen && !isPDVPage;
+  
+  // Hide sidebar completely on PDV page (it will have its own fullscreen button)
+  const hideSidebar = isPDVPage;
 
   return (
     <TooltipProvider>
@@ -538,20 +541,21 @@ export default function DashboardLayout() {
         "h-screen bg-background flex w-full overflow-hidden",
         showMobileNav && "pb-14" // Padding for bottom nav
       )}>
-        {/* Sidebar - Desktop - Yellow macOS style */}
-        <motion.aside 
-          layout
-          initial={false}
-          animate={{ width: sidebarCollapsed ? 56 : 208 }}
-          transition={{ 
-            duration: 0.25, 
-            ease: [0.25, 0.1, 0.25, 1] 
-          }}
-          className={cn(
-            "hidden md:flex flex-col h-screen flex-shrink-0 relative group/sidebar",
-            "bg-amber-400 border-r border-amber-500"
-          )}
-        >
+        {/* Sidebar - Desktop - Yellow macOS style - Hidden on PDV */}
+        {!hideSidebar && (
+          <motion.aside 
+            layout
+            initial={false}
+            animate={{ width: sidebarCollapsed ? 56 : 208 }}
+            transition={{ 
+              duration: 0.25, 
+              ease: [0.25, 0.1, 0.25, 1] 
+            }}
+            className={cn(
+              "hidden md:flex flex-col h-screen flex-shrink-0 relative group/sidebar",
+              "bg-amber-400 border-r border-amber-500"
+            )}
+          >
           {/* Collapse Toggle Button */}
           <button
             onClick={toggleSidebar}
@@ -713,43 +717,6 @@ export default function DashboardLayout() {
               "border-t border-amber-500/50"
             )}
           >
-            {/* Fullscreen Button for PDV */}
-            {isPDVPage && fullscreenSupported && (
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={toggleFullscreen}
-                    className={cn(
-                      "flex items-center gap-2 text-xs text-gray-700 hover:text-gray-900 transition-colors rounded-lg hover:bg-amber-500/50",
-                      sidebarCollapsed ? "p-1.5 justify-center" : "px-2.5 py-1.5 w-full"
-                    )}
-                  >
-                    {isFullscreen ? (
-                      <Minimize className="w-3.5 h-3.5 flex-shrink-0" />
-                    ) : (
-                      <Maximize className="w-3.5 h-3.5 flex-shrink-0" />
-                    )}
-                    <AnimatePresence mode="wait">
-                      {!sidebarCollapsed && (
-                        <motion.span
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                        >
-                          {isFullscreen ? "Sair Tela Cheia" : "Tela Cheia"}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                  </button>
-                </TooltipTrigger>
-                {sidebarCollapsed && (
-                  <TooltipContent side="right" className="text-xs font-medium">
-                    {isFullscreen ? "Sair da Tela Cheia (F11)" : "Modo Tela Cheia (F11)"}
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            )}
-
             {/* Theme Toggle */}
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
@@ -825,6 +792,7 @@ export default function DashboardLayout() {
             </Tooltip>
           </div>
         </motion.aside>
+        )}
 
         {/* Mobile Sidebar Sheet */}
         <AnimatePresence>

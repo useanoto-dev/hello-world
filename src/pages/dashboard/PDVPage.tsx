@@ -44,9 +44,11 @@ import {
 } from "@/services/PrintService";
 import { usePDVData, Table, getItemPrice, formatOccupationTime } from "@/hooks/usePDVData";
 import { usePDVCart } from "@/hooks/usePDVCart";
+import { useFullscreen } from "@/hooks/useFullscreen";
 
 export default function PDVPage() {
   const { store } = useOutletContext<{ store: any }>();
+  const { isFullscreen, toggleFullscreen, isSupported: fullscreenSupported } = useFullscreen();
   
   // Use extracted hooks
   const {
@@ -610,6 +612,9 @@ export default function PDVPage() {
         loyaltyDiscount={loyaltyDiscount}
         finalTotal={finalTotal}
         onOpenPayment={() => setIsPaymentOpen(true)}
+        isFullscreen={isFullscreen}
+        onToggleFullscreen={toggleFullscreen}
+        fullscreenSupported={fullscreenSupported}
       />
 
       {/* Complements Modal */}
