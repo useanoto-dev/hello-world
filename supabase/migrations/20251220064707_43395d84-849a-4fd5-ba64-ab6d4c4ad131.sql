@@ -1,0 +1,52 @@
+-- Clear existing neighborhoods and insert all 42 from CSV
+DELETE FROM public.neighborhoods;
+
+INSERT INTO public.neighborhoods (name, delivery_fee, is_active, display_order) VALUES
+  ('Aeroporto', 5.00, true, 1),
+  ('Alto da Boa Vista', 5.00, true, 2),
+  ('Alto são José', 5.00, true, 3),
+  ('Bachada', 5.00, true, 4),
+  ('Bairro Jerusalém', 5.00, true, 5),
+  ('Bairro São Benedito', 5.00, true, 6),
+  ('Bairro São Francisco', 5.00, true, 7),
+  ('Baixinha', 5.00, true, 8),
+  ('Bela vista', 5.00, true, 9),
+  ('Boiada', 5.00, true, 10),
+  ('Centro', 5.00, true, 11),
+  ('Conjunto primavera', 5.00, true, 12),
+  ('Diogo', 5.00, true, 13),
+  ('Engenho', 5.00, true, 14),
+  ('Goiabal', 5.00, true, 15),
+  ('Lolita 01', 5.00, true, 16),
+  ('Lolita 02', 5.00, true, 17),
+  ('Loteamento novo horizonte', 5.00, true, 18),
+  ('Loteamento ouro vivo', 5.00, true, 19),
+  ('Loteamento passos', 5.00, true, 20),
+  ('Loteamento pedra grande', 5.00, true, 21),
+  ('Loteamento são José', 5.00, true, 22),
+  ('Loteamento tavinho', 5.00, true, 23),
+  ('Majo Lucena', 5.00, true, 24),
+  ('Maria rita', 5.00, true, 25),
+  ('Matador', 5.00, true, 26),
+  ('Monti Cristo', 5.00, true, 27),
+  ('Morro do calango', 5.00, true, 28),
+  ('Multirão', 5.00, true, 29),
+  ('Nova pedreiras', 5.00, true, 30),
+  ('Novo seringal', 5.00, true, 31),
+  ('Parque das palmeiras', 5.00, true, 32),
+  ('Parque Enrique', 5.00, true, 33),
+  ('Prainha', 5.00, true, 34),
+  ('Rua do campo', 5.00, true, 35),
+  ('Santo Antônio dos Oliveira', 5.00, true, 36),
+  ('São Benedito', 5.00, true, 37),
+  ('Siringal', 5.00, true, 38),
+  ('Transoau', 5.00, true, 39),
+  ('Trizidela do vale', 5.00, true, 40),
+  ('Vila das palmeiras', 5.00, true, 41),
+  ('Zé da preta', 5.00, true, 42);
+
+-- Add image_url and description to pizza_sizes if not exists
+ALTER TABLE public.pizza_sizes 
+  ADD COLUMN IF NOT EXISTS image_url TEXT,
+  ADD COLUMN IF NOT EXISTS description TEXT,
+  ADD COLUMN IF NOT EXISTS base_price NUMERIC DEFAULT 0;
