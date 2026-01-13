@@ -1,7 +1,7 @@
-import { Store, Clock, MapPin, Phone, Instagram, Map, Star, DollarSign, Share2, Copy, QrCode, Download, Printer, Palette } from "lucide-react";
+import { Store, Clock, MapPin, Phone, Instagram, Map, Star, DollarSign, Share2, Copy, QrCode, Download, Printer, Palette, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { parseSchedule, isStoreOpenNow, getTodayHoursText, getFormattedWeekSchedule } from "@/lib/scheduleUtils";
 import {
@@ -54,6 +54,8 @@ interface StorefrontHeaderProps {
 
 export default function StorefrontHeader({ store, reviewStats, onRatingClick }: StorefrontHeaderProps) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromExplore = (location.state as { fromExplore?: boolean })?.fromExplore === true;
   const [showQRModal, setShowQRModal] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [posterColors, setPosterColors] = useState({
@@ -269,6 +271,25 @@ export default function StorefrontHeader({ store, reviewStats, onRatingClick }: 
 
   return (
     <header className="relative bg-white text-gray-900">
+      {/* Back Button - Only when coming from Explore page */}
+      {fromExplore && (
+        <motion.button
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          onClick={() => navigate("/explorar")}
+          className="absolute top-4 left-4 z-20 flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all hover:scale-105"
+          style={{
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+          }}
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Voltar
+        </motion.button>
+      )}
+
       {/* Banner Image - Full width */}
       <div 
         className="h-28 sm:h-36 md:h-44 relative overflow-hidden"
