@@ -523,7 +523,7 @@ export default function Landing() {
       )}
 
       {/* Preços */}
-      <section id="preços" className="px-4 py-16 sm:py-20" style={{ backgroundColor: COLORS.primaryLight }}>
+      <section id="preços" className="px-4 py-16 sm:py-20 relative" style={{ background: `linear-gradient(180deg, transparent 0%, ${COLORS.primaryLight} 8%, ${COLORS.primaryLight} 92%, transparent 100%)` }}>
         <div className="max-w-3xl mx-auto">
           <SectionTitle badge="PREÇO JUSTO" title="Simples, sem surpresas" subtitle="Sem taxa por pedido. Preço fixo." />
           <div className="grid md:grid-cols-2 gap-4">
