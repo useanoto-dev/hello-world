@@ -407,14 +407,14 @@ export default function OrdersPage() {
               key={f.value}
               onClick={() => setFilter(f.value)}
               className={cn(
-                "px-1.5 py-0.5 text-[9px] md:text-[10px] rounded-full transition-colors",
+                "px-3 py-1.5 text-xs md:px-2 md:py-0.5 md:text-[10px] rounded-full transition-colors font-medium",
                 filter === f.value 
                   ? "bg-primary text-primary-foreground" 
                   : "bg-muted/50 text-muted-foreground"
               )}
             >
               {f.label}
-              <span className="ml-0.5 opacity-70">
+              <span className="ml-1 opacity-70">
                 {f.value === "all" ? orders.length : orders.filter(o => {
                   if (f.value === "active") return !["completed", "canceled"].includes(o.status);
                   return o.status === f.value;
@@ -434,14 +434,14 @@ export default function OrdersPage() {
               key={s.value}
               onClick={() => setSourceFilter(s.value)}
               className={cn(
-                "px-1.5 py-0.5 text-[9px] md:text-[10px] rounded-full transition-colors",
+                "px-3 py-1.5 text-xs md:px-2 md:py-0.5 md:text-[10px] rounded-full transition-colors font-medium",
                 sourceFilter === s.value 
                   ? "bg-primary text-primary-foreground" 
                   : "bg-muted/50 text-muted-foreground"
               )}
             >
               {s.label}
-              <span className="ml-0.5 opacity-70">
+              <span className="ml-1 opacity-70">
                 {orderSourceCounts[s.value as keyof typeof orderSourceCounts]}
               </span>
             </button>
