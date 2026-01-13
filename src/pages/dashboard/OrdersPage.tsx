@@ -448,14 +448,21 @@ export default function OrdersPage() {
           {/* Period Filter Button */}
           <div className="relative ml-auto">
             <button
-              onClick={() => setShowPeriodMenu(!showPeriodMenu)}
-              className="flex items-center gap-1.5 px-4 py-2 text-sm md:px-3 md:py-1 md:text-xs rounded-lg bg-muted/80 hover:bg-muted transition-colors font-medium"
+              onClick={() => {
+                if (showPeriodMenu) {
+                  setShowPeriodMenu(false);
+                  setShowDatePicker(null);
+                } else {
+                  setShowPeriodMenu(true);
+                }
+              }}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm md:px-3 md:py-1 md:text-xs rounded-lg bg-muted/80 font-medium"
             >
               <Filter className="w-3.5 h-3.5" />
               Filtrar
             </button>
 
-            {showPeriodMenu && (
+            {showPeriodMenu && !showDatePicker && (
               <div className="absolute right-0 top-full mt-1 bg-popover border border-border rounded-lg shadow-lg z-50 min-w-[180px] py-1">
                 {[
                   { value: "day", label: "Hoje" },
@@ -467,11 +474,17 @@ export default function OrdersPage() {
                   <button
                     key={p.value}
                     onClick={() => {
-                      setPeriodFilter(p.value);
                       if (p.value === "custom") {
+                        setCustomDateStart(null);
+                        setCustomDateEnd(null);
+                        setPeriodFilter(p.value);
                         setShowDatePicker("start");
                       } else {
+                        setPeriodFilter(p.value);
                         setShowPeriodMenu(false);
+                        setShowDatePicker(null);
+                        setCustomDateStart(null);
+                        setCustomDateEnd(null);
                       }
                     }}
                     className={cn(
