@@ -103,9 +103,9 @@ export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreD
                 href={`/cardapio/${store.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-full bg-amber-400"
+                className="p-2 rounded-full"
               >
-                <ExternalLink className="w-5 h-5 text-gray-900" />
+                <ExternalLink className={`w-5 h-5 ${theme === "dark" ? "text-white" : "text-[#f1f2f3]"}`} />
               </a>
             )}
             <button 
