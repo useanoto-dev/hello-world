@@ -97,12 +97,24 @@ export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreD
               <p className="text-xs text-gray-400">Painel de Controle</p>
             </div>
           </div>
-          <button 
-            onClick={onClose}
-            className="p-2 rounded-full bg-amber-400"
-          >
-            <X className="w-5 h-5 text-gray-900" />
-          </button>
+          <div className="flex items-center gap-2">
+            {store?.slug && (
+              <a
+                href={`/cardapio/${store.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-full bg-amber-400"
+              >
+                <ExternalLink className="w-5 h-5 text-gray-900" />
+              </a>
+            )}
+            <button 
+              onClick={onClose}
+              className="p-2 rounded-full bg-amber-400"
+            >
+              <X className="w-5 h-5 text-gray-900" />
+            </button>
+          </div>
         </div>
 
         {/* Menu Grid */}
@@ -137,19 +149,6 @@ export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreD
               <Moon className="w-4 h-4 text-gray-900" />
             )}
           </button>
-          
-          {/* View Menu Link */}
-          {store?.slug && (
-            <a
-              href={`/cardapio/${store.slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-400 text-gray-900"
-            >
-              <ExternalLink className="w-4 h-4" />
-              <span className="text-xs font-medium">Ver cardápio</span>
-            </a>
-          )}
           
           {/* Logout */}
           <button
