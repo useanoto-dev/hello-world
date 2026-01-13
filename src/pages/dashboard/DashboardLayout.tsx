@@ -457,9 +457,7 @@ export default function DashboardLayout() {
         onClick={handleClick}
         className={cn(
           "ripple-container relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium outline-none transition-all duration-200",
-          isActive 
-            ? "bg-amber-400 text-gray-900" 
-            : "text-gray-300 hover:bg-amber-400 hover:text-gray-900",
+          "bg-amber-400 text-gray-900 hover:bg-amber-300",
           sidebarCollapsed && "justify-center px-2"
         )}
         onMouseEnter={() => prefetchRoute(item.path)}
