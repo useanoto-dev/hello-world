@@ -141,12 +141,12 @@ export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreD
           {/* Theme Toggle */}
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-400"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg"
           >
             {theme === "dark" ? (
-              <Sun className="w-4 h-4 text-gray-900" />
+              <Sun className="w-4 h-4 text-white" />
             ) : (
-              <Moon className="w-4 h-4 text-gray-900" />
+              <Moon className="w-4 h-4 text-[#f1f2f3]" />
             )}
           </button>
           
