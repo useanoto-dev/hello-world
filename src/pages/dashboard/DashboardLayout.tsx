@@ -648,7 +648,7 @@ export default function DashboardLayout() {
                   className={cn(
                     "w-2.5 h-2.5 rounded-full flex-shrink-0",
                     store?.is_open_override 
-                      ? "bg-green-600 shadow-[0_0_8px_2px_rgba(34,197,94,0.6)]" 
+                      ? "bg-[#39FF14] shadow-[0_0_12px_4px_rgba(57,255,20,0.7)]" 
                       : "bg-red-600 shadow-[0_0_6px_2px_rgba(239,68,68,0.5)]"
                   )}
                 />
