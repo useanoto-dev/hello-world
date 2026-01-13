@@ -523,8 +523,8 @@ export default function DashboardLayout() {
   };
 
   // Hide sidebar on mobile completely (use bottom nav instead)
-  // Show mobile bottom nav unless on PDV page or in fullscreen mode
-  const showMobileNav = isMobile && !isFullscreen && !isPDVPage;
+  // Show mobile bottom nav on ALL mobile pages including PDV - always visible for quick access
+  const showMobileNav = isMobile && !isFullscreen;
   
   // Hide sidebar only when in fullscreen mode OR on mobile (mobile uses bottom nav)
   const hideSidebar = isFullscreen || isMobile;
@@ -533,7 +533,7 @@ export default function DashboardLayout() {
     <TooltipProvider>
       <div className={cn(
         "h-screen bg-background flex w-full overflow-hidden",
-        showMobileNav && "pb-14" // Padding for bottom nav
+        showMobileNav && "pb-16" // Padding for bottom nav - increased for better spacing
       )}>
         {/* Sidebar - Desktop - Yellow macOS style - Hidden on PDV */}
         {!hideSidebar && (
@@ -803,8 +803,8 @@ export default function DashboardLayout() {
           />
 
           <div className={cn(
-            "md:p-5 p-3",
-            showMobileNav ? "pt-3 pb-4" : "pt-3",
+            "md:p-5 p-2.5",
+            showMobileNav ? "pt-2 pb-6" : "pt-3",
             "md:pt-16"
           )}>
             {/* Trial/Subscription Warning */}

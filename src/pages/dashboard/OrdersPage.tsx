@@ -288,63 +288,63 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2 md:space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-sm font-semibold">Pedidos</h1>
-          <p className="text-[10px] text-muted-foreground">
+          <h1 className="text-xs md:text-sm font-semibold">Pedidos</h1>
+          <p className="text-[9px] md:text-[10px] text-muted-foreground">
             {orders.filter(o => !["completed", "canceled"].includes(o.status)).length} ativos
           </p>
         </div>
         
-        <div className="flex items-center gap-1 bg-muted/50 rounded-md p-0.5">
-          <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={goToPreviousDay}>
-            <ChevronLeft className="w-3.5 h-3.5" />
+        <div className="flex items-center gap-0.5 bg-muted/50 rounded-md p-0.5">
+          <Button variant="ghost" size="sm" className="h-5 w-5 md:h-6 md:w-6 p-0" onClick={goToPreviousDay}>
+            <ChevronLeft className="w-3 h-3" />
           </Button>
           
           <Button 
             variant={isToday(selectedDate) ? "default" : "ghost"} 
             size="sm"
             onClick={goToToday}
-            className="h-6 text-[10px] px-2"
+            className="h-5 md:h-6 text-[9px] md:text-[10px] px-1.5"
           >
             {isToday(selectedDate) ? "Hoje" : format(selectedDate, "dd/MM", { locale: ptBR })}
           </Button>
           
-          <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={goToNextDay}>
-            <ChevronRight className="w-3.5 h-3.5" />
+          <Button variant="ghost" size="sm" className="h-5 w-5 md:h-6 md:w-6 p-0" onClick={goToNextDay}>
+            <ChevronRight className="w-3 h-3" />
           </Button>
         </div>
       </div>
 
       {/* Summary Cards - Ultra Compact */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-1.5 md:gap-2">
         <Card className="border-border/40">
-          <CardContent className="p-2.5">
-            <p className="text-[9px] text-muted-foreground uppercase tracking-wide">Vendas</p>
-            <p className="text-base font-semibold text-emerald-600 dark:text-emerald-400">
+          <CardContent className="p-2 md:p-2.5">
+            <p className="text-[8px] md:text-[9px] text-muted-foreground uppercase tracking-wide">Vendas</p>
+            <p className="text-sm md:text-base font-semibold text-emerald-600 dark:text-emerald-400">
               R$ {financialSummary.totalSold.toFixed(0)}
             </p>
           </CardContent>
         </Card>
         <Card className="border-border/40">
-          <CardContent className="p-2.5">
-            <p className="text-[9px] text-muted-foreground uppercase tracking-wide">Pedidos</p>
-            <p className="text-base font-semibold">{financialSummary.totalOrders}</p>
+          <CardContent className="p-2 md:p-2.5">
+            <p className="text-[8px] md:text-[9px] text-muted-foreground uppercase tracking-wide">Pedidos</p>
+            <p className="text-sm md:text-base font-semibold">{financialSummary.totalOrders}</p>
           </CardContent>
         </Card>
         <Card className="border-border/40">
-          <CardContent className="p-2.5">
-            <p className="text-[9px] text-muted-foreground uppercase tracking-wide">Ticket</p>
-            <p className="text-base font-semibold">R$ {financialSummary.averageTicket.toFixed(0)}</p>
+          <CardContent className="p-2 md:p-2.5">
+            <p className="text-[8px] md:text-[9px] text-muted-foreground uppercase tracking-wide">Ticket</p>
+            <p className="text-sm md:text-base font-semibold">R$ {financialSummary.averageTicket.toFixed(0)}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Chart - Compact */}
       {financialSummary.totalOrders > 0 && (
-        <Card className="border-border/40">
+        <Card className="border-border/40 hidden md:block">
           <CardContent className="p-3">
             <h3 className="text-[10px] font-medium text-muted-foreground mb-2 uppercase tracking-wide">Vendas por Hora</h3>
             <div className="h-[100px]">
@@ -400,50 +400,48 @@ export default function OrdersPage() {
           {[
             { value: "all", label: "Todos" },
             { value: "active", label: "Ativos" },
-            { value: "pending", label: "Pendentes" },
-            { value: "completed", label: "Concluídos" }
+            { value: "pending", label: "Pend." },
+            { value: "completed", label: "Concl." }
           ].map(f => (
             <button
               key={f.value}
               onClick={() => setFilter(f.value)}
               className={cn(
-                "px-2 py-1 text-[10px] rounded-full transition-colors",
+                "px-1.5 py-0.5 text-[9px] md:text-[10px] rounded-full transition-colors",
                 filter === f.value 
                   ? "bg-primary text-primary-foreground" 
-                  : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                  : "bg-muted/50 text-muted-foreground"
               )}
             >
               {f.label}
-              {f.value !== "all" && (
-                <span className="ml-1 opacity-70">
-                  {orders.filter(o => {
-                    if (f.value === "active") return !["completed", "canceled"].includes(o.status);
-                    return o.status === f.value;
-                  }).length}
-                </span>
-              )}
+              <span className="ml-0.5 opacity-70">
+                {f.value === "all" ? orders.length : orders.filter(o => {
+                  if (f.value === "active") return !["completed", "canceled"].includes(o.status);
+                  return o.status === f.value;
+                }).length}
+              </span>
             </button>
           ))}
           
-          <div className="w-px h-5 bg-border mx-1 self-center" />
+          <div className="w-px h-4 bg-border mx-0.5 self-center" />
           
           {[
             { value: "all", label: "Todos", emoji: "" },
-            { value: "digital", label: "Digital", emoji: "📱" },
-            { value: "pdv", label: "PDV", emoji: "💻" },
+            { value: "digital", label: "📱", emoji: "" },
+            { value: "pdv", label: "💻", emoji: "" },
           ].map(s => (
             <button
               key={s.value}
               onClick={() => setSourceFilter(s.value)}
               className={cn(
-                "px-2 py-1 text-[10px] rounded-full transition-colors",
+                "px-1.5 py-0.5 text-[9px] md:text-[10px] rounded-full transition-colors",
                 sourceFilter === s.value 
                   ? "bg-primary text-primary-foreground" 
-                  : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                  : "bg-muted/50 text-muted-foreground"
               )}
             >
-              {s.emoji} {s.label}
-              <span className="ml-1 opacity-70">
+              {s.label}
+              <span className="ml-0.5 opacity-70">
                 {orderSourceCounts[s.value as keyof typeof orderSourceCounts]}
               </span>
             </button>
@@ -453,9 +451,9 @@ export default function OrdersPage() {
 
       {/* Orders List - Compact Table Style */}
       {filteredOrders.length === 0 ? (
-        <div className="text-center py-8 bg-muted/20 rounded-lg">
-          <ShoppingBag className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
-          <p className="text-xs text-muted-foreground">Nenhum pedido encontrado</p>
+        <div className="text-center py-6 bg-muted/20 rounded-lg">
+          <ShoppingBag className="w-6 h-6 mx-auto mb-1.5 text-muted-foreground/50" />
+          <p className="text-[10px] text-muted-foreground">Nenhum pedido encontrado</p>
         </div>
       ) : (
         <Card className="border-border/40 overflow-hidden">
