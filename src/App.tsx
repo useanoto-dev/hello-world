@@ -11,6 +11,7 @@ import { StoreStatusProvider } from "@/contexts/StoreStatusContext";
 import TopProgressBar from "@/components/TopProgressBar";
 import OfflineIndicator from "@/components/OfflineIndicator";
 import { useRoutePreloader } from "@/hooks/useRoutePreloader";
+import { useContentProtection } from "@/hooks/useContentProtection";
 
 // Eager loaded pages (critical path)
 import Landing from "@/pages/Landing";
@@ -75,6 +76,9 @@ const queryClient = new QueryClient({
 function AnimatedRoutes() {
   const location = useLocation();
   const [isNavigating, setIsNavigating] = useState(false);
+  
+  // Proteção global de conteúdo
+  useContentProtection();
   
   // Preload critical routes
   useRoutePreloader();
