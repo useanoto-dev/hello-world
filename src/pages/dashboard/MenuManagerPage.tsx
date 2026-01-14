@@ -93,6 +93,7 @@ import { NewCategoryModal, CategoryFormData } from "@/components/admin/NewCatego
 import { MenuItemWizard, ItemFormData } from "@/components/admin/MenuItemWizard";
 import { SortableCategoryItem, DragHandleButton } from "@/components/admin/SortableCategoryItem";
 import { ProductOptionGroupsManager } from "@/components/admin/ProductOptionGroupsManager";
+import { ProductFlavorsManager } from "@/components/admin/ProductFlavorsManager";
 import { AddItemTypeModal } from "@/components/admin/AddItemTypeModal";
 
 interface Category {
@@ -1530,18 +1531,17 @@ export default function MenuManagerPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Product Options Manager Modal */}
+      {/* Product Flavors Manager Modal */}
       <Dialog open={showOptionsManager} onOpenChange={setShowOptionsManager}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              Personalização - {selectedOptionsProduct?.productName}
+              Sabores - {selectedOptionsProduct?.productName}
             </DialogTitle>
           </DialogHeader>
           {selectedOptionsProduct && storeId && (
-            <ProductOptionGroupsManager
+            <ProductFlavorsManager
               productId={selectedOptionsProduct.productId}
-              categoryId={selectedOptionsProduct.categoryId}
               storeId={storeId}
               productName={selectedOptionsProduct.productName}
               onClose={() => setShowOptionsManager(false)}
