@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Trophy, Users, Calendar, Play, X, Sparkles, 
-  Filter, Minus, Plus
+  Filter, Minus, Plus, CalendarDays
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -15,10 +15,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPhone } from "@/lib/formatters";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
+import { format, startOfDay, endOfDay, isWithinInterval } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { DateRange } from "react-day-picker";
 
 interface Participant {
   id: string;
@@ -43,6 +53,10 @@ export function RaffleManager({ storeId }: RaffleManagerProps) {
   const [winners, setWinners] = useState<Participant[]>([]);
   const [raffleComplete, setRaffleComplete] = useState(false);
   const [isYellow, setIsYellow] = useState(false);
+  
+  // Date filters
+  const [specificDate, setSpecificDate] = useState<Date | undefined>(undefined);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   useEffect(() => {
     if (storeId) {
@@ -99,20 +113,32 @@ export function RaffleManager({ storeId }: RaffleManagerProps) {
     return participants.filter((p) => {
       if (!p.last_order_at) return false;
       const lastOrder = new Date(p.last_order_at);
-      const daysDiff = Math.floor((now.getTime() - lastOrder.getTime()) / (1000 * 60 * 60 * 24));
 
       switch (periodFilter) {
         case "7days":
-          return daysDiff <= 7;
+          return Math.floor((now.getTime() - lastOrder.getTime()) / (1000 * 60 * 60 * 24)) <= 7;
         case "30days":
-          return daysDiff <= 30;
+          return Math.floor((now.getTime() - lastOrder.getTime()) / (1000 * 60 * 60 * 24)) <= 30;
         case "1year":
-          return daysDiff <= 365;
+          return Math.floor((now.getTime() - lastOrder.getTime()) / (1000 * 60 * 60 * 24)) <= 365;
+        case "specific":
+          if (!specificDate) return true;
+          return isWithinInterval(lastOrder, {
+            start: startOfDay(specificDate),
+            end: endOfDay(specificDate),
+          });
+        case "range":
+          if (!dateRange?.from) return true;
+          const rangeEnd = dateRange.to || dateRange.from;
+          return isWithinInterval(lastOrder, {
+            start: startOfDay(dateRange.from),
+            end: endOfDay(rangeEnd),
+          });
         default:
           return true;
       }
     });
-  }, [participants, periodFilter]);
+  }, [participants, periodFilter, specificDate, dateRange]);
 
   const filteredParticipants = getFilteredParticipants();
 
@@ -237,7 +263,14 @@ export function RaffleManager({ storeId }: RaffleManagerProps) {
             <Filter className="w-4 h-4 text-muted-foreground" />
             <Label className="text-sm font-medium">Período de Pedidos</Label>
           </div>
-          <Select value={periodFilter} onValueChange={setPeriodFilter}>
+          <Select 
+            value={periodFilter} 
+            onValueChange={(value) => {
+              setPeriodFilter(value);
+              if (value !== "specific") setSpecificDate(undefined);
+              if (value !== "range") setDateRange(undefined);
+            }}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Selecione o período" />
             </SelectTrigger>
@@ -246,8 +279,83 @@ export function RaffleManager({ storeId }: RaffleManagerProps) {
               <SelectItem value="7days">Últimos 7 dias</SelectItem>
               <SelectItem value="30days">Últimos 30 dias</SelectItem>
               <SelectItem value="1year">Último ano</SelectItem>
+              <SelectItem value="specific">Data específica</SelectItem>
+              <SelectItem value="range">Período personalizado</SelectItem>
             </SelectContent>
           </Select>
+
+          {/* Specific Date Picker */}
+          {periodFilter === "specific" && (
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Selecione a data</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !specificDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarDays className="mr-2 h-4 w-4" />
+                    {specificDate ? format(specificDate, "dd/MM/yyyy", { locale: ptBR }) : "Escolha uma data"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={specificDate}
+                    onSelect={setSpecificDate}
+                    locale={ptBR}
+                    disabled={(date) => date > new Date()}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+
+          {/* Date Range Picker */}
+          {periodFilter === "range" && (
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Selecione o período</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !dateRange?.from && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarDays className="mr-2 h-4 w-4" />
+                    {dateRange?.from ? (
+                      dateRange.to ? (
+                        <>
+                          {format(dateRange.from, "dd/MM/yyyy", { locale: ptBR })} -{" "}
+                          {format(dateRange.to, "dd/MM/yyyy", { locale: ptBR })}
+                        </>
+                      ) : (
+                        format(dateRange.from, "dd/MM/yyyy", { locale: ptBR })
+                      )
+                    ) : (
+                      "Escolha o período"
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="range"
+                    selected={dateRange}
+                    onSelect={setDateRange}
+                    locale={ptBR}
+                    numberOfMonths={2}
+                    disabled={(date) => date > new Date()}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+
           <div className="flex items-center gap-2 text-sm">
             <Users className="w-4 h-4 text-primary" />
             <span className="font-medium">{filteredParticipants.length}</span>
