@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Trophy, Users, Calendar, Play, X, Sparkles, 
-  Filter, ChevronDown, Minus, Plus
+  Filter, Minus, Plus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -18,6 +18,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { formatPhone } from "@/lib/formatters";
 import { toast } from "sonner";
+import confetti from "canvas-confetti";
 
 interface Participant {
   id: string;
@@ -128,6 +129,54 @@ export function RaffleManager({ storeId }: RaffleManagerProps) {
     setIsYellow(false);
   };
 
+  const launchBalloons = () => {
+    const duration = 3000;
+    const end = Date.now() + duration;
+
+    const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffa500', '#ff69b4'];
+
+    const frame = () => {
+      confetti({
+        particleCount: 4,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.8 },
+        colors: colors,
+        shapes: ['circle'],
+        scalar: 2,
+        drift: 0,
+        gravity: 0.5,
+      });
+      confetti({
+        particleCount: 4,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.8 },
+        colors: colors,
+        shapes: ['circle'],
+        scalar: 2,
+        drift: 0,
+        gravity: 0.5,
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+
+    // Initial burst
+    confetti({
+      particleCount: 100,
+      spread: 100,
+      origin: { y: 0.6 },
+      colors: colors,
+      shapes: ['circle'],
+      scalar: 2.5,
+    });
+
+    frame();
+  };
+
   useEffect(() => {
     if (!showFullscreen || currentNumber === null || raffleComplete) return;
 
@@ -143,6 +192,7 @@ export function RaffleManager({ storeId }: RaffleManagerProps) {
       const selectedWinners = shuffled.slice(0, winnersCount);
       setWinners(selectedWinners);
       setRaffleComplete(true);
+      launchBalloons();
     }
   }, [showFullscreen, currentNumber, raffleComplete, filteredParticipants, winnersCount]);
 
@@ -230,7 +280,7 @@ export function RaffleManager({ storeId }: RaffleManagerProps) {
           {/* Countdown Start */}
           <div className="space-y-2">
             <Label className="text-xs text-muted-foreground">
-              Contagem Regressiva: {countdownStart} segundos
+              Começar a contar de: <span className="font-bold text-foreground">{countdownStart}</span>
             </Label>
             <Slider
               value={[countdownStart]}
@@ -241,30 +291,20 @@ export function RaffleManager({ storeId }: RaffleManagerProps) {
               className="py-2"
             />
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>3s</span>
-              <span>15s</span>
+              <span>3</span>
+              <span>15</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Participants Preview */}
+      {/* Participants Count */}
       {filteredParticipants.length > 0 && (
-        <div className="p-4 bg-muted/30 rounded-lg space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium">Participantes ({filteredParticipants.length})</h3>
-          </div>
-          <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-            {filteredParticipants.slice(0, 20).map((p) => (
-              <Badge key={p.id} variant="secondary" className="text-xs">
-                {p.name.split(" ")[0]}
-              </Badge>
-            ))}
-            {filteredParticipants.length > 20 && (
-              <Badge variant="outline" className="text-xs">
-                +{filteredParticipants.length - 20} mais
-              </Badge>
-            )}
+        <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg">
+          <div className="flex items-center justify-center gap-3">
+            <Users className="w-6 h-6 text-primary" />
+            <span className="text-3xl font-bold text-primary">{filteredParticipants.length}</span>
+            <span className="text-muted-foreground">participantes elegíveis</span>
           </div>
         </div>
       )}
