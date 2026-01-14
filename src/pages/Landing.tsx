@@ -21,6 +21,7 @@ import LoginModal from "@/components/LoginModal";
 // URLs externas das imagens
 const anotoLogoFull = "https://felipedublin.com/wp-content/uploads/2026/01/anoto-logo-full.webp";
 import anotoMascotMoto from "@/assets/anoto-mascot-moto.png";
+import badgeCheckIcon from "@/assets/badge-check-icon.png";
 
 // Cores fixas da landing
 const COLORS = {
@@ -413,9 +414,9 @@ export default function Landing() {
               </div>
               
               <div className="mt-6 flex flex-wrap items-center justify-center lg:justify-start gap-4">
-                {[{ icon: Check, text: "7 dias grátis" }, { icon: Shield, text: "Sem cartão" }, { icon: Zap, text: "Setup 3 min" }].map((item) => (
+                {[{ text: "7 dias grátis" }, { text: "Sem cartão" }, { text: "Setup 3 min" }].map((item) => (
                   <span key={item.text} className="flex items-center gap-1.5 text-xs" style={{ color: COLORS.muted }}>
-                    <item.icon className="w-3.5 h-3.5" style={{ color: COLORS.success }} />
+                    <img src={badgeCheckIcon} alt="" className="w-4 h-4 object-contain" />
                     {item.text}
                   </span>
                 ))}
