@@ -15,18 +15,38 @@ if (typeof window !== 'undefined') {
   };
 }
 
+// Environment flags (Vite)
+const IS_DEV = import.meta.env.DEV;
+const IS_PROD = import.meta.env.PROD;
+
+// DEV SAFETY: if a Service Worker from a previous build is still registered,
+// it can serve stale cached chunks and cause React hook runtime errors
+// like "Cannot read properties of null (reading 'useEffect')".
+if (typeof window !== "undefined" && IS_DEV && "serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then((regs) => {
+    regs.forEach((reg) => reg.unregister());
+  });
+
+  // Clear SW caches (best-effort)
+  if ("caches" in window) {
+    caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)));
+  }
+}
+
 // Performance monitoring
-if (typeof window !== 'undefined' && 'performance' in window) {
-  window.addEventListener('load', () => {
+if (typeof window !== "undefined" && "performance" in window) {
+  window.addEventListener("load", () => {
     // Log performance metrics in development
-    if (process.env.NODE_ENV === 'development') {
+    if (IS_DEV) {
       setTimeout(() => {
-        const perfData = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+        const perfData = performance.getEntriesByType(
+          "navigation",
+        )[0] as PerformanceNavigationTiming;
         if (perfData) {
-          console.log('📊 Performance Metrics:', {
-            'DOM Content Loaded': `${Math.round(perfData.domContentLoadedEventEnd)}ms`,
-            'Load Complete': `${Math.round(perfData.loadEventEnd)}ms`,
-            'First Paint': `${Math.round(performance.getEntriesByName('first-paint')[0]?.startTime || 0)}ms`,
+          console.log("📊 Performance Metrics:", {
+            "DOM Content Loaded": `${Math.round(perfData.domContentLoadedEventEnd)}ms`,
+            "Load Complete": `${Math.round(perfData.loadEventEnd)}ms`,
+            "First Paint": `${Math.round(performance.getEntriesByName("first-paint")[0]?.startTime || 0)}ms`,
           });
         }
       }, 0);
@@ -34,11 +54,11 @@ if (typeof window !== 'undefined' && 'performance' in window) {
   });
 }
 
-// Register service worker for PWA
-if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch((error) => {
-      console.warn('SW registration failed:', error);
+// Register service worker for PWA (production only)
+if ("serviceWorker" in navigator && IS_PROD) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch((error) => {
+      console.warn("SW registration failed:", error);
     });
   });
 }
