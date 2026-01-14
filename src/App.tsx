@@ -51,6 +51,7 @@ const CustomersPage = lazy(() => import("@/pages/dashboard/CustomersPage"));
 const InventoryPage = lazy(() => import("@/pages/dashboard/InventoryPage"));
 const IntegrationsPage = lazy(() => import("@/pages/dashboard/IntegrationsPage"));
 const WhatsAppMessagesPage = lazy(() => import("@/pages/dashboard/WhatsAppMessagesPage"));
+const SubscriptionPage = lazy(() => import("@/pages/dashboard/SubscriptionPage"));
 
 // Storefront Pages
 const StorefrontPage = lazy(() => import("@/pages/storefront/StorefrontPage"));
@@ -146,7 +147,7 @@ function AnimatedRoutes() {
             <Route path="integrations" element={<IntegrationsPage />} />
             <Route path="whatsapp-messages" element={<WhatsAppMessagesPage />} />
             <Route path="settings" element={<SettingsPage />} />
-            <Route path="subscription" element={<DashboardHome />} />
+            <Route path="subscription" element={<SubscriptionPage />} />
           </Route>
           
           {/* Public Storefront */}
