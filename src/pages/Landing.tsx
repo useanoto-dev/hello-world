@@ -21,6 +21,7 @@ import LoginModal from "@/components/LoginModal";
 // URLs externas das imagens
 const anotoLogoFull = "https://felipedublin.com/wp-content/uploads/2026/01/anoto-logo-full.webp";
 import anotoMascotMoto from "@/assets/anoto-mascot-moto.png";
+import anotoMascotHero from "@/assets/anoto-mascot-hero.avif";
 import badgeCheckIcon from "@/assets/badge-check-icon.png";
 import integrationWhatsapp from "@/assets/integration-whatsapp.avif";
 import integrationBroadcast from "@/assets/integration-broadcast.avif";
@@ -433,7 +434,7 @@ export default function Landing() {
               className="relative hidden sm:flex justify-center items-center order-2">
               <div className="absolute w-48 h-48 sm:w-64 sm:h-64 rounded-full"
                 style={{ background: `radial-gradient(circle, ${COLORS.primary}25 0%, transparent 70%)`, filter: "blur(40px)" }} />
-              <motion.img src={anotoMascotMoto} alt="Mascote" className="w-48 sm:w-64 lg:w-96 object-contain relative z-10"
+              <motion.img src={anotoMascotHero} alt="Mascote" className="w-48 sm:w-64 lg:w-96 object-contain relative z-10"
                 animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }} />
               <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.6 }}
                 className="absolute -top-2 right-2 lg:right-6 z-20 px-4 py-2 rounded-xl shadow-lg"
