@@ -1,5 +1,5 @@
-// App.tsx - Anotô SaaS
-import { Suspense, lazy, useState, useEffect } from "react";
+// App.tsx - Anotô SaaS - Optimized Build
+import { Suspense, lazy, useState, useEffect, memo } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,17 +12,21 @@ import TopProgressBar from "@/components/TopProgressBar";
 import OfflineIndicator from "@/components/OfflineIndicator";
 import { useRoutePreloader } from "@/hooks/useRoutePreloader";
 import { useContentProtection } from "@/hooks/useContentProtection";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Eager loaded pages (critical path)
 import Landing from "@/pages/Landing";
-import ExplorePage from "@/pages/ExplorePage";
-import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
-import ResetPasswordPage from "@/pages/ResetPasswordPage";
-import PrivacyPolicy from "@/pages/PrivacyPolicy";
-import TermsOfUse from "@/pages/TermsOfUse";
-import FAQPage from "@/pages/FAQPage";
 import NotFound from "@/pages/NotFound";
-// Lazy loaded pages
+
+// Semi-eager loaded (frequently accessed)
+const ExplorePage = lazy(() => import("@/pages/ExplorePage"));
+const ForgotPasswordPage = lazy(() => import("@/pages/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("@/pages/ResetPasswordPage"));
+const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
+const TermsOfUse = lazy(() => import("@/pages/TermsOfUse"));
+const FAQPage = lazy(() => import("@/pages/FAQPage"));
+
+// Lazy loaded pages - Dashboard
 const DashboardLayout = lazy(() => import("@/pages/dashboard/DashboardLayout"));
 const DashboardHome = lazy(() => import("@/pages/dashboard/DashboardHome"));
 const OnboardingWizard = lazy(() => import("@/pages/dashboard/OnboardingWizard"));
@@ -156,23 +160,28 @@ function AnimatedRoutes() {
   );
 }
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <CartProvider>
-          <StoreStatusProvider>
-            <Toaster />
-            <Sonner />
-            <OfflineIndicator />
-            <BrowserRouter>
-              <AnimatedRoutes />
-            </BrowserRouter>
-          </StoreStatusProvider>
-        </CartProvider>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+// Memoized App to prevent unnecessary re-renders
+const App = memo(() => (
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <CartProvider>
+            <StoreStatusProvider>
+              <Toaster />
+              <Sonner />
+              <OfflineIndicator />
+              <BrowserRouter>
+                <AnimatedRoutes />
+              </BrowserRouter>
+            </StoreStatusProvider>
+          </CartProvider>
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
+));
+
+App.displayName = "App";
 
 export default App;
