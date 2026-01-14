@@ -28,7 +28,7 @@ import { LoyaltyWidget } from "@/components/storefront/LoyaltyWidget";
 import { PizzaSizeGrid } from "@/components/storefront/PizzaSizeGrid";
 import { PizzaFlavorSelectionDrawer } from "@/components/storefront/PizzaFlavorSelectionDrawer";
 import { PizzaDoughSelectionDrawer } from "@/components/storefront/PizzaDoughSelectionDrawer";
-import { ProductOptionsDrawer } from "@/components/storefront/ProductOptionsDrawer";
+
 import { parseSchedule, isStoreOpenNow, getNextOpeningTime } from "@/lib/scheduleUtils";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
@@ -204,7 +204,7 @@ function getMorphAnimationEnabled(storeId: string): boolean {
 
 // Fetch categories, products and option groups
 async function fetchStoreContent(storeId: string) {
-  const [categoriesResult, productsResult, optionGroupsResult, reviewsResult, inventoryCategoriesResult, inventoryProductsResult, flowStepsResult, productOptionGroupsResult] = await Promise.all([
+  const [categoriesResult, productsResult, optionGroupsResult, reviewsResult, inventoryCategoriesResult, inventoryProductsResult, flowStepsResult] = await Promise.all([
     supabase
       .from("categories")
       .select("id, name, slug, icon, image_url, use_sequential_flow, has_base_product, category_type, show_flavor_prices")
@@ -246,12 +246,6 @@ async function fetchStoreContent(storeId: string) {
       .from("pizza_flow_steps")
       .select("category_id, step_type, is_enabled, step_order, next_step_id")
       .eq("store_id", storeId),
-    // Fetch product-level option groups to know which products have customizations
-    supabase
-      .from("product_option_groups")
-      .select("product_id")
-      .eq("store_id", storeId)
-      .eq("is_active", true)
   ]);
 
   if (categoriesResult.error) throw categoriesResult.error;
@@ -348,11 +342,6 @@ async function fetchStoreContent(storeId: string) {
     };
   });
 
-  // Build set of product IDs that have option groups
-  const productsWithOptions = new Set<string>();
-  (productOptionGroupsResult.data || []).forEach((group: { product_id: string }) => {
-    productsWithOptions.add(group.product_id);
-  });
 
   return {
     categories: [...(categoriesResult.data || []) as Category[], ...inventoryCategories],
@@ -362,7 +351,6 @@ async function fetchStoreContent(storeId: string) {
     reviewStats,
     inventoryProductIds: new Set(inventoryProducts.map(p => p.id)),
     flowStepsData,
-    productsWithOptions,
   };
 }
 
@@ -408,11 +396,6 @@ export default function StorefrontPage() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [preselectedOptionId, setPreselectedOptionId] = useState<string | null>(null);
   const [showCustomizationModal, setShowCustomizationModal] = useState(false);
-  
-  // Product options drawer state (for products with product_option_groups)
-  const [showProductOptionsDrawer, setShowProductOptionsDrawer] = useState(false);
-  const [productForOptionsDrawer, setProductForOptionsDrawer] = useState<Product | null>(null);
-  const [categoryNameForOptionsDrawer, setCategoryNameForOptionsDrawer] = useState("");
   
   // Upsell modal state
   const [showUpsellModal, setShowUpsellModal] = useState(false);
@@ -606,7 +589,6 @@ export default function StorefrontPage() {
   const primaryGroupItems = content?.primaryGroupItems || {};
   const reviewStats = content?.reviewStats;
   const flowStepsData = content?.flowStepsData || {};
-  const productsWithOptions = content?.productsWithOptions || new Set<string>();
   const loading = storeLoading || (!!store && contentLoading);
 
   // Use ref to always have latest flowStepsData (avoids stale closure issues)
@@ -771,14 +753,6 @@ export default function StorefrontPage() {
 
     const category = categories.find(c => c.id === product.category_id);
     
-    // Check if this product has product-level options (product_option_groups)
-    // This is for standard model (non-pizza) products with customizations
-    if (!product.isVirtualProduct && productsWithOptions.has(product.id)) {
-      setProductForOptionsDrawer(product);
-      setCategoryNameForOptionsDrawer(category?.name || "Produto");
-      setShowProductOptionsDrawer(true);
-      return;
-    }
     
     if (category) {
       // For virtual products (from primary options), create a simple product object
@@ -826,7 +800,7 @@ export default function StorefrontPage() {
         image_url: product.image_url || undefined,
       });
     }
-  }, [categories, addToCart, isStoreOpen, productsWithOptions, categoryHasOptions]);
+  }, [categories, addToCart, isStoreOpen, categoryHasOptions]);
 
   const handleCustomizationComplete = useCallback(() => {
     setShowCustomizationModal(false);
@@ -837,17 +811,10 @@ export default function StorefrontPage() {
 
   const handleShowUpsell = useCallback((categoryId: string) => {
     setShowCustomizationModal(false);
-    setShowProductOptionsDrawer(false);
     setSelectedProduct(null);
     setSelectedCategory(null);
-    setProductForOptionsDrawer(null);
     setUpsellExcludeCategory(categoryId);
     setShowUpsellModal(true);
-  }, []);
-  
-  const handleProductOptionsDrawerClose = useCallback(() => {
-    setShowProductOptionsDrawer(false);
-    setProductForOptionsDrawer(null);
   }, []);
 
   const handleUpsellContinueShopping = useCallback((categoryId: string) => {
@@ -1295,18 +1262,6 @@ export default function StorefrontPage() {
           preselectedOptionId={preselectedOptionId}
           onClose={() => setShowCustomizationModal(false)}
           onComplete={handleCustomizationComplete}
-          onShowUpsell={handleShowUpsell}
-        />
-      )}
-
-      {/* Product Options Drawer - for products with product_option_groups */}
-      {productForOptionsDrawer && store && (
-        <ProductOptionsDrawer
-          open={showProductOptionsDrawer}
-          onClose={handleProductOptionsDrawerClose}
-          product={productForOptionsDrawer}
-          storeId={store.id}
-          categoryName={categoryNameForOptionsDrawer}
           onShowUpsell={handleShowUpsell}
         />
       )}

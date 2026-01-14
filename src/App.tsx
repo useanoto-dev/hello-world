@@ -38,7 +38,7 @@ const MenuManagerPage = lazy(() => import("@/pages/dashboard/MenuManagerPage"));
 const CategoryEditorPage = lazy(() => import("@/pages/dashboard/CategoryEditorPage"));
 const PizzaFlavorWizard = lazy(() => import("@/pages/dashboard/PizzaFlavorWizard"));
 const PizzaFlavorsListPage = lazy(() => import("@/pages/dashboard/PizzaFlavorsListPage"));
-const StandardItemWizard = lazy(() => import("@/pages/dashboard/StandardItemWizard"));
+
 const MenuImagesPage = lazy(() => import("@/pages/dashboard/MenuImagesPage"));
 const MenuBulkEditPage = lazy(() => import("@/pages/dashboard/MenuBulkEditPage"));
 const FlowsPage = lazy(() => import("@/pages/dashboard/FlowsPage"));
@@ -119,8 +119,6 @@ function AnimatedRoutes() {
           <Route path="/dashboard/pizza-flavor/new" element={<PizzaFlavorWizard />} />
           <Route path="/dashboard/pizza-flavor/edit" element={<PizzaFlavorWizard />} />
           <Route path="/dashboard/pizza-flavors" element={<PizzaFlavorsListPage />} />
-          <Route path="/dashboard/item/new" element={<StandardItemWizard />} />
-          <Route path="/dashboard/item/edit" element={<StandardItemWizard />} />
           
           {/* Dashboard with Layout */}
           <Route path="/dashboard" element={<DashboardLayout />}>
