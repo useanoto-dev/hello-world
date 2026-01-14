@@ -1645,6 +1645,132 @@ export type Database = {
           },
         ]
       }
+      product_option_groups: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          is_required: boolean | null
+          item_layout: string | null
+          max_selections: number | null
+          min_selections: number | null
+          name: string
+          product_id: string
+          selection_type: string
+          show_item_images: boolean | null
+          store_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+          item_layout?: string | null
+          max_selections?: number | null
+          min_selections?: number | null
+          name: string
+          product_id: string
+          selection_type?: string
+          show_item_images?: boolean | null
+          store_id: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+          item_layout?: string | null
+          max_selections?: number | null
+          min_selections?: number | null
+          name?: string
+          product_id?: string
+          selection_type?: string
+          show_item_images?: boolean | null
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_option_groups_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_option_groups_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_option_items: {
+        Row: {
+          additional_price: number | null
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          group_id: string
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          name: string
+          promotion_end_at: string | null
+          promotion_start_at: string | null
+          promotional_price: number | null
+          store_id: string
+        }
+        Insert: {
+          additional_price?: number | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          group_id: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name: string
+          promotion_end_at?: string | null
+          promotion_start_at?: string | null
+          promotional_price?: number | null
+          store_id: string
+        }
+        Update: {
+          additional_price?: number | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          group_id?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string
+          promotion_end_at?: string | null
+          promotion_start_at?: string | null
+          promotional_price?: number | null
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_option_items_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "product_option_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_option_items_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           category_id: string | null
