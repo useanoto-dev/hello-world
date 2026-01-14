@@ -64,22 +64,75 @@ export default defineConfig(({ mode }) => ({
           }
         ]
       },
-      // PWA sem offline - apenas network, requer conexão com internet
+      // PWA com suporte offline completo
       workbox: {
-        // Não cachear nenhum arquivo para funcionamento offline
-        globPatterns: [],
-        // Todas as requisições vão direto para a rede
+        // Cachear arquivos estáticos
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,woff,avif,jpg,jpeg,webp}'],
+        // Estratégias de cache por tipo de recurso
         runtimeCaching: [
           {
-            urlPattern: /.*/,
-            handler: "NetworkOnly",
-          }
+            // Cache de APIs do Supabase - Network First com fallback
+            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'supabase-api-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60, // 1 hora
+              },
+              networkTimeoutSeconds: 10,
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            // Cache de imagens - Cache First
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images-cache',
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 dias
+              },
+            },
+          },
+          {
+            // Cache de fontes - Cache First
+            urlPattern: /\.(?:woff|woff2|ttf|eot)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'fonts-cache',
+              expiration: {
+                maxEntries: 30,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 ano
+              },
+            },
+          },
+          {
+            // Cache de páginas - Stale While Revalidate
+            urlPattern: /^https:\/\/.*/,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'pages-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24, // 24 horas
+              },
+            },
+          },
         ],
-        // Desabilitar precaching
-        navigateFallback: null,
+        // Fallback para navegação offline
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api/, /^\/auth/],
+        // Skip waiting para atualizações imediatas
+        skipWaiting: true,
+        clientsClaim: true,
       },
       devOptions: {
-        enabled: false
+        enabled: true,
+        type: 'module',
       }
     })
   ].filter(Boolean),
