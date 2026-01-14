@@ -93,8 +93,7 @@ import { NewCategoryModal, CategoryFormData } from "@/components/admin/NewCatego
 import { MenuItemWizard, ItemFormData } from "@/components/admin/MenuItemWizard";
 import { SortableCategoryItem, DragHandleButton } from "@/components/admin/SortableCategoryItem";
 import { ProductOptionGroupsManager } from "@/components/admin/ProductOptionGroupsManager";
-import { ProductFlavorsManager } from "@/components/admin/ProductFlavorsManager";
-import { AddItemTypeModal } from "@/components/admin/AddItemTypeModal";
+import { ProductOptionsManager } from "@/components/admin/ProductOptionsManager";
 
 interface Category {
   id: string;
@@ -191,10 +190,6 @@ export default function MenuManagerPage() {
     categoryId: string;
   } | null>(null);
   
-  // Add item type modal state
-  const [showAddItemTypeModal, setShowAddItemTypeModal] = useState(false);
-  const [addItemCategoryId, setAddItemCategoryId] = useState<string | null>(null);
-  const [addItemCategoryName, setAddItemCategoryName] = useState<string>("");
 
   useEffect(() => {
     loadData();
@@ -377,10 +372,8 @@ export default function MenuManagerPage() {
       // For pizza categories, go directly to pizza flavor wizard
       navigate(`/dashboard/pizza-flavor/new?categoryId=${categoryId}`);
     } else {
-      // For standard categories, show the type selection modal
-      setAddItemCategoryId(categoryId);
-      setAddItemCategoryName(categoryName);
-      setShowAddItemTypeModal(true);
+      // For standard categories, go directly to item wizard
+      navigate(`/dashboard/item/new?categoryId=${categoryId}`);
     }
   };
   
@@ -1531,16 +1524,16 @@ export default function MenuManagerPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Product Flavors Manager Modal */}
+      {/* Product Options Manager Modal */}
       <Dialog open={showOptionsManager} onOpenChange={setShowOptionsManager}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              Sabores - {selectedOptionsProduct?.productName}
+              Opções - {selectedOptionsProduct?.productName}
             </DialogTitle>
           </DialogHeader>
           {selectedOptionsProduct && storeId && (
-            <ProductFlavorsManager
+            <ProductOptionsManager
               productId={selectedOptionsProduct.productId}
               storeId={storeId}
               productName={selectedOptionsProduct.productName}
@@ -1549,23 +1542,6 @@ export default function MenuManagerPage() {
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Add Item Type Modal */}
-      {storeId && addItemCategoryId && (
-        <AddItemTypeModal
-          open={showAddItemTypeModal}
-          onOpenChange={setShowAddItemTypeModal}
-          storeId={storeId}
-          categoryId={addItemCategoryId}
-          categoryName={addItemCategoryName}
-          onNewItem={() => openItemWizard(addItemCategoryId)}
-          onAddToProduct={(product) => handleAddToProduct({
-            id: product.id,
-            name: product.name,
-            categoryId: product.category_id,
-          })}
-        />
-      )}
     </div>
   );
 }
