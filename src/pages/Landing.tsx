@@ -356,7 +356,7 @@ export default function Landing() {
 
           <div className="md:hidden flex items-center gap-3">
             <button onClick={() => navigate("/explorar")} className="p-2" style={{ background: "none", border: "none" }}>
-              <Store className="w-5 h-5" style={{ color: '#f59e0b', filter: 'drop-shadow(0 0 4px #ef4444)' }} />
+              <Store className="w-5 h-5" style={{ color: '#f59e0b' }} />
             </button>
             <button onClick={() => setShowLoginModal(true)} style={{ color: COLORS.foreground, background: "none", border: "none" }}>
               <User className="w-5 h-5" />
