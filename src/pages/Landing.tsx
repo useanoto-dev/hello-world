@@ -23,6 +23,7 @@ import anotoLogoHeader from "@/assets/anoto-logo-header.avif";
 import anotoMascotMoto from "@/assets/anoto-mascot-moto.png";
 import anotoMascotHero from "@/assets/anoto-mascot-hero.avif";
 import badgeCheckIcon from "@/assets/badge-check-icon.png";
+import anotoMascotFooter from "@/assets/anoto-mascot-footer.avif";
 import integrationWhatsapp from "@/assets/integration-whatsapp.avif";
 import integrationBroadcast from "@/assets/integration-broadcast.avif";
 import integrationNotification from "@/assets/integration-notification.avif";
@@ -691,7 +692,7 @@ export default function Landing() {
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <img src={anotoMascotMoto} alt="" className="w-8 h-8 object-contain" />
+              <img src={anotoMascotFooter} alt="" className="w-8 h-8 object-contain" />
               <div>
                 <span className="font-semibold text-sm">Anotô</span>
                 <p className="text-[10px]" style={{ color: COLORS.muted }}>Pediu, chegou!</p>
