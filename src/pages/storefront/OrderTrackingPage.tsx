@@ -112,6 +112,13 @@ const statusConfig: Record<string, {
     bgColor: "bg-red-500/10",
     description: "Este pedido foi cancelado",
   },
+  canceled: {
+    label: "Cancelado",
+    icon: XCircle,
+    color: "text-red-500",
+    bgColor: "bg-red-500/10",
+    description: "Este pedido foi cancelado",
+  },
 };
 
 const statusFlow = ["pending", "confirmed", "preparing", "ready", "delivering", "completed"];
@@ -366,6 +373,78 @@ export default function OrderTrackingPage() {
         <Button onClick={() => navigate(`/cardapio/${slug}`)}>
           Voltar ao Cardápio
         </Button>
+      </div>
+    );
+  }
+
+  // Pedido cancelado
+  if (currentStatus === "canceled" || currentStatus === "cancelled") {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 200, damping: 15 }}
+          className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center mb-6"
+        >
+          <XCircle className="w-12 h-12 text-red-500" />
+        </motion.div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="space-y-3"
+        >
+          <h1 className="text-2xl font-bold text-red-500">
+            Pedido Cancelado
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            Pedido #{order.order_number}
+          </p>
+          <p className="text-muted-foreground max-w-xs mx-auto">
+            Infelizmente este pedido foi cancelado. Entre em contato com a loja para mais informações.
+          </p>
+        </motion.div>
+
+        {/* WhatsApp Button */}
+        {storeSettings?.whatsapp && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mt-8"
+          >
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={() => {
+                const whatsappNumber = storeSettings.whatsapp?.replace(/\D/g, '');
+                const message = `Olá! Gostaria de informações sobre meu pedido cancelado #${order.order_number}`;
+                window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
+              }}
+            >
+              <MessageCircle className="w-4 h-4" />
+              Falar com a loja
+            </Button>
+          </motion.div>
+        )}
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="mt-8"
+        >
+          <Button
+            variant="ghost"
+            onClick={() => navigate(`/cardapio/${slug}`)}
+            className="gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Voltar ao Cardápio
+          </Button>
+        </motion.div>
       </div>
     );
   }
