@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/formatters";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Check, Minus, Plus, Tag, ShoppingCart, X } from "lucide-react";
+import { ArrowLeft, Check, Minus, Plus, Tag, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
