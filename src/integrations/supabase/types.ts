@@ -1990,6 +1990,264 @@ export type Database = {
           },
         ]
       }
+      standard_addon_prices: {
+        Row: {
+          addon_id: string
+          created_at: string
+          id: string
+          is_available: boolean
+          price: number
+          size_id: string
+        }
+        Insert: {
+          addon_id: string
+          created_at?: string
+          id?: string
+          is_available?: boolean
+          price?: number
+          size_id: string
+        }
+        Update: {
+          addon_id?: string
+          created_at?: string
+          id?: string
+          is_available?: boolean
+          price?: number
+          size_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "standard_addon_prices_addon_id_fkey"
+            columns: ["addon_id"]
+            isOneToOne: false
+            referencedRelation: "standard_addons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "standard_addon_prices_size_id_fkey"
+            columns: ["size_id"]
+            isOneToOne: false
+            referencedRelation: "standard_sizes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      standard_addons: {
+        Row: {
+          category_id: string
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          image_url: string | null
+          is_active: boolean
+          is_required: boolean
+          max_quantity: number
+          name: string
+          store_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          is_required?: boolean
+          max_quantity?: number
+          name: string
+          store_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          is_required?: boolean
+          max_quantity?: number
+          name?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "standard_addons_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "standard_addons_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      standard_item_prices: {
+        Row: {
+          created_at: string
+          id: string
+          is_available: boolean
+          item_id: string
+          price: number
+          size_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_available?: boolean
+          item_id: string
+          price?: number
+          size_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_available?: boolean
+          item_id?: string
+          price?: number
+          size_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "standard_item_prices_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "standard_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "standard_item_prices_size_id_fkey"
+            columns: ["size_id"]
+            isOneToOne: false
+            referencedRelation: "standard_sizes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      standard_items: {
+        Row: {
+          category_id: string
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          image_url: string | null
+          is_active: boolean
+          is_premium: boolean
+          item_type: string
+          name: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          is_premium?: boolean
+          item_type?: string
+          name: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          is_premium?: boolean
+          item_type?: string
+          name?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "standard_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "standard_items_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      standard_sizes: {
+        Row: {
+          base_price: number
+          category_id: string
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          base_price?: number
+          category_id: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          base_price?: number
+          category_id?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "standard_sizes_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "standard_sizes_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stores: {
         Row: {
           about_us: string | null
