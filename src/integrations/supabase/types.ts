@@ -498,6 +498,109 @@ export type Database = {
           },
         ]
       }
+      financial_categories: {
+        Row: {
+          color: string | null
+          created_at: string
+          display_order: number | null
+          icon: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          store_id: string
+          type: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          store_id: string
+          type: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          store_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_categories_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_transactions: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_recurring: boolean | null
+          notes: string | null
+          payment_method: string | null
+          recurring_day: number | null
+          reference_date: string
+          store_id: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          notes?: string | null
+          payment_method?: string | null
+          recurring_day?: number | null
+          reference_date?: string
+          store_id: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          notes?: string | null
+          payment_method?: string | null
+          recurring_day?: number | null
+          reference_date?: string
+          store_id?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_transactions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       historico_whatsapp_pedido: {
         Row: {
           data_envio: string
