@@ -346,9 +346,10 @@ export default function MenuManagerPage() {
   const openItemWizard = (categoryId?: string, isPizza?: boolean) => {
     if (isPizza && categoryId) {
       navigate(`/dashboard/pizza-flavor/new?categoryId=${categoryId}`);
+    } else if (categoryId) {
+      navigate(`/dashboard/item/new?categoryId=${categoryId}`);
     } else {
-      setPreselectedCategoryId(categoryId || null);
-      setShowItemWizard(true);
+      navigate(`/dashboard/item/new`);
     }
   };
 
