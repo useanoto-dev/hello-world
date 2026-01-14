@@ -18,8 +18,8 @@ import { generateStoreSlug } from "@/lib/utils";
 import SignupModal from "@/components/SignupModal";
 import LoginModal from "@/components/LoginModal";
 
-// URLs externas das imagens
-const anotoLogoFull = "https://felipedublin.com/wp-content/uploads/2026/01/anoto-logo-full.webp";
+// Imagens importadas
+import anotoLogoHeader from "@/assets/anoto-logo-header.avif";
 import anotoMascotMoto from "@/assets/anoto-mascot-moto.png";
 import anotoMascotHero from "@/assets/anoto-mascot-hero.avif";
 import badgeCheckIcon from "@/assets/badge-check-icon.png";
@@ -331,7 +331,7 @@ export default function Landing() {
         }}
       >
         <div className="px-3 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between">
-          <img src={anotoLogoFull} alt="Anotô?" className="h-10 sm:h-12 object-contain" />
+          <img src={anotoLogoHeader} alt="Anotô?" className="h-10 sm:h-12 object-contain" />
           
           <nav className="hidden md:flex items-center gap-6">
             {["Recursos", "Funcionalidades", "Preços", "Depoimentos"].map((item) => (
