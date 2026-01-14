@@ -93,6 +93,7 @@ import { NewCategoryModal, CategoryFormData } from "@/components/admin/NewCatego
 import { MenuItemWizard, ItemFormData } from "@/components/admin/MenuItemWizard";
 import { SortableCategoryItem, DragHandleButton } from "@/components/admin/SortableCategoryItem";
 import { ProductOptionGroupsManager } from "@/components/admin/ProductOptionGroupsManager";
+import { AddItemTypeModal } from "@/components/admin/AddItemTypeModal";
 
 interface Category {
   id: string;
@@ -188,6 +189,11 @@ export default function MenuManagerPage() {
     productName: string;
     categoryId: string;
   } | null>(null);
+  
+  // Add item type modal state
+  const [showAddItemTypeModal, setShowAddItemTypeModal] = useState(false);
+  const [addItemCategoryId, setAddItemCategoryId] = useState<string | null>(null);
+  const [addItemCategoryName, setAddItemCategoryName] = useState<string>("");
 
   useEffect(() => {
     loadData();
@@ -363,6 +369,28 @@ export default function MenuManagerPage() {
     } else {
       navigate(`/dashboard/item/new`);
     }
+  };
+  
+  const openAddItemTypeModal = (categoryId: string, categoryName: string, isPizza?: boolean) => {
+    if (isPizza) {
+      // For pizza categories, go directly to pizza flavor wizard
+      navigate(`/dashboard/pizza-flavor/new?categoryId=${categoryId}`);
+    } else {
+      // For standard categories, show the type selection modal
+      setAddItemCategoryId(categoryId);
+      setAddItemCategoryName(categoryName);
+      setShowAddItemTypeModal(true);
+    }
+  };
+  
+  const handleAddToProduct = (product: { id: string; name: string; categoryId: string }) => {
+    // Open the product options manager for this product
+    setSelectedOptionsProduct({
+      productId: product.id,
+      productName: product.name,
+      categoryId: product.categoryId,
+    });
+    setShowOptionsManager(true);
   };
 
   const handleSaveCategory = async (formData: CategoryFormData, createItems?: boolean) => {
@@ -1377,7 +1405,7 @@ export default function MenuManagerPage() {
               {/* Add Item Button */}
               <div className="mt-4 flex items-center gap-4">
                 <button 
-                  onClick={() => openItemWizard(category.id, category.category_type === 'pizza')}
+                  onClick={() => openAddItemTypeModal(category.id, category.name, category.category_type === 'pizza')}
                   className="flex items-center gap-2 text-amber-600 hover:text-amber-700 font-medium text-sm"
                 >
                   <Plus className="w-5 h-5" />
@@ -1521,6 +1549,23 @@ export default function MenuManagerPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Add Item Type Modal */}
+      {storeId && addItemCategoryId && (
+        <AddItemTypeModal
+          open={showAddItemTypeModal}
+          onOpenChange={setShowAddItemTypeModal}
+          storeId={storeId}
+          categoryId={addItemCategoryId}
+          categoryName={addItemCategoryName}
+          onNewItem={() => openItemWizard(addItemCategoryId)}
+          onAddToProduct={(product) => handleAddToProduct({
+            id: product.id,
+            name: product.name,
+            categoryId: product.category_id,
+          })}
+        />
+      )}
     </div>
   );
 }
