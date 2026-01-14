@@ -204,6 +204,9 @@ export default function OrdersPage() {
   };
 
   const deleteOrder = async (orderId: string) => {
+    // Remove imediatamente da UI para feedback instantâneo
+    setOrders(prev => prev.filter(o => o.id !== orderId));
+    
     try {
       const { error } = await supabase
         .from("orders")
@@ -213,6 +216,8 @@ export default function OrdersPage() {
       if (error) throw error;
       toast.success("Pedido excluído");
     } catch (error: any) {
+      // Se falhar, recarrega os pedidos para restaurar o estado correto
+      loadOrders();
       toast.error(error.message || "Erro ao excluir");
     }
   };
