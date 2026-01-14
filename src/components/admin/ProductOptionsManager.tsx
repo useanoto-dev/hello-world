@@ -1,5 +1,6 @@
-// Product Flavors Manager - For managing flavors/options linked to individual products
-import { useState, useEffect } from "react";
+// Product Options Manager - Gerencia grupos de opções e itens para produtos padrão
+// Estilo iFood/Anota Aí - grupos como "Adicionais", "Ponto da Carne", "Extras"
+import { useState, useEffect, useRef } from "react";
 import { 
   Plus, 
   Trash2, 
@@ -11,6 +12,7 @@ import {
   X,
   Loader2,
   Pencil,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,7 +75,7 @@ interface Props {
   onClose: () => void;
 }
 
-export function ProductFlavorsManager({ productId, storeId, productName, onClose }: Props) {
+export function ProductOptionsManager({ productId, storeId, productName, onClose }: Props) {
   const [loading, setLoading] = useState(true);
   const [groups, setGroups] = useState<OptionGroup[]>([]);
   const [items, setItems] = useState<Record<string, OptionItem[]>>({});
@@ -84,12 +86,12 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
   const [editingGroup, setEditingGroup] = useState<OptionGroup | null>(null);
   const [groupForm, setGroupForm] = useState({
     name: "",
-    selection_type: "single" as "single" | "multiple",
+    selection_type: "multiple" as "single" | "multiple",
     is_required: false,
     min_selections: 0,
-    max_selections: 1,
+    max_selections: 10,
     item_layout: "list",
-    show_item_images: false,
+    show_item_images: true,
   });
   
   // Item modal
@@ -106,6 +108,7 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
   const [uploadingImage, setUploadingImage] = useState(false);
   const [savingGroup, setSavingGroup] = useState(false);
   const [savingItem, setSavingItem] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadData();
@@ -114,7 +117,7 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
   const loadData = async () => {
     setLoading(true);
     try {
-      // Load groups for this product (using product_option_groups table)
+      // Load groups for this product
       const { data: groupsData, error: groupsError } = await supabase
         .from("product_option_groups")
         .select("*")
@@ -127,7 +130,7 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
       const loadedGroups = (groupsData || []) as OptionGroup[];
       setGroups(loadedGroups);
 
-      // Expand first group by default if exists
+      // Expand first group by default
       if (loadedGroups.length > 0 && expandedGroups.size === 0) {
         setExpandedGroups(new Set([loadedGroups[0].id]));
       }
@@ -144,7 +147,6 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
 
         if (itemsError) throw itemsError;
 
-        // Group items by group_id
         const itemsByGroup: Record<string, OptionItem[]> = {};
         (itemsData || []).forEach((item: OptionItem) => {
           if (!itemsByGroup[item.group_id]) {
@@ -156,7 +158,7 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
       }
     } catch (error) {
       console.error("Error loading option groups:", error);
-      toast.error("Erro ao carregar grupos de sabores");
+      toast.error("Erro ao carregar grupos de opções");
     } finally {
       setLoading(false);
     }
@@ -182,7 +184,7 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
         selection_type: group.selection_type,
         is_required: group.is_required,
         min_selections: group.min_selections,
-        max_selections: group.max_selections || 1,
+        max_selections: group.max_selections || 10,
         item_layout: group.item_layout,
         show_item_images: group.show_item_images,
       });
@@ -190,10 +192,10 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
       setEditingGroup(null);
       setGroupForm({
         name: "",
-        selection_type: "single",
+        selection_type: "multiple",
         is_required: false,
         min_selections: 0,
-        max_selections: 1,
+        max_selections: 10,
         item_layout: "list",
         show_item_images: true,
       });
@@ -215,7 +217,7 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
         name: groupForm.name.trim(),
         selection_type: groupForm.selection_type,
         is_required: groupForm.is_required,
-        min_selections: groupForm.is_required ? Math.max(1, groupForm.min_selections) : 0,
+        min_selections: groupForm.is_required ? Math.max(1, groupForm.min_selections) : groupForm.min_selections,
         max_selections: groupForm.selection_type === "single" ? 1 : groupForm.max_selections,
         item_layout: groupForm.item_layout,
         show_item_images: groupForm.show_item_images,
@@ -250,7 +252,7 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
   };
 
   const handleDeleteGroup = async (group: OptionGroup) => {
-    if (!confirm(`Excluir grupo "${group.name}" e todos os sabores?`)) return;
+    if (!confirm(`Excluir grupo "${group.name}" e todos os itens?`)) return;
 
     try {
       const { error } = await supabase
@@ -299,7 +301,7 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
     setUploadingImage(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `product-flavors/${crypto.randomUUID()}.${fileExt}`;
+      const fileName = `product-options/${crypto.randomUUID()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from('product-images')
@@ -322,7 +324,7 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
 
   const handleSaveItem = async () => {
     if (!itemForm.name.trim() || !selectedGroupId) {
-      toast.error("Nome do sabor é obrigatório");
+      toast.error("Nome da opção é obrigatório");
       return;
     }
 
@@ -350,7 +352,7 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
           .eq("id", editingItem.id);
 
         if (error) throw error;
-        toast.success("Sabor atualizado!");
+        toast.success("Opção atualizada!");
       } else {
         const currentItems = items[selectedGroupId] || [];
         const maxOrder = Math.max(0, ...currentItems.map(i => i.display_order || 0));
@@ -360,14 +362,14 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
           .insert({ ...itemData, display_order: maxOrder + 1 });
 
         if (error) throw error;
-        toast.success("Sabor criado!");
+        toast.success("Opção criada!");
       }
 
       setShowItemModal(false);
       loadData();
     } catch (error: any) {
       console.error("Error saving item:", error);
-      toast.error(error.message || "Erro ao salvar sabor");
+      toast.error(error.message || "Erro ao salvar opção");
     } finally {
       setSavingItem(false);
     }
@@ -383,10 +385,10 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
         .eq("id", item.id);
 
       if (error) throw error;
-      toast.success("Sabor excluído!");
+      toast.success("Opção excluída!");
       loadData();
     } catch (error: any) {
-      toast.error("Erro ao excluir sabor");
+      toast.error("Erro ao excluir opção");
     }
   };
 
@@ -400,7 +402,7 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
       if (error) throw error;
       loadData();
     } catch (error) {
-      toast.error("Erro ao atualizar sabor");
+      toast.error("Erro ao atualizar opção");
     }
   };
 
@@ -426,9 +428,9 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-foreground">Grupos de Sabores</h3>
+          <h3 className="font-semibold text-foreground">Opções do Produto</h3>
           <p className="text-xs text-muted-foreground">
-            Produto: {productName}
+            {productName}
           </p>
         </div>
         <Button
@@ -445,8 +447,11 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
       {groups.length === 0 ? (
         <div className="text-center py-8 bg-muted/50 rounded-lg border border-dashed border-border">
           <Settings2 className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground mb-3">
-            Nenhum grupo de sabores criado
+          <p className="text-sm font-medium text-foreground mb-1">
+            Nenhum grupo de opções
+          </p>
+          <p className="text-xs text-muted-foreground mb-4">
+            Crie grupos como "Adicionais", "Ponto da Carne", "Bebida" etc.
           </p>
           <Button
             onClick={() => openGroupModal()}
@@ -484,7 +489,7 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
                         </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {items[group.id]?.length || 0} sabores • 
+                        {items[group.id]?.length || 0} opções • 
                         {group.selection_type === "multiple" 
                           ? ` Mín: ${group.min_selections}, Máx: ${group.max_selections || "∞"}`
                           : " Selecionar 1"
@@ -509,7 +514,7 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
                           e.stopPropagation();
                           handleDeleteGroup(group);
                         }}
-                        className="text-red-500 hover:text-red-700"
+                        className="text-destructive hover:text-destructive"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -522,91 +527,114 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
                   </div>
                 </CollapsibleTrigger>
 
-                {/* Items */}
+                {/* Group Items */}
                 <CollapsibleContent>
-                  <div className="border-t border-border p-3 space-y-2 bg-muted/30">
-                    {/* Add Item Button */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full gap-2 border-dashed"
-                      onClick={() => openItemModal(group.id)}
-                    >
-                      <Plus className="w-4 h-4" />
-                      Adicionar Sabor
-                    </Button>
-
-                    {/* Items List */}
-                    {(items[group.id] || []).map((item) => (
-                      <div
-                        key={item.id}
-                        className={cn(
-                          "flex items-center gap-3 p-3 rounded-lg border border-border bg-background",
-                          !item.is_active && "opacity-50"
-                        )}
+                  <div className="border-t border-border">
+                    <div className="p-3 space-y-2">
+                      {(items[group.id] || []).length === 0 ? (
+                        <div className="text-center py-4 bg-muted/30 rounded-lg border border-dashed border-border">
+                          <p className="text-xs text-muted-foreground mb-2">
+                            Nenhuma opção criada
+                          </p>
+                          <Button
+                            onClick={() => openItemModal(group.id)}
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                          >
+                            <Plus className="w-3 h-3" />
+                            Adicionar opção
+                          </Button>
+                        </div>
+                      ) : (
+                        <>
+                          {(items[group.id] || []).map((item) => (
+                            <div
+                              key={item.id}
+                              className={cn(
+                                "flex items-center gap-3 p-3 rounded-lg border transition-colors",
+                                item.is_active 
+                                  ? "bg-background border-border" 
+                                  : "bg-muted/50 border-muted opacity-60"
+                              )}
+                            >
+                              {/* Image */}
+                              {item.image_url && (
+                                <img
+                                  src={item.image_url}
+                                  alt={item.name}
+                                  className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                                />
+                              )}
+                              
+                              {/* Content */}
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm text-foreground truncate">
+                                  {item.name}
+                                </p>
+                                {item.description && (
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    {item.description}
+                                  </p>
+                                )}
+                                <div className="flex items-center gap-2 mt-1">
+                                  {item.promotional_price !== null ? (
+                                    <>
+                                      <span className="text-xs text-muted-foreground line-through">
+                                        R$ {item.additional_price.toFixed(2).replace(".", ",")}
+                                      </span>
+                                      <span className="text-xs font-semibold text-green-600">
+                                        R$ {item.promotional_price.toFixed(2).replace(".", ",")}
+                                      </span>
+                                    </>
+                                  ) : item.additional_price > 0 ? (
+                                    <span className="text-xs font-medium text-amber-600">
+                                      + R$ {item.additional_price.toFixed(2).replace(".", ",")}
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs text-muted-foreground">Incluso</span>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              {/* Actions */}
+                              <div className="flex items-center gap-2">
+                                <Switch
+                                  checked={item.is_active}
+                                  onCheckedChange={() => handleToggleItemActive(item)}
+                                />
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => openItemModal(group.id, item)}
+                                >
+                                  <Pencil className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteItem(item)}
+                                  className="text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </>
+                      )}
+                      
+                      {/* Add Item Button */}
+                      <Button
+                        onClick={() => openItemModal(group.id)}
+                        variant="outline"
+                        size="sm"
+                        className="w-full gap-2 mt-2"
                       >
-                        {item.image_url ? (
-                          <img
-                            src={item.image_url}
-                            alt={item.name}
-                            className="w-12 h-12 rounded-lg object-cover"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
-                            <ImagePlus className="w-5 h-5 text-muted-foreground" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm text-foreground truncate">{item.name}</p>
-                          {item.description && (
-                            <p className="text-xs text-muted-foreground truncate">{item.description}</p>
-                          )}
-                          <div className="flex items-center gap-2 mt-0.5">
-                            {item.promotional_price && item.promotional_price < item.additional_price ? (
-                              <>
-                                <span className="text-xs text-muted-foreground line-through">
-                                  R$ {item.additional_price.toFixed(2).replace(".", ",")}
-                                </span>
-                                <span className="text-xs font-semibold text-green-600">
-                                  R$ {item.promotional_price.toFixed(2).replace(".", ",")}
-                                </span>
-                              </>
-                            ) : (
-                              <span className="text-xs font-medium text-primary">
-                                R$ {item.additional_price.toFixed(2).replace(".", ",")}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={item.is_active}
-                            onCheckedChange={() => handleToggleItemActive(item)}
-                          />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openItemModal(group.id, item)}
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteItem(item)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-
-                    {(!items[group.id] || items[group.id].length === 0) && (
-                      <p className="text-center text-sm text-muted-foreground py-4">
-                        Nenhum sabor neste grupo
-                      </p>
-                    )}
+                        <Plus className="w-4 h-4" />
+                        Adicionar opção
+                      </Button>
+                    </div>
                   </div>
                 </CollapsibleContent>
               </div>
@@ -617,35 +645,37 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
 
       {/* Group Modal */}
       <Dialog open={showGroupModal} onOpenChange={setShowGroupModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {editingGroup ? "Editar Grupo" : "Novo Grupo de Sabores"}
+              {editingGroup ? "Editar Grupo" : "Novo Grupo de Opções"}
             </DialogTitle>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Nome do Grupo</Label>
+              <Label>Nome do grupo *</Label>
               <Input
-                placeholder="Ex: Sabores, Coberturas, Adicionais..."
                 value={groupForm.name}
                 onChange={(e) => setGroupForm(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Ex: Adicionais, Ponto da Carne, Bebida..."
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Tipo de Seleção</Label>
+              <Label>Tipo de seleção</Label>
               <Select
                 value={groupForm.selection_type}
-                onValueChange={(value: "single" | "multiple") => 
-                  setGroupForm(prev => ({ ...prev, selection_type: value }))
-                }
+                onValueChange={(v) => setGroupForm(prev => ({ 
+                  ...prev, 
+                  selection_type: v as "single" | "multiple",
+                  max_selections: v === "single" ? 1 : prev.max_selections
+                }))}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-popover">
                   <SelectItem value="single">Escolha única</SelectItem>
                   <SelectItem value="multiple">Múltipla escolha</SelectItem>
                 </SelectContent>
@@ -656,9 +686,11 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
               <Label>Obrigatório</Label>
               <Switch
                 checked={groupForm.is_required}
-                onCheckedChange={(checked) => 
-                  setGroupForm(prev => ({ ...prev, is_required: checked }))
-                }
+                onCheckedChange={(checked) => setGroupForm(prev => ({ 
+                  ...prev, 
+                  is_required: checked,
+                  min_selections: checked ? Math.max(1, prev.min_selections) : 0
+                }))}
               />
             </div>
 
@@ -670,12 +702,10 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
                     type="number"
                     min="0"
                     value={groupForm.min_selections}
-                    onChange={(e) => 
-                      setGroupForm(prev => ({ 
-                        ...prev, 
-                        min_selections: parseInt(e.target.value) || 0 
-                      }))
-                    }
+                    onChange={(e) => setGroupForm(prev => ({ 
+                      ...prev, 
+                      min_selections: parseInt(e.target.value) || 0 
+                    }))}
                   />
                 </div>
                 <div className="space-y-2">
@@ -684,54 +714,30 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
                     type="number"
                     min="1"
                     value={groupForm.max_selections}
-                    onChange={(e) => 
-                      setGroupForm(prev => ({ 
-                        ...prev, 
-                        max_selections: parseInt(e.target.value) || 1 
-                      }))
-                    }
+                    onChange={(e) => setGroupForm(prev => ({ 
+                      ...prev, 
+                      max_selections: parseInt(e.target.value) || 10 
+                    }))}
                   />
                 </div>
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label>Layout dos Itens</Label>
-              <Select
-                value={groupForm.item_layout}
-                onValueChange={(value) => 
-                  setGroupForm(prev => ({ ...prev, item_layout: value }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="list">Lista</SelectItem>
-                  <SelectItem value="grid-2">Grade 2 colunas</SelectItem>
-                  <SelectItem value="grid-3">Grade 3 colunas</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
             <div className="flex items-center justify-between">
-              <Label>Mostrar imagens</Label>
+              <Label>Exibir imagens dos itens</Label>
               <Switch
                 checked={groupForm.show_item_images}
-                onCheckedChange={(checked) => 
-                  setGroupForm(prev => ({ ...prev, show_item_images: checked }))
-                }
+                onCheckedChange={(checked) => setGroupForm(prev => ({ ...prev, show_item_images: checked }))}
               />
             </div>
           </div>
-
+          
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowGroupModal(false)}>
               Cancelar
             </Button>
             <Button onClick={handleSaveGroup} disabled={savingGroup}>
-              {savingGroup && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {editingGroup ? "Salvar" : "Criar"}
+              {savingGroup ? <Loader2 className="w-4 h-4 animate-spin" /> : "Salvar"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -739,15 +745,15 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
 
       {/* Item Modal */}
       <Dialog open={showItemModal} onOpenChange={setShowItemModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {editingItem ? "Editar Sabor" : "Novo Sabor"}
+              {editingItem ? "Editar Opção" : "Nova Opção"}
             </DialogTitle>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            {/* Image Upload */}
+            {/* Image */}
             <div className="space-y-2">
               <Label>Imagem (opcional)</Label>
               <div className="flex items-center gap-4">
@@ -760,92 +766,89 @@ export function ProductFlavorsManager({ productId, storeId, productName, onClose
                     />
                     <button
                       onClick={() => setItemForm(prev => ({ ...prev, image_url: null }))}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center"
                     >
                       <X className="w-3 h-3" />
                     </button>
                   </div>
                 ) : (
-                  <label className="w-20 h-20 rounded-lg border-2 border-dashed border-border flex items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingImage}
+                    className="w-20 h-20 rounded-lg border-2 border-dashed border-border flex items-center justify-center hover:border-primary transition-colors"
+                  >
                     {uploadingImage ? (
-                      <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                     ) : (
                       <ImagePlus className="w-6 h-6 text-muted-foreground" />
                     )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleImageUpload(file);
-                      }}
-                      disabled={uploadingImage}
-                    />
-                  </label>
+                  </button>
                 )}
-                <p className="text-xs text-muted-foreground">
-                  Imagem do sabor (máx. 2MB)
-                </p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleImageUpload(file);
+                  }}
+                />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label>Nome do Sabor *</Label>
+              <Label>Nome *</Label>
               <Input
-                placeholder="Ex: Morango, Chocolate, Tradicional..."
                 value={itemForm.name}
                 onChange={(e) => setItemForm(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Ex: Bacon Extra, Queijo Cheddar..."
               />
             </div>
 
             <div className="space-y-2">
               <Label>Descrição (opcional)</Label>
               <Textarea
-                placeholder="Ingredientes ou descrição..."
                 value={itemForm.description}
                 onChange={(e) => setItemForm(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Descrição breve..."
+                className="resize-none"
                 rows={2}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Preço (R$)</Label>
+                <Label>Preço adicional (R$)</Label>
                 <Input
-                  placeholder="0,00"
                   value={itemForm.additional_price}
-                  onChange={(e) => 
-                    setItemForm(prev => ({ 
-                      ...prev, 
-                      additional_price: formatPrice(e.target.value) 
-                    }))
-                  }
+                  onChange={(e) => setItemForm(prev => ({ 
+                    ...prev, 
+                    additional_price: formatPrice(e.target.value)
+                  }))}
+                  placeholder="0,00"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Preço Promocional (R$)</Label>
+                <Label>Preço promocional</Label>
                 <Input
-                  placeholder="0,00"
                   value={itemForm.promotional_price}
-                  onChange={(e) => 
-                    setItemForm(prev => ({ 
-                      ...prev, 
-                      promotional_price: e.target.value ? formatPrice(e.target.value) : "" 
-                    }))
-                  }
+                  onChange={(e) => setItemForm(prev => ({ 
+                    ...prev, 
+                    promotional_price: e.target.value ? formatPrice(e.target.value) : ""
+                  }))}
+                  placeholder="Opcional"
                 />
               </div>
             </div>
           </div>
-
+          
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowItemModal(false)}>
               Cancelar
             </Button>
             <Button onClick={handleSaveItem} disabled={savingItem}>
-              {savingItem && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {editingItem ? "Salvar" : "Criar"}
+              {savingItem ? <Loader2 className="w-4 h-4 animate-spin" /> : "Salvar"}
             </Button>
           </DialogFooter>
         </DialogContent>
