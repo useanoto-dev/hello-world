@@ -213,12 +213,12 @@ export default function CategoryEditorPage() {
     setStandardAddons(prev => prev.map(a => a.id === id ? { ...a, [field]: value } : a));
   };
 
-  const updateAddonPrice = (addonId: string, sizeId: string, price: number) => {
+  const updateAddonPrice = (addonId: string, sizeId: string, field: "enabled" | "price", value: any) => {
     setStandardAddons(prev => prev.map(addon => {
       if (addon.id !== addonId) return addon;
       return {
         ...addon,
-        prices: addon.prices.map(p => p.sizeId === sizeId ? { ...p, price } : p)
+        prices: addon.prices.map(p => p.sizeId === sizeId ? { ...p, [field]: value } : p)
       };
     }));
   };
@@ -1760,9 +1760,8 @@ export default function CategoryEditorPage() {
                               <CompactStandardAddonItem
                                 key={addon.id}
                                 addon={addon}
-                                sizes={standardSizes.filter(s => s.name.trim())}
                                 onUpdate={updateStandardAddon}
-                                onUpdatePrice={updateAddonPrice}
+                                onPriceUpdate={updateAddonPrice}
                                 onRemove={removeStandardAddon}
                                 canRemove={standardAddons.length > 1}
                               />
