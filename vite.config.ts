@@ -130,8 +130,9 @@ export default defineConfig(({ mode }) => ({
         skipWaiting: true,
         clientsClaim: true,
       },
+      // IMPORTANT: disable SW in dev to avoid stale cached chunks causing React hook runtime errors
       devOptions: {
-        enabled: true,
+        enabled: false,
         type: 'module',
       }
     })
@@ -140,5 +141,7 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    // Ensure a single React instance (prevents "useContext of null" / "useEffect of null")
+    dedupe: ["react", "react-dom"],
   },
 }));
