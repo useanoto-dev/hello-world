@@ -16,6 +16,7 @@ import {
   GripVertical,
   Package,
   BoxIcon,
+  Settings2,
 } from "lucide-react";
 import {
   DndContext,
@@ -91,6 +92,7 @@ import { cn } from "@/lib/utils";
 import { NewCategoryModal, CategoryFormData } from "@/components/admin/NewCategoryModal";
 import { MenuItemWizard, ItemFormData } from "@/components/admin/MenuItemWizard";
 import { SortableCategoryItem, DragHandleButton } from "@/components/admin/SortableCategoryItem";
+import { ProductOptionGroupsManager } from "@/components/admin/ProductOptionGroupsManager";
 
 interface Category {
   id: string;
@@ -116,6 +118,8 @@ interface Product {
   has_stock_control?: boolean;
   stock_quantity?: number;
   min_stock_alert?: number;
+  display_mode?: string;
+  category_id?: string;
 }
 
 interface PizzaSize {
@@ -176,6 +180,14 @@ export default function MenuManagerPage() {
   const [stockAdjustmentQty, setStockAdjustmentQty] = useState('');
   const [stockAdjustmentReason, setStockAdjustmentReason] = useState('');
   const [savingStock, setSavingStock] = useState(false);
+  
+  // Product options modal state
+  const [showOptionsManager, setShowOptionsManager] = useState(false);
+  const [selectedOptionsProduct, setSelectedOptionsProduct] = useState<{
+    productId: string;
+    productName: string;
+    categoryId: string;
+  } | null>(null);
 
   useEffect(() => {
     loadData();
@@ -243,7 +255,7 @@ export default function MenuManagerPage() {
       } else {
         const { data: products } = await supabase
           .from("products")
-          .select("id, name, description, price, promotional_price, image_url, is_available, is_featured, has_stock_control, stock_quantity, min_stock_alert")
+          .select("id, name, description, price, promotional_price, image_url, is_available, is_featured, has_stock_control, stock_quantity, min_stock_alert, display_mode, category_id")
           .eq("category_id", categoryId)
           .order("display_order");
         
@@ -1149,6 +1161,14 @@ export default function MenuManagerPage() {
                                 </div>
                               )}
                               
+                              {/* Customization Badge - Top Right */}
+                              {product.display_mode === 'customization' && (
+                                <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-blue-500 text-white shadow-sm">
+                                  <Settings2 className="w-3 h-3" />
+                                  Personalização
+                                </div>
+                              )}
+                              
                               {/* Actions Overlay */}
                               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                 <button 
@@ -1168,10 +1188,29 @@ export default function MenuManagerPage() {
                                     </button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="center" className="w-48">
-                                    <DropdownMenuItem className="gap-2 text-sm">
+                                    <DropdownMenuItem 
+                                      onClick={() => navigate(`/dashboard/item/new?categoryId=${category.id}&edit=${product.id}`)}
+                                      className="gap-2 text-sm"
+                                    >
                                       <Pencil className="w-4 h-4" />
                                       Editar item
                                     </DropdownMenuItem>
+                                    {product.display_mode === 'customization' && (
+                                      <DropdownMenuItem 
+                                        onClick={() => {
+                                          setSelectedOptionsProduct({
+                                            productId: product.id,
+                                            productName: product.name,
+                                            categoryId: category.id,
+                                          });
+                                          setShowOptionsManager(true);
+                                        }}
+                                        className="gap-2 text-sm text-blue-600"
+                                      >
+                                        <Settings2 className="w-4 h-4" />
+                                        Personalização
+                                      </DropdownMenuItem>
+                                    )}
                                     <DropdownMenuItem 
                                       onClick={() => handleDuplicateProduct(product, category.id)}
                                       className="gap-2 text-sm"
@@ -1460,6 +1499,26 @@ export default function MenuManagerPage() {
               {savingStock ? 'Salvando...' : 'Confirmar'}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Product Options Manager Modal */}
+      <Dialog open={showOptionsManager} onOpenChange={setShowOptionsManager}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Personalização - {selectedOptionsProduct?.productName}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedOptionsProduct && storeId && (
+            <ProductOptionGroupsManager
+              productId={selectedOptionsProduct.productId}
+              categoryId={selectedOptionsProduct.categoryId}
+              storeId={storeId}
+              productName={selectedOptionsProduct.productName}
+              onClose={() => setShowOptionsManager(false)}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>

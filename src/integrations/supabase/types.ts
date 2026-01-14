@@ -1650,6 +1650,7 @@ export type Database = {
           category_id: string | null
           created_at: string | null
           description: string | null
+          display_mode: string | null
           display_order: number | null
           has_stock_control: boolean | null
           id: string
@@ -1671,6 +1672,7 @@ export type Database = {
           category_id?: string | null
           created_at?: string | null
           description?: string | null
+          display_mode?: string | null
           display_order?: number | null
           has_stock_control?: boolean | null
           id?: string
@@ -1692,6 +1694,7 @@ export type Database = {
           category_id?: string | null
           created_at?: string | null
           description?: string | null
+          display_mode?: string | null
           display_order?: number | null
           has_stock_control?: boolean | null
           id?: string

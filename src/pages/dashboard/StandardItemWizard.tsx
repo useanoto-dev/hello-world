@@ -310,6 +310,7 @@ export default function StandardItemWizard() {
         stock_quantity: hasStockControl ? stockQuantity : null,
         min_stock_alert: hasStockControl ? minStockAlert : null,
         unit: hasStockControl ? unit : null,
+        display_mode: displayMode,
       };
 
       if (editId) {
