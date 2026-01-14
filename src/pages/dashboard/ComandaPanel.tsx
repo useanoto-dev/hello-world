@@ -3,7 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import { 
   Clock, ChefHat, CheckCircle2, Truck,
   MapPin, MessageCircle, Printer, Package, ChevronLeft, ChevronRight, PackageCheck,
-  Phone, CreditCard, AlertCircle, Cloud
+  Phone, CreditCard, AlertCircle, Cloud, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -124,13 +124,15 @@ const paymentLabels: Record<string, string> = {
 function OrderCard({ 
   order, 
   nextStatus, 
-  onUpdateStatus, 
+  onUpdateStatus,
+  onCancelOrder, 
   onOpenPreview, 
   onOpenWhatsApp 
 }: { 
   order: Order; 
   nextStatus: string | null; 
   onUpdateStatus: (id: string, status: string) => void;
+  onCancelOrder: (id: string) => void;
   onOpenPreview: (order: Order) => void;
   onOpenWhatsApp: (order: Order) => void;
 }) {
@@ -240,11 +242,23 @@ function OrderCard({
         <Button 
           size="sm" 
           variant="outline"
-          className="flex-1 h-8 text-xs gap-1"
+          className="h-8 text-xs gap-1"
           onClick={() => onOpenWhatsApp(order)}
         >
           <MessageCircle className="w-3.5 h-3.5" />
-          WhatsApp
+        </Button>
+        
+        <Button 
+          size="sm" 
+          variant="outline"
+          className="h-8 text-xs gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
+          onClick={() => {
+            if (confirm("Cancelar este pedido?")) {
+              onCancelOrder(order.id);
+            }
+          }}
+        >
+          <X className="w-3.5 h-3.5" />
         </Button>
         
         {nextStatus && (
@@ -898,6 +912,7 @@ Qualquer dúvida estamos à disposição! 😊`;
                     order={order}
                     nextStatus={getNextStatus(order.status)}
                     onUpdateStatus={updateStatus}
+                    onCancelOrder={(id) => updateStatus(id, "canceled")}
                     onOpenPreview={setPreviewOrder}
                     onOpenWhatsApp={openWhatsApp}
                   />

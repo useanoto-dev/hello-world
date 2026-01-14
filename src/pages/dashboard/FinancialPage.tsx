@@ -157,24 +157,30 @@ export default function FinancialPage() {
   });
 
   // Fetch orders for the period (to show revenue from sales)
-  const { data: ordersRevenue = 0 } = useQuery({
+  const { data: ordersData = [] } = useQuery({
     queryKey: ["orders-revenue", profile?.store_id, dateRange.start, dateRange.end],
     queryFn: async () => {
-      if (!profile?.store_id) return 0;
+      if (!profile?.store_id) return [];
       
       const { data, error } = await supabase
         .from("orders")
-        .select("total")
+        .select("id, order_number, customer_name, customer_phone, total, order_type, payment_method, status, created_at")
         .eq("store_id", profile.store_id)
-        .neq("status", "canceled")
         .gte("created_at", dateRange.start.toISOString())
-        .lte("created_at", dateRange.end.toISOString());
+        .lte("created_at", dateRange.end.toISOString())
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data?.reduce((sum, order) => sum + (order.total || 0), 0) || 0;
+      return data || [];
     },
     enabled: !!profile?.store_id,
   });
+
+  const ordersRevenue = useMemo(() => {
+    return ordersData
+      .filter(o => o.status !== "canceled")
+      .reduce((sum, order) => sum + (order.total || 0), 0);
+  }, [ordersData]);
 
   // Calculate metrics
   const metrics = useMemo(() => {
@@ -491,6 +497,7 @@ export default function FinancialPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+          <TabsTrigger value="sales">Vendas</TabsTrigger>
           <TabsTrigger value="transactions">Lançamentos</TabsTrigger>
         </TabsList>
 
@@ -578,6 +585,80 @@ export default function FinancialPage() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="sales">
+          <Card>
+            <CardHeader>
+              <CardTitle>Vendas (Pedidos)</CardTitle>
+              <CardDescription>
+                {ordersData.filter(o => o.status !== "canceled").length} pedidos no período • Total: {formatCurrency(ordersRevenue)}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>#</TableHead>
+                      <TableHead>Data/Hora</TableHead>
+                      <TableHead>Cliente</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Pagamento</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Valor</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {ordersData.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                          Nenhuma venda no período
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      ordersData.map((order) => (
+                        <TableRow key={order.id} className={order.status === "canceled" ? "opacity-50" : ""}>
+                          <TableCell className="font-medium">#{order.order_number}</TableCell>
+                          <TableCell>
+                            {format(new Date(order.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                          </TableCell>
+                          <TableCell>{order.customer_name}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-xs">
+                              {order.order_type === "delivery" ? "🛵 Delivery" : 
+                               order.order_type === "pickup" ? "🏪 Retirada" : "🍽️ Mesa"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="capitalize">
+                            {order.payment_method?.replace("_", " ") || "-"}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={order.status === "canceled" ? "destructive" : order.status === "completed" ? "default" : "secondary"}>
+                              {order.status === "pending" ? "Pendente" :
+                               order.status === "confirmed" ? "Confirmado" :
+                               order.status === "preparing" ? "Preparando" :
+                               order.status === "ready" ? "Pronto" :
+                               order.status === "delivering" ? "Entregando" :
+                               order.status === "delivered" ? "Entregue" :
+                               order.status === "completed" ? "Concluído" :
+                               order.status === "canceled" ? "Cancelado" : order.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className={cn(
+                            "text-right font-medium",
+                            order.status === "canceled" ? "text-muted-foreground line-through" : "text-green-600"
+                          )}>
+                            {formatCurrency(order.total)}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="transactions">
