@@ -22,6 +22,11 @@ import LoginModal from "@/components/LoginModal";
 const anotoLogoFull = "https://felipedublin.com/wp-content/uploads/2026/01/anoto-logo-full.webp";
 import anotoMascotMoto from "@/assets/anoto-mascot-moto.png";
 import badgeCheckIcon from "@/assets/badge-check-icon.png";
+import integrationWhatsapp from "@/assets/integration-whatsapp.avif";
+import integrationBroadcast from "@/assets/integration-broadcast.avif";
+import integrationNotification from "@/assets/integration-notification.avif";
+import integrationPrint from "@/assets/integration-print.avif";
+import integrationGoogle from "@/assets/integration-google.avif";
 
 // Cores fixas da landing
 const COLORS = {
@@ -53,11 +58,11 @@ const GLASS = {
 
 // Integrações
 const integrations = [
-  { icon: MessageSquare, title: "WhatsApp Bot", desc: "Atendimento 24h", gradient: "from-green-400 to-green-600" },
-  { icon: Send, title: "Disparo em Massa", desc: "Promoções", gradient: "from-emerald-400 to-teal-500" },
-  { icon: Bell, title: "Notificações", desc: "Status em tempo real", gradient: "from-blue-400 to-blue-600" },
-  { icon: Printer, title: "Impressão", desc: "Comandas automáticas", gradient: "from-orange-400 to-red-500" },
-  { icon: Chrome, title: "Login Google", desc: "Acesso rápido", gradient: "from-indigo-400 to-purple-500" }
+  { image: integrationWhatsapp, title: "WhatsApp Bot", desc: "Atendimento 24h" },
+  { image: integrationBroadcast, title: "Disparo em Massa", desc: "Promoções" },
+  { image: integrationNotification, title: "Notificações", desc: "Status em tempo real" },
+  { image: integrationPrint, title: "Impressão", desc: "Comandas automáticas" },
+  { image: integrationGoogle, title: "Login Google", desc: "Acesso rápido" }
 ];
 
 // Funcionalidades
@@ -448,8 +453,8 @@ export default function Landing() {
               <AnimatedCard key={item.title} delay={i * 0.08}>
                 <div className="rounded-2xl p-4 h-full text-center transition-transform hover:scale-[1.02]"
                   style={{ backgroundColor: "#fff", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
-                  <div className={`w-10 h-10 mx-auto rounded-xl flex items-center justify-center bg-gradient-to-br ${item.gradient}`}>
-                    <item.icon className="w-5 h-5 text-white" />
+                  <div className="w-10 h-10 mx-auto rounded-xl flex items-center justify-center overflow-hidden">
+                    <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
                   </div>
                   <h3 className="mt-3 text-xs font-semibold" style={{ color: COLORS.foreground }}>{item.title}</h3>
                   <p className="text-[10px] mt-0.5" style={{ color: COLORS.muted }}>{item.desc}</p>
