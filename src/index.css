@@ -613,3 +613,171 @@
   }
 }
 
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+
+/* GPU acceleration for frequently animated elements */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+/* Reduce paint area for fixed elements */
+.fixed-optimized {
+  contain: layout style paint;
+}
+
+/* Isolate stacking context for modals/overlays */
+.isolate-layer {
+  isolation: isolate;
+}
+
+/* Optimize text rendering */
+.text-optimized {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Skip offscreen content during paint */
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 200px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-price-pulse,
+  .animate-shimmer,
+  .animate-icon-spin,
+  .pulse-soft {
+    animation: none !important;
+  }
+}
+
+/* Image optimization defaults */
+img {
+  content-visibility: auto;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Lazy load images below fold */
+img[loading="lazy"] {
+  transition: opacity 0.3s ease;
+}
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: 0 0% 30%;
+  }
+  
+  .dark {
+    --border: 0 0% 70%;
+  }
+}
+
+/* Forced colors mode (Windows High Contrast) */
+@media (forced-colors: active) {
+  .btn-primary,
+  .btn-secondary {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print,
+  nav,
+  .sidebar,
+  .bottom-navigation,
+  button:not(.print-btn) {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .card {
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+  }
+}
+
+/* ===== TOUCH DEVICE OPTIMIZATIONS ===== */
+
+@media (hover: none) and (pointer: coarse) {
+  /* Larger touch targets on mobile */
+  button,
+  a,
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Disable hover effects on touch devices */
+  .card-hover:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  
+  /* Prevent text selection on interactive elements */
+  button,
+  [role="button"] {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
+/* ===== LOADING STATES ===== */
+
+.skeleton-loading {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 25%,
+    hsl(var(--muted-foreground) / 0.1) 50%,
+    hsl(var(--muted)) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Error state */
+.error-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+/* Success state */
+.success-bounce {
+  animation: bounce 0.5s ease;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}

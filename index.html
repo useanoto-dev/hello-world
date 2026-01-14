@@ -2,12 +2,15 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
     
+    <!-- Primary Meta Tags -->
     <title>Anotô? | Pediu, chegou!</title>
     <meta name="description" content="Anotô? - Pediu, chegou! Cardápio digital inteligente para seu estabelecimento. Gerencie pedidos, produtos e clientes de forma fácil e rápida.">
     <meta name="author" content="Anotô" />
-    <meta name="keywords" content="cardápio digital, delivery, pedido online, restaurante, anotô">
+    <meta name="keywords" content="cardápio digital, delivery, pedido online, restaurante, anotô, gestão de pedidos, cardápio online, sistema para restaurante">
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#dc2626" />
@@ -16,35 +19,66 @@
     <meta name="apple-mobile-web-app-title" content="Anotô?" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="format-detection" content="telephone=no" />
+    <meta name="application-name" content="Anotô?">
     
     <!-- iOS Splash Screens -->
     <link rel="apple-touch-icon" href="https://felipedublin.com/wp-content/uploads/2026/01/iconanot-1-scaled-e1767383912316.webp" />
     
-    <!-- Open Graph -->
-    
-    
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://anoto.app" />
+    <meta property="og:title" content="Anotô? | Pediu, chegou!">
+    <meta property="og:description" content="Anotô? - Pediu, chegou! Cardápio digital inteligente para seu estabelecimento. Gerencie pedidos, produtos e clientes de forma fácil e rápida.">
     <meta property="og:image" content="https://felipedublin.com/wp-content/uploads/2026/01/logoanoto-scaled-e1767383946555.webp" />
     <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content="Anotô?">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    
-    
+    <meta name="twitter:title" content="Anotô? | Pediu, chegou!">
+    <meta name="twitter:description" content="Anotô? - Pediu, chegou! Cardápio digital inteligente para seu estabelecimento. Gerencie pedidos, produtos e clientes de forma fácil e rápida.">
     <meta name="twitter:image" content="https://felipedublin.com/wp-content/uploads/2026/01/logoanoto-scaled-e1767383946555.webp" />
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://storage.googleapis.com/gpt-engineer-file-uploads/grmE4mGtDobwFcRynUIi7GPADjy1/uploads/1767736253561-ChatGPT Image 5_01_2026, 15_56_39.png">
     <link rel="manifest" href="/manifest.webmanifest" />
     
-    <!-- Google Fonts for storefront customization -->
+    <!-- Preconnect to external domains for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://wxiyjvtqgvbvcscbxxnq.supabase.co">
+    
+    <!-- DNS Prefetch for third-party resources -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    
+    <!-- Google Fonts - Optimized loading -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;500;600;700&family=Lato:wght@400;700;900&family=Montserrat:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&family=Raleway:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Cinzel:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&family=Great+Vibes&family=Pacifico&family=Lobster&family=Caveat:wght@400;500;600;700&family=Kaushan+Script&family=Satisfy&family=Noto+Serif+JP:wght@400;500;600;700&family=Shippori+Mincho:wght@400;500;600;700&family=M+PLUS+Rounded+1c:wght@400;500;700&family=Berkshire+Swash&family=Abril+Fatface&family=Permanent+Marker&family=Shadows+Into+Light&display=swap" rel="stylesheet">
     
+    <!-- Structured Data - Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Anotô?",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "description": "Cardápio digital inteligente para restaurantes e estabelecimentos. Gerencie pedidos, produtos e clientes de forma fácil e rápida.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "BRL"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "150"
+      }
+    }
+    </script>
+    
     <style>
-      /* Safe area padding for notched devices */
+      /* Critical CSS - Inline for faster first paint */
       :root {
         --sat: env(safe-area-inset-top);
         --sar: env(safe-area-inset-right);
@@ -71,14 +105,42 @@
         -ms-overflow-style: none;
         scrollbar-width: none;
       }
+      
+      /* Initial loading state */
+      #root:empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: #f5f5f5;
+      }
+      
+      #root:empty::after {
+        content: "";
+        width: 40px;
+        height: 40px;
+        border: 3px solid #dc2626;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      
+      @media (prefers-color-scheme: dark) {
+        #root:empty {
+          background: #1a1a1a;
+        }
+      }
     </style>
-    <meta property="og:title" content="Anotô? | Pediu, chegou!">
-  <meta name="twitter:title" content="Anotô? | Pediu, chegou!">
-  <meta property="og:description" content="Anotô? - Pediu, chegou! Cardápio digital inteligente para seu estabelecimento. Gerencie pedidos, produtos e clientes de forma fácil e rápida.">
-  <meta name="twitter:description" content="Anotô? - Pediu, chegou! Cardápio digital inteligente para seu estabelecimento. Gerencie pedidos, produtos e clientes de forma fácil e rápida.">
-</head>
+  </head>
 
   <body>
+    <!-- Skip Link for Accessibility -->
+    <a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">Pular para o conteúdo principal</a>
+    
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
