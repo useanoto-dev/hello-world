@@ -44,6 +44,7 @@ const MenuBulkEditPage = lazy(() => import("@/pages/dashboard/MenuBulkEditPage")
 const FlowsPage = lazy(() => import("@/pages/dashboard/FlowsPage"));
 const SettingsPage = lazy(() => import("@/pages/dashboard/SettingsPage"));
 const AnalyticsPage = lazy(() => import("@/pages/dashboard/AnalyticsPage"));
+const FinancialPage = lazy(() => import("@/pages/dashboard/FinancialPage"));
 const BannersPage = lazy(() => import("@/pages/dashboard/BannersPage"));
 const CouponsPage = lazy(() => import("@/pages/dashboard/CouponsPage"));
 const CustomersPage = lazy(() => import("@/pages/dashboard/CustomersPage"));
@@ -137,6 +138,7 @@ function AnimatedRoutes() {
             <Route path="flows" element={<FlowsPage />} />
             <Route path="orders" element={<OrdersPage />} />
             <Route path="analytics" element={<AnalyticsPage />} />
+            <Route path="financeiro" element={<FinancialPage />} />
             <Route path="customers" element={<CustomersPage />} />
             <Route path="inventory" element={<InventoryPage />} />
             <Route path="coupons" element={<CouponsPage />} />
