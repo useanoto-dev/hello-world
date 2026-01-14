@@ -414,9 +414,9 @@ export default function Landing() {
               </div>
               
               <div className="mt-6 flex flex-wrap items-center justify-center lg:justify-start gap-4">
-                {[{ text: "7 dias grátis" }, { text: "Sem cartão" }, { text: "Setup 3 min" }].map((item) => (
+                {[{ icon: Check, text: "7 dias grátis" }, { icon: Shield, text: "Sem cartão" }, { icon: Zap, text: "Setup 3 min" }].map((item) => (
                   <span key={item.text} className="flex items-center gap-1.5 text-xs" style={{ color: COLORS.muted }}>
-                    <img src={badgeCheckIcon} alt="" className="w-4 h-4 object-contain" />
+                    <item.icon className="w-3.5 h-3.5" style={{ color: COLORS.success }} />
                     {item.text}
                   </span>
                 ))}
