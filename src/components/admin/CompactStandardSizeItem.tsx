@@ -8,10 +8,9 @@ import { cn } from "@/lib/utils";
 
 export interface StandardSize {
   id: string;
-  image: string | null;
   name: string;
   basePrice: number;
-  isOut: boolean;
+  isActive: boolean;
 }
 
 interface CompactStandardSizeItemProps {
@@ -95,8 +94,8 @@ export function CompactStandardSizeItem({
       <div className="flex items-center gap-2">
         <span className="text-xs text-[#9d9d9d]">Ativo</span>
         <Switch
-          checked={!size.isOut}
-          onCheckedChange={(checked) => onUpdate(size.id, "isOut", !checked)}
+          checked={size.isActive}
+          onCheckedChange={(checked) => onUpdate(size.id, "isActive", checked)}
         />
       </div>
 
