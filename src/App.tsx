@@ -1,5 +1,5 @@
-// App.tsx - Anotô SaaS - Optimized Build v2
-import { Suspense, lazy, useState, useEffect, memo } from "react";
+// App.tsx - Anotô SaaS - Optimized Build v3
+import React, { Suspense, lazy, useState, useEffect, memo } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";

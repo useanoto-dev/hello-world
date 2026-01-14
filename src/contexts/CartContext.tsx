@@ -174,7 +174,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
       setCart(prevCart => {
         if (product.category === 'pizzas') {
-          const uniqueId = product.id || `pizza_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          const uniqueId = product.id || `pizza_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
           return [...prevCart, { ...product, id: uniqueId, quantity: 1 }];
         }
         
