@@ -1,5 +1,5 @@
-// Standard Item Wizard - For hamburgers, açaí, dishes, etc.
-import { useState, useEffect } from "react";
+// Standard Item Wizard - For hamburgers, açaí, dishes, etc. v2
+import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Star, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
