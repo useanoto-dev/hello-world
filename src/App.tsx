@@ -102,6 +102,7 @@ function AnimatedRoutes() {
       <TopProgressBar isLoading={isNavigating} />
       <Suspense fallback={null}>
         <Routes location={location}>
+          {/* Public Pages */}
           <Route path="/" element={<Landing />} />
           <Route path="/explorar" element={<ExplorePage />} />
           <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
@@ -111,22 +112,17 @@ function AnimatedRoutes() {
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/instalar" element={<InstallPWA />} />
           
-          {/* Onboarding - fora do layout para tela cheia */}
+          {/* Dashboard Fullscreen Pages - MUST be before DashboardLayout */}
           <Route path="/dashboard/onboarding" element={<OnboardingWizard />} />
-          
-          {/* Category Editor - fullscreen sem sidebar */}
           <Route path="/dashboard/category/new" element={<CategoryEditorPage />} />
           <Route path="/dashboard/category/edit" element={<CategoryEditorPage />} />
-          
-          {/* Pizza Flavor Wizard - fullscreen */}
           <Route path="/dashboard/pizza-flavor/new" element={<PizzaFlavorWizard />} />
           <Route path="/dashboard/pizza-flavor/edit" element={<PizzaFlavorWizard />} />
           <Route path="/dashboard/pizza-flavors" element={<PizzaFlavorsListPage />} />
-          
-          {/* Standard Item Wizard - fullscreen */}
           <Route path="/dashboard/item/new" element={<StandardItemWizard />} />
           <Route path="/dashboard/item/edit" element={<StandardItemWizard />} />
           
+          {/* Dashboard with Layout */}
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardHome />} />
             <Route path="comandas" element={<ComandaPanel />} />
@@ -161,6 +157,7 @@ function AnimatedRoutes() {
           <Route path="/cardapio/:slug/finalizar/pagamento" element={<CheckoutPayment />} />
           <Route path="/cardapio/:slug/finalizar/resumo" element={<CheckoutSummary />} />
           
+          {/* 404 - MUST be last */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
