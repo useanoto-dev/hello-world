@@ -4,7 +4,7 @@ import { useOutletContext } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Users, Search, Phone, Mail, MapPin, ShoppingBag, 
-  ChevronDown, ChevronUp, Calendar, DollarSign, StickyNote, Pencil, Star, MessageSquare, Gift, Filter, X, MessageCircle, History, Send, Megaphone, Trash2, MoreVertical, UserCog
+  ChevronDown, ChevronUp, Calendar, DollarSign, StickyNote, Pencil, Star, MessageSquare, Gift, Filter, X, MessageCircle, History, Send, Megaphone, Trash2, MoreVertical, UserCog, Trophy
 } from "lucide-react";
 import { formatPhone } from "@/lib/formatters";
 import { Button } from "@/components/ui/button";
@@ -47,6 +47,7 @@ import { ReviewsManager } from "@/components/admin/ReviewsManager";
 import { LoyaltyManager } from "@/components/admin/LoyaltyManager";
 import { BroadcastWizard } from "@/components/admin/BroadcastWizard";
 import { CampaignHistory } from "@/components/admin/CampaignHistory";
+import { RaffleManager } from "@/components/admin/RaffleManager";
 
 interface WhatsAppTemplate {
   id: string;
@@ -559,6 +560,10 @@ export default function CustomersPage() {
           <TabsTrigger value="campaigns" className="text-xs h-7 gap-1.5 px-3">
             <Megaphone className="w-3.5 h-3.5" />
             Campanhas
+          </TabsTrigger>
+          <TabsTrigger value="raffle" className="text-xs h-7 gap-1.5 px-3">
+            <Trophy className="w-3.5 h-3.5" />
+            Sorteio
           </TabsTrigger>
         </TabsList>
 
@@ -1130,6 +1135,11 @@ export default function CustomersPage() {
         {/* Campaigns Tab */}
         <TabsContent value="campaigns">
           <CampaignHistory storeId={store?.id || ""} />
+        </TabsContent>
+
+        {/* Raffle Tab */}
+        <TabsContent value="raffle">
+          <RaffleManager storeId={store?.id || ""} />
         </TabsContent>
       </Tabs>
 
