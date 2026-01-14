@@ -177,24 +177,35 @@ export function RaffleManager({ storeId }: RaffleManagerProps) {
     frame();
   };
 
+  // Color flashing effect - separate from countdown
+  useEffect(() => {
+    if (!showFullscreen || raffleComplete) return;
+
+    const colorInterval = setInterval(() => {
+      setIsYellow((prev) => !prev);
+    }, 500);
+
+    return () => clearInterval(colorInterval);
+  }, [showFullscreen, raffleComplete]);
+
+  // Countdown logic - separate timer
   useEffect(() => {
     if (!showFullscreen || currentNumber === null || raffleComplete) return;
 
     if (currentNumber > 0) {
-      setIsYellow((prev) => !prev);
       const timer = setTimeout(() => {
-        setCurrentNumber(currentNumber - 1);
+        setCurrentNumber((prev) => (prev !== null ? prev - 1 : null));
       }, 1000);
       return () => clearTimeout(timer);
-    } else {
-      // Select winners
+    } else if (currentNumber === 0) {
+      // Select winners immediately when reaching 0
       const shuffled = [...filteredParticipants].sort(() => Math.random() - 0.5);
       const selectedWinners = shuffled.slice(0, winnersCount);
       setWinners(selectedWinners);
       setRaffleComplete(true);
       launchBalloons();
     }
-  }, [showFullscreen, currentNumber, raffleComplete, filteredParticipants, winnersCount]);
+  }, [showFullscreen, currentNumber, raffleComplete]);
 
   const closeFullscreen = () => {
     setShowFullscreen(false);
