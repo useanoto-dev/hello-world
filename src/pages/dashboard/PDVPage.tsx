@@ -112,7 +112,7 @@ export default function PDVPage() {
     setIsTableSelectionOpen(true);
   };
 
-  const handleTableSelected = async (table: Table | null) => {
+  const handleTableSelected = async (table: Table | null, isCounterOrder: boolean) => {
     if (table) {
       setSelectedTable(table);
       setIsCounter(false);
@@ -131,16 +131,145 @@ export default function PDVPage() {
           t.id === table.id ? { ...t, status: "occupied" } : t
         ));
       }
+      
+      // For table orders: send directly to kitchen (no payment now)
+      await handleSendToKitchen(table);
     } else {
       setSelectedTable(null);
       setIsCounter(true);
       if (customerName.startsWith("Mesa ")) {
         setCustomerName("Cliente Balcão");
       }
+      
+      // For counter orders: open payment modal
+      setIsPaymentOpen(true);
+    }
+  };
+
+  const handleSendToKitchen = async (table: Table) => {
+    if (cart.length === 0) {
+      toast.error("Carrinho vazio");
+      return;
     }
     
-    // Open payment modal
-    setIsPaymentOpen(true);
+    setIsSaving(true);
+    
+    try {
+      const orderData = {
+        store_id: store.id,
+        customer_name: customerName.startsWith("Mesa ") ? customerName : `Mesa ${table.number}`,
+        customer_phone: "00000000000",
+        order_type: "dine_in",
+        items: cart.map(cartItem => {
+          let productId: string | undefined = undefined;
+          const itemId = cartItem.item.id;
+          
+          if (itemId.startsWith('prod-')) {
+            productId = itemId.substring(5);
+          } else if (itemId.startsWith('inv-')) {
+            productId = itemId.substring(4);
+          }
+          
+          const itemData: Record<string, unknown> = {
+            id: itemId,
+            name: cartItem.item.name,
+            quantity: cartItem.quantity,
+            price: getItemPrice(cartItem.item),
+            notes: cartItem.notes || null,
+            complements: cartItem.complements.map(c => ({
+              name: c.item.name,
+              quantity: c.quantity,
+              price: getItemPrice(c.item),
+            })),
+          };
+          
+          if (productId) {
+            itemData.product_id = productId;
+          }
+          
+          if (cartItem.selectedVariation) {
+            itemData.selectedVariation = {
+              name: cartItem.selectedVariation.name,
+              price: cartItem.selectedVariation.price,
+            };
+          }
+          
+          return itemData;
+        }) as Json,
+        subtotal: cartTotal,
+        total: finalTotal,
+        discount: totalDiscount,
+        delivery_fee: 0,
+        payment_method: null, // No payment yet for table orders
+        status: "preparing", // Goes to kitchen
+        order_source: "pdv",
+        table_id: table.id,
+        paid: false, // Not paid yet
+      };
+      
+      const { data: order, error } = await supabase
+        .from("orders")
+        .insert(orderData)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      
+      // Print comanda for kitchen
+      const printerWidth = (store?.printer_width as PrinterWidth) || '80mm';
+      
+      const comandaData: ComandaData = {
+        order_number: order.order_number,
+        hora: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        cliente: `Mesa ${table.number}`,
+        whatsapp: "",
+        forma_pagamento: "A pagar",
+        items: cart.flatMap(cartItem => [
+          { qty: cartItem.quantity, nome: cartItem.item.name, observacao: cartItem.notes },
+          ...cartItem.complements.map(c => ({
+            qty: c.quantity,
+            nome: `  + ${c.item.name}`,
+          }))
+        ]),
+        total: finalTotal,
+        taxa_entrega: 0,
+        tipo_servico: 'dine_in',
+        mesa: table.number,
+      };
+      
+      const shouldPrint = store?.printnode_auto_print && store?.printnode_printer_id ||
+                          (isUSBPrintingSupported() && isUSBPrinterConnected());
+      
+      if (shouldPrint) {
+        const result = await printComanda(comandaData, {
+          printerWidth,
+          printNodePrinterId: store?.printnode_auto_print ? store?.printnode_printer_id : undefined,
+          storeId: store?.id,
+          orderId: order.id,
+          orderNumber: order.order_number,
+          printerName: store?.printnode_printer_name,
+          maxRetries: store?.printnode_max_retries ?? 2,
+          logoUrl: store?.logo_url,
+          storeInfo: {
+            nome: store?.name,
+            endereco: store?.address,
+            telefone: store?.phone,
+            whatsapp: store?.whatsapp,
+            mensagemPersonalizada: store?.print_footer_message,
+          }
+        });
+        
+        showPrintResultToast(result, order.order_number);
+      }
+      
+      toast.success(`Pedido #${order.order_number} enviado para cozinha - Mesa ${table.number}`);
+      handleClearCart();
+      
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao enviar pedido");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleClearCart = useCallback(() => {
@@ -217,7 +346,8 @@ export default function PDVPage() {
         payment_method: paymentMethodStr,
         status: "preparing",
         order_source: "pdv",
-        table_id: selectedTable?.id || null,
+        table_id: null, // Counter orders have no table
+        paid: true, // Counter orders are paid immediately
       };
       
       const { data: order, error } = await supabase
@@ -360,7 +490,7 @@ export default function PDVPage() {
         total: finalTotal,
         taxa_entrega: 0,
         tipo_servico: 'dine_in',
-        mesa: selectedTable?.number,
+        mesa: undefined, // Counter order
       };
       
       const shouldPrint = store?.printnode_auto_print && store?.printnode_printer_id ||
@@ -388,7 +518,7 @@ export default function PDVPage() {
         showPrintResultToast(result, order.order_number);
       }
       
-      toast.success(`Pedido #${order.order_number} criado!${selectedTable ? ` - Mesa ${selectedTable.number}` : ''}`);
+      toast.success(`Pedido #${order.order_number} criado - Balcão`);
       setIsPaymentOpen(false);
       handleClearCart();
       
@@ -649,18 +779,18 @@ export default function PDVPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Payment Modal */}
+      {/* Payment Modal - Only for counter orders */}
       <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Finalizar Pedido</DialogTitle>
+            <DialogTitle>Pagamento - Balcão</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-4">
             <div>
-              <Label>Destino</Label>
+              <Label>Cliente</Label>
               <p className="text-sm text-muted-foreground">
-                {selectedTable ? `Mesa ${selectedTable.number}` : "Balcão"} - {customerName}
+                {customerName}
               </p>
             </div>
             

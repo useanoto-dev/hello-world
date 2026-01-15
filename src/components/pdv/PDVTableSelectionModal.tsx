@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, Coffee, Check } from "lucide-react";
+import { Users, Coffee, Check, CreditCard, ChefHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +18,7 @@ interface PDVTableSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
   tables: Table[];
-  onSelectTable: (table: Table | null) => void; // null = balcão
+  onSelectTable: (table: Table | null, isCounter: boolean) => void;
   customerName: string;
   onCustomerNameChange: (name: string) => void;
 }
@@ -35,11 +35,11 @@ export function PDVTableSelectionModal({
 
   const handleConfirm = () => {
     if (selectedOption === "counter") {
-      onSelectTable(null);
+      onSelectTable(null, true);
     } else {
       const table = tables.find(t => t.id === selectedOption);
       if (table) {
-        onSelectTable(table);
+        onSelectTable(table, false);
       }
     }
     onClose();
@@ -47,6 +47,8 @@ export function PDVTableSelectionModal({
 
   const availableTables = tables.filter(t => t.status === "available");
   const occupiedTables = tables.filter(t => t.status === "occupied");
+
+  const isCounter = selectedOption === "counter";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -87,7 +89,7 @@ export function PDVTableSelectionModal({
             </div>
             <div className="flex-1 text-left">
               <p className="font-medium">Balcão / Viagem</p>
-              <p className="text-xs text-muted-foreground">Pedido sem mesa vinculada</p>
+              <p className="text-xs text-muted-foreground">Pagamento imediato</p>
             </div>
             {selectedOption === "counter" && (
               <Check className="w-5 h-5 text-primary" />
@@ -98,7 +100,7 @@ export function PDVTableSelectionModal({
           {tables.length > 0 && (
             <div>
               <Label className="text-xs text-muted-foreground mb-2 block">
-                Ou selecione uma mesa
+                Ou selecione uma mesa (envia para cozinha)
               </Label>
               <ScrollArea className="h-48">
                 <div className="space-y-2 pr-2">
@@ -173,8 +175,18 @@ export function PDVTableSelectionModal({
           <Button variant="outline" onClick={onClose}>
             Cancelar
           </Button>
-          <Button onClick={handleConfirm}>
-            Continuar para Pagamento
+          <Button onClick={handleConfirm} className="gap-2">
+            {isCounter ? (
+              <>
+                <CreditCard className="w-4 h-4" />
+                Ir para Pagamento
+              </>
+            ) : (
+              <>
+                <ChefHat className="w-4 h-4" />
+                Enviar para Cozinha
+              </>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
