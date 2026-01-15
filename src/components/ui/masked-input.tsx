@@ -42,7 +42,7 @@ export function MaskedInput({
   const isValid = touched && !error && displayValue.trim() !== '';
   const showSuccess = showSuccessState && isValid;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
     const masked = applyMask(inputValue, maskType);
     const raw = removeMask(inputValue);
@@ -54,7 +54,24 @@ export function MaskedInput({
     }
     
     onValueChange?.(storageValue, masked);
-  };
+  }, [maskType, onValueChange]);
+
+  // Handle autofill - browsers may not trigger onChange for autofill
+  const handleInput = React.useCallback((e: React.FormEvent<HTMLInputElement>) => {
+    const inputValue = (e.target as HTMLInputElement).value;
+    const currentRaw = removeMask(inputValue);
+    const stateRaw = removeMask(value);
+    
+    // Only update if the values differ (autofill detected)
+    if (currentRaw !== stateRaw) {
+      const masked = applyMask(inputValue, maskType);
+      let storageValue = currentRaw;
+      if (maskType === 'whatsapp' && currentRaw && !currentRaw.startsWith('55')) {
+        storageValue = '55' + currentRaw;
+      }
+      onValueChange?.(storageValue, masked);
+    }
+  }, [maskType, onValueChange, value]);
 
   return (
     <div className="space-y-1.5">
@@ -73,6 +90,7 @@ export function MaskedInput({
         <Input
           value={displayValue}
           onChange={handleChange}
+          onInput={handleInput}
           onBlur={onBlur}
           className={cn(
             leftIcon && "pl-9",
