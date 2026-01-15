@@ -1,4 +1,4 @@
-// Category Editor Page - Compact Layout with Flow Sync
+// Category Editor Page - Pizza Only - Compact Layout with Flow Sync
 import { useState, useEffect, KeyboardEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
@@ -42,8 +42,6 @@ import {
 } from "@dnd-kit/sortable";
 import { CompactPizzaSizeItem, PizzaSize } from "@/components/admin/CompactPizzaSizeItem";
 import { CompactPizzaOptionItem, PizzaOption, OptionPrice } from "@/components/admin/CompactPizzaOptionItem";
-import { CompactStandardSizeItem } from "@/components/admin/CompactStandardSizeItem";
-import { CompactStandardAddonItem } from "@/components/admin/CompactStandardAddonItem";
 
 const PIZZA_STEPS = [
   { id: 1, label: "Categoria" },
@@ -51,12 +49,6 @@ const PIZZA_STEPS = [
   { id: 3, label: "Bordas" },
   { id: 4, label: "Massas" },
   { id: 5, label: "Adicionais" },
-];
-
-const STANDARD_STEPS = [
-  { id: 1, label: "Categoria" },
-  { id: 2, label: "Tamanhos" },
-  { id: 3, label: "Complementos" },
 ];
 
 const DAYS = [
@@ -75,35 +67,15 @@ interface ScheduleItem {
   endTime: string;
 }
 
-// Standard Size type
-interface StandardSize {
-  id: string;
-  name: string;
-  basePrice: number;
-  isActive: boolean;
-}
-
-// Standard Addon type
-interface StandardAddon {
-  id: string;
-  name: string;
-  isActive: boolean;
-  isRequired: boolean;
-  maxQuantity: number;
-  prices: { sizeId: string; sizeName: string; price: number; enabled: boolean }[];
-}
-
 export default function CategoryEditorPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('edit');
-  
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(!!searchParams.get('edit'));
   const [storeId, setStoreId] = useState<string | null>(null);
   
-  // Form state
-  const [modelo, setModelo] = useState<"padrao" | "pizza">("padrao");
+  // Form state - Always pizza mode now
   const [currentStep, setCurrentStep] = useState(1);
   const [name, setName] = useState("");
   const [isPromotion, setIsPromotion] = useState(false);
@@ -144,13 +116,6 @@ export default function CategoryEditorPage() {
   const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [promotionPercent, setPromotionPercent] = useState("");
 
-  // Standard mode state
-  const [standardSizes, setStandardSizes] = useState<StandardSize[]>([
-    { id: crypto.randomUUID(), name: "", basePrice: 0, isActive: true }
-  ]);
-  const [hasAddons, setHasAddons] = useState<"yes" | "no">("no");
-  const [standardAddons, setStandardAddons] = useState<StandardAddon[]>([]);
-
   // Helper function to create prices based on pizza sizes
   const createOptionPrices = (): OptionPrice[] => {
     return pizzaSizes.map(size => ({
@@ -160,90 +125,6 @@ export default function CategoryEditorPage() {
       price: "0"
     }));
   };
-
-  // Helper function to create addon prices based on standard sizes
-  const createAddonPrices = () => {
-    return standardSizes.filter(s => s.name.trim()).map(size => ({
-      sizeId: size.id,
-      sizeName: size.name || "Tamanho",
-      price: 0,
-      enabled: true
-    }));
-  };
-
-  // ===== STANDARD SIZES =====
-  const addStandardSize = () => {
-    setStandardSizes(prev => [...prev, {
-      id: crypto.randomUUID(),
-      name: "",
-      basePrice: 0,
-      isActive: true,
-    }]);
-  };
-
-  const removeStandardSize = (id: string) => {
-    if (standardSizes.length > 1) {
-      setStandardSizes(prev => prev.filter(s => s.id !== id));
-    }
-  };
-
-  const updateStandardSize = (id: string, field: keyof StandardSize, value: any) => {
-    setStandardSizes(prev => prev.map(s => s.id === id ? { ...s, [field]: value } : s));
-  };
-
-  // ===== STANDARD ADDONS =====
-  const addStandardAddon = () => {
-    setStandardAddons(prev => [...prev, {
-      id: crypto.randomUUID(),
-      name: "",
-      isActive: true,
-      isRequired: false,
-      maxQuantity: 10,
-      prices: createAddonPrices(),
-    }]);
-  };
-
-  const removeStandardAddon = (id: string) => {
-    if (standardAddons.length > 1) {
-      setStandardAddons(prev => prev.filter(a => a.id !== id));
-    }
-  };
-
-  const updateStandardAddon = (id: string, field: keyof StandardAddon, value: any) => {
-    setStandardAddons(prev => prev.map(a => a.id === id ? { ...a, [field]: value } : a));
-  };
-
-  const updateAddonPrice = (addonId: string, sizeId: string, field: "enabled" | "price", value: any) => {
-    setStandardAddons(prev => prev.map(addon => {
-      if (addon.id !== addonId) return addon;
-      return {
-        ...addon,
-        prices: addon.prices.map(p => p.sizeId === sizeId ? { ...p, [field]: value } : p)
-      };
-    }));
-  };
-
-  // Sync addon prices when sizes change
-  useEffect(() => {
-    if (standardAddons.length > 0) {
-      setStandardAddons(prev => prev.map(addon => ({
-        ...addon,
-        prices: standardSizes.filter(s => s.name.trim()).map(size => {
-          const existingPrice = addon.prices.find(p => p.sizeId === size.id);
-          return existingPrice 
-            ? { ...existingPrice, sizeName: size.name }
-            : { sizeId: size.id, sizeName: size.name, price: 0, enabled: true };
-        })
-      })));
-    }
-  }, [standardSizes]);
-
-  // Initialize addons when enabled
-  useEffect(() => {
-    if (hasAddons === "yes" && standardAddons.length === 0) {
-      addStandardAddon();
-    }
-  }, [hasAddons]);
 
   // ===== EDGES =====
   const addPizzaEdge = () => {
@@ -402,9 +283,6 @@ export default function CategoryEditorPage() {
     }
   }, [editId]);
 
-  useEffect(() => {
-    setCurrentStep(1);
-  }, [modelo]);
 
   const loadStoreId = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -436,7 +314,7 @@ export default function CategoryEditorPage() {
       setIsPromotion(!!categoryData.description);
       setPromotionMessage(categoryData.description || "");
       setAvailability(categoryData.is_active ? "always" : "paused");
-      setModelo(categoryData.category_type === "pizza" ? "pizza" : "padrao");
+      // Always pizza mode
 
       if (categoryData.category_type === "pizza") {
         const { data: sizesData } = await supabase
@@ -509,51 +387,6 @@ export default function CategoryEditorPage() {
             }) || [],
           }));
           setPizzaDoughs(loadedDoughs);
-        }
-      } else {
-        // Load standard sizes
-        const { data: stdSizesData } = await supabase
-          .from("standard_sizes")
-          .select("*")
-          .eq("category_id", id)
-          .order("display_order");
-
-        if (stdSizesData && stdSizesData.length > 0) {
-          const loadedSizes: StandardSize[] = stdSizesData.map(size => ({
-            id: size.id,
-            name: size.name,
-            basePrice: size.base_price || 0,
-            isActive: size.is_active,
-          }));
-          setStandardSizes(loadedSizes);
-        }
-
-        // Load standard addons
-        const { data: addonsData } = await supabase
-          .from("standard_addons")
-          .select("*, standard_addon_prices(*)")
-          .eq("category_id", id)
-          .order("display_order");
-
-        if (addonsData && addonsData.length > 0) {
-          setHasAddons("yes");
-          const loadedAddons: StandardAddon[] = addonsData.map(addon => ({
-            id: addon.id,
-            name: addon.name,
-            isActive: addon.is_active,
-            isRequired: addon.is_required,
-            maxQuantity: addon.max_quantity,
-            prices: stdSizesData?.map(size => {
-              const priceData = addon.standard_addon_prices?.find((p: any) => p.size_id === size.id);
-              return {
-                sizeId: size.id,
-                sizeName: size.name,
-                price: priceData?.price || 0,
-                enabled: priceData?.is_available ?? true,
-              };
-            }) || [],
-          }));
-          setStandardAddons(loadedAddons);
         }
       }
     } catch (error) {
@@ -669,27 +502,6 @@ export default function CategoryEditorPage() {
     }
   };
 
-  const handleStandardSizeDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (over && active.id !== over.id) {
-      setStandardSizes((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
-    }
-  };
-
-  const handleStandardAddonDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (over && active.id !== over.id) {
-      setStandardAddons((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
-    }
-  };
 
   const handleEdgeDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -730,13 +542,8 @@ export default function CategoryEditorPage() {
       return;
     }
 
-    if (isPizza && pizzaSizes.filter(s => s.name.trim()).length === 0) {
+    if (pizzaSizes.filter(s => s.name.trim()).length === 0) {
       toast.error("Adicione pelo menos um tamanho de pizza");
-      return;
-    }
-
-    if (!isPizza && standardSizes.filter(s => s.name.trim()).length === 0) {
-      toast.error("Adicione pelo menos um tamanho");
       return;
     }
 
@@ -755,8 +562,8 @@ export default function CategoryEditorPage() {
         slug,
         description: isPromotion ? promotionMessage : null,
         is_active: availability !== "paused",
-        category_type: modelo,
-        use_sequential_flow: isPizza || standardSizes.filter(s => s.name.trim()).length > 1,
+        category_type: "pizza",
+        use_sequential_flow: true,
       };
 
       let categoryId: string;
@@ -787,22 +594,15 @@ export default function CategoryEditorPage() {
         categoryId = result.id;
       }
 
-      if (isPizza) {
-        await savePizzaOptionGroups(categoryId);
-        // Sync flow steps based on options
-        await syncFlowSteps(categoryId);
-      } else {
-        await saveStandardSizesAndAddons(categoryId);
-      }
+      // Save pizza options
+      await savePizzaOptionGroups(categoryId);
+      // Sync flow steps based on options
+      await syncFlowSteps(categoryId);
 
       toast.success(editId ? "Categoria atualizada!" : "Categoria criada!");
 
       if (createItems) {
-        if (isPizza) {
-          navigate(`/dashboard/flavors?categoryId=${categoryId}`);
-        } else {
-          navigate(`/dashboard/items?categoryId=${categoryId}`);
-        }
+        navigate(`/dashboard/flavors?categoryId=${categoryId}`);
       } else {
         navigate("/dashboard/products");
       }
@@ -814,104 +614,6 @@ export default function CategoryEditorPage() {
     }
   };
 
-  // Save standard sizes and addons
-  const saveStandardSizesAndAddons = async (categoryId: string) => {
-    if (!storeId) return;
-
-    // Delete existing data if editing
-    if (editId) {
-      const { data: existingAddons } = await supabase
-        .from("standard_addons")
-        .select("id")
-        .eq("category_id", categoryId);
-
-      if (existingAddons && existingAddons.length > 0) {
-        const addonIds = existingAddons.map(a => a.id);
-        await supabase.from("standard_addon_prices").delete().in("addon_id", addonIds);
-      }
-
-      await supabase.from("standard_addons").delete().eq("category_id", categoryId);
-      await supabase.from("standard_sizes").delete().eq("category_id", categoryId);
-    }
-
-    // Save sizes
-    const validSizes = standardSizes.filter(s => s.name.trim());
-    const sizeIdMap: Record<string, string> = {};
-
-    if (validSizes.length > 0) {
-      const sizesToInsert = validSizes.map((size, index) => {
-        const newId = crypto.randomUUID();
-        sizeIdMap[size.id] = newId;
-        return {
-          id: newId,
-          store_id: storeId,
-          category_id: categoryId,
-          name: size.name,
-          base_price: size.basePrice,
-          is_active: size.isActive,
-          display_order: index,
-        };
-      });
-
-      const { error: sizesError } = await supabase
-        .from("standard_sizes")
-        .insert(sizesToInsert);
-
-      if (sizesError) throw sizesError;
-    }
-
-    // Save addons
-    if (hasAddons === "yes" && standardAddons.length > 0) {
-      const validAddons = standardAddons.filter(a => a.name.trim());
-      
-      if (validAddons.length > 0) {
-        const addonsToInsert = validAddons.map((addon, index) => ({
-          id: crypto.randomUUID(),
-          store_id: storeId,
-          category_id: categoryId,
-          name: addon.name,
-          is_active: addon.isActive,
-          is_required: addon.isRequired,
-          max_quantity: addon.maxQuantity,
-          display_order: index,
-        }));
-
-        const { data: insertedAddons, error: addonsError } = await supabase
-          .from("standard_addons")
-          .insert(addonsToInsert)
-          .select("id");
-
-        if (addonsError) throw addonsError;
-
-        // Insert addon prices
-        const addonPricesToInsert: any[] = [];
-        validAddons.forEach((addon, addonIndex) => {
-          const insertedAddonId = insertedAddons?.[addonIndex]?.id;
-          if (!insertedAddonId) return;
-
-          addon.prices.forEach((price) => {
-            const newSizeId = sizeIdMap[price.sizeId];
-            if (newSizeId) {
-              addonPricesToInsert.push({
-                addon_id: insertedAddonId,
-                size_id: newSizeId,
-                price: price.price,
-                is_available: price.enabled,
-              });
-            }
-          });
-        });
-
-        if (addonPricesToInsert.length > 0) {
-          const { error: pricesError } = await supabase
-            .from("standard_addon_prices")
-            .insert(addonPricesToInsert);
-
-          if (pricesError) throw pricesError;
-        }
-      }
-    }
-  };
 
   // Sync flow steps based on edges/doughs/extras settings
   const syncFlowSteps = async (categoryId: string) => {
@@ -1315,35 +1017,18 @@ export default function CategoryEditorPage() {
 
   const handleClose = () => navigate("/dashboard/products");
 
-  const isPizza = modelo === "pizza";
-
-  // Category Form Content
+  // Category Form Content (Pizza only)
   const CategoryFormContent = (
     <div className="space-y-5">
-      {/* Modelo + Nome */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="space-y-1.5">
-          <Label className="text-xs font-medium text-foreground">Modelo</Label>
-          <Select value={modelo} onValueChange={(v) => setModelo(v as "padrao" | "pizza")}>
-            <SelectTrigger className="w-[100px] h-9 text-sm border-border bg-background">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-popover border border-border z-50">
-              <SelectItem value="padrao">Padrão</SelectItem>
-              <SelectItem value="pizza">Pizza</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5 flex-1">
-          <Label className="text-xs font-medium text-foreground">Nome da categoria *</Label>
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={isPizza ? "Ex.: Pizzas Salgadas" : "Ex.: Hambúrgueres, Açaí, Pratos"}
-            className="h-9 text-sm border-border bg-background"
-          />
-        </div>
+      {/* Nome */}
+      <div className="space-y-1.5">
+        <Label className="text-xs font-medium text-foreground">Nome da categoria *</Label>
+        <Input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Ex.: Pizzas Salgadas"
+          className="h-9 text-sm border-border bg-background"
+        />
       </div>
 
       {/* Promoção */}
@@ -1596,253 +1281,6 @@ export default function CategoryEditorPage() {
       </div>
     );
   }
-
-  // Standard mode with steps
-  if (!isPizza) {
-    const totalSteps = STANDARD_STEPS.length;
-    
-    return (
-      <div className="min-h-screen bg-background flex flex-col">
-        {/* Header */}
-        <div className="bg-card border-b border-border px-4 py-2.5">
-          <div className="flex items-center gap-3">
-            <button onClick={handleClose} className="text-muted-foreground hover:text-foreground">
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div>
-              <h1 className="text-sm font-semibold text-foreground">
-                {editId ? "Editar categoria" : "Nova categoria"}
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                Gestor de cardápio › Categoria Padrão
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Steps - Horizontal */}
-        <div className="bg-card border-b border-border px-4">
-          <div className="flex gap-2 overflow-x-auto max-w-3xl mx-auto py-1">
-            {STANDARD_STEPS.map((step) => {
-              const isCurrent = step.id === currentStep;
-              const isCompleted = step.id < currentStep;
-              const isDisabled = !editId && step.id > currentStep;
-              
-              return (
-                <button
-                  key={step.id}
-                  onClick={() => {
-                    if (editId || step.id <= currentStep) setCurrentStep(step.id);
-                  }}
-                  disabled={isDisabled}
-                  className={cn(
-                    "flex items-center gap-1.5 px-2 py-2 text-xs font-medium transition-colors whitespace-nowrap border-b-2",
-                    isCurrent ? "text-primary border-primary" 
-                      : isCompleted || editId ? "text-foreground border-transparent cursor-pointer hover:text-primary"
-                      : "text-muted-foreground border-transparent cursor-not-allowed"
-                  )}
-                >
-                  <span className={cn(
-                    "flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-semibold",
-                    isCurrent ? "bg-primary text-primary-foreground"
-                      : isCompleted || editId ? "bg-foreground text-background"
-                      : "bg-muted text-muted-foreground"
-                  )}>
-                    {step.id}
-                  </span>
-                  {step.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div className="flex-1 overflow-y-auto pb-20 bg-background">
-          <div className="max-w-3xl mx-auto p-4">
-            <div className="bg-card rounded-lg shadow-sm border border-border p-4">
-              <h2 className="text-sm font-semibold text-foreground mb-4">
-                {currentStep}. {STANDARD_STEPS.find(s => s.id === currentStep)?.label}
-              </h2>
-
-              {currentStep === 1 && CategoryFormContent}
-              
-              {currentStep === 2 && (
-                <div className="space-y-3">
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Defina os tamanhos disponíveis para os itens desta categoria.
-                  </p>
-
-                  {/* Header Labels */}
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground px-8">
-                    <span className="flex-1">Nome do Tamanho</span>
-                    <span className="w-32">Preço Base</span>
-                    <span className="w-16 text-center">Ativo</span>
-                    <span className="w-8"></span>
-                  </div>
-
-                  <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleStandardSizeDragEnd}>
-                    <SortableContext items={standardSizes.map(s => s.id)} strategy={verticalListSortingStrategy}>
-                      <div className="space-y-2">
-                        {standardSizes.map((size) => (
-                          <CompactStandardSizeItem
-                            key={size.id}
-                            size={size}
-                            onUpdate={updateStandardSize}
-                            onRemove={removeStandardSize}
-                            canRemove={standardSizes.length > 1}
-                          />
-                        ))}
-                      </div>
-                    </SortableContext>
-                  </DndContext>
-
-                  <button
-                    type="button"
-                    onClick={addStandardSize}
-                    className="flex items-center gap-1.5 text-primary hover:text-primary/80 text-sm font-medium"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Adicionar tamanho
-                  </button>
-                </div>
-              )}
-              
-              {currentStep === 3 && (
-                <div className="space-y-4">
-                  {/* Has Addons Toggle */}
-                  <div className="flex items-center gap-4">
-                    <Label className="text-sm font-medium text-foreground">Tem complementos/adicionais?</Label>
-                    <div className="flex items-center gap-3">
-                      <label className="flex items-center gap-1.5 cursor-pointer">
-                        <div 
-                          className={cn(
-                            "w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors",
-                            hasAddons === "yes" ? "border-primary bg-primary" : "border-muted-foreground"
-                          )}
-                          onClick={() => setHasAddons("yes")}
-                        >
-                          {hasAddons === "yes" && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />}
-                        </div>
-                        <span className="text-sm">Sim</span>
-                      </label>
-                      <label className="flex items-center gap-1.5 cursor-pointer">
-                        <div 
-                          className={cn(
-                            "w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors",
-                            hasAddons === "no" ? "border-primary bg-primary" : "border-muted-foreground"
-                          )}
-                          onClick={() => setHasAddons("no")}
-                        >
-                          {hasAddons === "no" && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />}
-                        </div>
-                        <span className="text-sm">Não</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  {hasAddons === "no" && (
-                    <p className="text-xs text-muted-foreground bg-muted p-2 rounded">
-                      Sem complementos, o cliente escolhe apenas o tamanho e o item.
-                    </p>
-                  )}
-
-                  {hasAddons === "yes" && (
-                    <>
-                      <p className="text-xs text-muted-foreground">
-                        Ex.: Bacon extra, Queijo, Calda, Granola, etc.
-                      </p>
-
-                      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleStandardAddonDragEnd}>
-                        <SortableContext items={standardAddons.map(a => a.id)} strategy={verticalListSortingStrategy}>
-                          <div className="space-y-2">
-                            {standardAddons.map((addon) => (
-                              <CompactStandardAddonItem
-                                key={addon.id}
-                                addon={addon}
-                                onUpdate={updateStandardAddon}
-                                onPriceUpdate={updateAddonPrice}
-                                onRemove={removeStandardAddon}
-                                canRemove={standardAddons.length > 1}
-                              />
-                            ))}
-                          </div>
-                        </SortableContext>
-                      </DndContext>
-
-                      <button
-                        type="button"
-                        onClick={addStandardAddon}
-                        className="flex items-center gap-1.5 text-primary hover:text-primary/80 text-sm font-medium"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Adicionar complemento
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="fixed bottom-0 left-0 right-0 bg-background dark:bg-card border-t border-border px-4 py-3 z-20">
-          <div className="flex items-center justify-between max-w-3xl mx-auto">
-            <Button
-              variant="outline"
-              onClick={handleClose}
-              className="h-9 px-4 text-sm"
-              disabled={loading}
-            >
-              Cancelar
-            </Button>
-            
-            <div className="flex gap-2">
-              {currentStep > 1 && (
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentStep(prev => prev - 1)}
-                  className="h-9 px-4 text-sm"
-                >
-                  Voltar
-                </Button>
-              )}
-              
-              {currentStep < totalSteps ? (
-                <Button 
-                  onClick={() => setCurrentStep(prev => prev + 1)}
-                  className="h-9 px-4 text-sm bg-primary hover:bg-primary/90"
-                  disabled={currentStep === 1 && !name.trim()}
-                >
-                  Próximo
-                </Button>
-              ) : (
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleSave(false)}
-                    disabled={loading || !name.trim()}
-                    className="h-9 px-4 text-sm border-primary text-primary hover:bg-primary/10"
-                  >
-                    {loading ? "Salvando..." : "Salvar"}
-                  </Button>
-                  <Button
-                    onClick={() => handleSave(true)}
-                    disabled={loading || !name.trim()}
-                    className="h-9 px-4 text-sm bg-primary hover:bg-primary/90"
-                  >
-                    {loading ? "Salvando..." : "Salvar e criar itens"}
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {PromotionModal}
-      </div>
-    );
   }
 
   // Pizza mode
