@@ -314,7 +314,7 @@ export default function StaffLoginPage() {
                     onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
                     placeholder="XXXXXX"
                     className="pl-10 uppercase font-mono tracking-widest"
-                    maxLength={6}
+                    maxLength={8}
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
