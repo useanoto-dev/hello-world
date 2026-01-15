@@ -548,7 +548,7 @@ export default function DashboardLayout() {
             }}
             className={cn(
               "hidden md:flex flex-col h-screen flex-shrink-0 relative group/sidebar",
-              "bg-[#2B2E31] border-r border-[#3a3d41]"
+              "bg-amber-400 border-r border-amber-500"
             )}
           >
           {/* Collapse Toggle Button */}
@@ -577,7 +577,7 @@ export default function DashboardLayout() {
               "h-12 flex items-center flex-shrink-0 overflow-hidden",
               "transition-all duration-200",
               sidebarCollapsed ? "justify-center px-2" : "px-3",
-              "border-b border-[#3a3d41]"
+              "border-b border-amber-500"
             )}
           >
             <Link to="/dashboard" className="flex items-center gap-2.5 min-w-0">
@@ -593,8 +593,8 @@ export default function DashboardLayout() {
                     className="w-8 h-8 rounded-md object-cover"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-lg bg-amber-400 flex items-center justify-center shadow-sm">
-                    <span className="text-[#2B2E31] font-bold text-sm">
+                  <div className="w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center shadow-sm">
+                    <span className="text-amber-400 font-bold text-sm">
                       {store?.name?.charAt(0) || "A"}
                     </span>
                   </div>
@@ -607,7 +607,7 @@ export default function DashboardLayout() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -8 }}
                     transition={{ duration: 0.15 }}
-                    className="font-bold text-[13px] text-gray-100 truncate"
+                    className="font-bold text-[13px] text-gray-900 truncate"
                   >
                     {store?.name || "Anotô?"}
                   </motion.span>
@@ -631,9 +631,9 @@ export default function DashboardLayout() {
                 className={cn(
                   "flex items-center gap-2 w-full",
                   sidebarCollapsed ? "justify-center p-1.5" : "px-3 py-1.5",
-                  store?.is_open_override 
-                    ? "bg-green-500/20"
-                    : "bg-red-500/20"
+                store?.is_open_override 
+                    ? "bg-green-600/30"
+                    : "bg-red-600/30"
                 )}
               >
                 <motion.div
@@ -709,7 +709,7 @@ export default function DashboardLayout() {
             className={cn(
               "p-1.5 space-y-0.5 flex-shrink-0 overflow-hidden",
               sidebarCollapsed && "flex flex-col items-center",
-              "border-t border-[#3a3d41]"
+              "border-t border-amber-500"
             )}
           >
             {/* Theme Toggle */}
@@ -733,11 +733,11 @@ export default function DashboardLayout() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(
-                      "flex items-center gap-2 text-xs text-gray-300 rounded-lg",
+                      "flex items-center gap-2 text-xs text-gray-900 rounded-lg hover:bg-amber-500",
                       sidebarCollapsed ? "p-1.5 justify-center" : "px-2.5 py-1.5"
                     )}
                   >
-                    <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
+                    <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 text-gray-900" />
                     <AnimatePresence mode="wait">
                       {!sidebarCollapsed && (
                         <motion.span
@@ -763,7 +763,7 @@ export default function DashboardLayout() {
                 <button
                   onClick={handleLogout}
                     className={cn(
-                      "flex items-center gap-2 text-xs text-red-400 w-full rounded-lg",
+                      "flex items-center gap-2 text-xs text-red-600 w-full rounded-lg hover:bg-amber-500",
                       sidebarCollapsed ? "p-1.5 justify-center" : "px-2.5 py-1.5"
                     )}
                 >
