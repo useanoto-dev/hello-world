@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { X, ExternalLink, LogOut, Sun, Moon } from "lucide-react";
+import { X, ExternalLink, LogOut, Sun, Moon, UserCircle, ClipboardList } from "lucide-react";
 import {
   LayoutDashboard, Monitor, UtensilsCrossed, ChefHat, ShoppingBag,
   TrendingUp, Users, Package, Warehouse, TicketPercent, Image, Plug,
@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/useTheme";
+import { useStaffAuth, type StaffRole } from "@/hooks/useStaffAuth";
 
 interface MobileMoreDrawerProps {
   open: boolean;
@@ -21,33 +22,69 @@ interface MobileMoreDrawerProps {
   onLogout: () => void;
 }
 
-const allMenuItems = [
-  { icon: LayoutDashboard, label: "Início", path: "/dashboard" },
-  { icon: Monitor, label: "PDV", path: "/dashboard/pdv" },
-  { icon: UtensilsCrossed, label: "Mesas", path: "/dashboard/tables" },
-  { icon: ChefHat, label: "Cozinha", path: "/dashboard/comandas", requiresComandaMode: true },
-  { icon: ShoppingBag, label: "Pedidos", path: "/dashboard/orders" },
-  { icon: TrendingUp, label: "Analytics", path: "/dashboard/analytics" },
-  { icon: Users, label: "Clientes", path: "/dashboard/customers" },
-  { icon: Package, label: "Gestor de Cardápio", path: "/dashboard/products" },
-  { icon: Warehouse, label: "Estoque", path: "/dashboard/inventory" },
-  { icon: TicketPercent, label: "Cupons", path: "/dashboard/coupons" },
-  { icon: Image, label: "Banners", path: "/dashboard/banners" },
-  { icon: Plug, label: "Integrações", path: "/dashboard/integrations" },
-  { icon: Settings, label: "Configurações", path: "/dashboard/settings" },
-  { icon: CreditCard, label: "Assinatura", path: "/dashboard/subscription" },
+interface MenuItemConfig {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  path: string;
+  requiresComandaMode?: boolean;
+  allowedRoles?: StaffRole[];
+  staffOnly?: boolean;
+}
+
+const allMenuItems: MenuItemConfig[] = [
+  { icon: LayoutDashboard, label: "Início", path: "/dashboard", allowedRoles: ['admin'] },
+  { icon: Monitor, label: "PDV", path: "/dashboard/pdv", allowedRoles: ['admin', 'caixa'] },
+  { icon: UtensilsCrossed, label: "Mesas", path: "/dashboard/tables", allowedRoles: ['admin', 'caixa', 'garcom'] },
+  { icon: ChefHat, label: "Cozinha", path: "/dashboard/comandas", requiresComandaMode: true, allowedRoles: ['admin', 'caixa'] },
+  { icon: ClipboardList, label: "Meus Pedidos", path: "/dashboard/my-orders", allowedRoles: ['garcom'], staffOnly: true },
+  { icon: ShoppingBag, label: "Pedidos", path: "/dashboard/orders", allowedRoles: ['admin', 'caixa'] },
+  { icon: TrendingUp, label: "Analytics", path: "/dashboard/analytics", allowedRoles: ['admin', 'caixa'] },
+  { icon: Users, label: "Clientes", path: "/dashboard/customers", allowedRoles: ['admin'] },
+  { icon: Package, label: "Gestor de Cardápio", path: "/dashboard/products", allowedRoles: ['admin'] },
+  { icon: Warehouse, label: "Estoque", path: "/dashboard/inventory", allowedRoles: ['admin'] },
+  { icon: TicketPercent, label: "Cupons", path: "/dashboard/coupons", allowedRoles: ['admin'] },
+  { icon: Image, label: "Banners", path: "/dashboard/banners", allowedRoles: ['admin'] },
+  { icon: Plug, label: "Integrações", path: "/dashboard/integrations", allowedRoles: ['admin'] },
+  { icon: Settings, label: "Configurações", path: "/dashboard/settings", allowedRoles: ['admin'] },
+  { icon: CreditCard, label: "Assinatura", path: "/dashboard/subscription", allowedRoles: ['admin'] },
+  { icon: UserCircle, label: "Meu Perfil", path: "/dashboard/profile", allowedRoles: ['caixa', 'garcom'], staffOnly: true },
 ];
 
 export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreDrawerProps) {
   const { theme, setTheme } = useTheme();
+  const { isStaffLoggedIn, role, name, logout } = useStaffAuth();
   
-  // Filter menu items based on comanda mode
+  // Filter menu items based on comanda mode and role
   const menuItems = allMenuItems.filter(item => {
-    if (item.requiresComandaMode) {
-      return store?.use_comanda_mode !== false;
+    // Filter by comanda mode
+    if (item.requiresComandaMode && store?.use_comanda_mode === false) {
+      return false;
     }
+    
+    // If staff is logged in, filter by role
+    if (isStaffLoggedIn && role) {
+      // Items with allowedRoles must include the staff role
+      if (item.allowedRoles && !item.allowedRoles.includes(role)) {
+        return false;
+      }
+    } else {
+      // Admin via Supabase Auth - hide staff-only items
+      if (item.staffOnly) {
+        return false;
+      }
+    }
+    
     return true;
   });
+
+  const handleLogout = () => {
+    onClose();
+    if (isStaffLoggedIn) {
+      logout();
+    } else {
+      onLogout();
+    }
+  };
 
   if (!open) return null;
 
@@ -79,7 +116,13 @@ export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreD
         {/* Header */}
         <div className="flex items-center justify-between px-5 pb-4 border-b border-[#e5c801]">
           <div className="flex items-center gap-3">
-            {store?.logo_url ? (
+            {isStaffLoggedIn ? (
+              <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center shadow-sm">
+                <span className="text-[#FEDE01] font-bold text-lg uppercase">
+                  {name?.charAt(0) || "F"}
+                </span>
+              </div>
+            ) : store?.logo_url ? (
               <img 
                 src={store.logo_url} 
                 alt={store.name} 
@@ -93,12 +136,16 @@ export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreD
               </div>
             )}
             <div>
-              <h2 className="font-bold text-gray-900">{store?.name || "Minha Loja"}</h2>
-              <p className="text-xs text-gray-700">Painel de Controle</p>
+              <h2 className="font-bold text-gray-900">
+                {isStaffLoggedIn ? name : (store?.name || "Minha Loja")}
+              </h2>
+              <p className="text-xs text-gray-700">
+                {isStaffLoggedIn ? `Logado como ${role}` : "Painel de Controle"}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {store?.slug && (
+            {store?.slug && !isStaffLoggedIn && (
               <a
                 href={`/cardapio/${store.slug}`}
                 target="_blank"
@@ -152,10 +199,7 @@ export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreD
           
           {/* Logout */}
           <button
-            onClick={() => {
-              onClose();
-              onLogout();
-            }}
+            onClick={handleLogout}
             className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#e5c801] transition-colors"
           >
             <LogOut className="w-4 h-4 text-gray-900" />

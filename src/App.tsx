@@ -54,6 +54,8 @@ const SubscriptionPage = lazy(() => import("@/pages/dashboard/SubscriptionPage")
 const StaffManagementPage = lazy(() => import("@/pages/dashboard/StaffManagementPage"));
 const AuditLogsPage = lazy(() => import("@/pages/dashboard/AuditLogsPage"));
 const StaffLoginPage = lazy(() => import("@/pages/StaffLoginPage"));
+const WaiterOrdersPage = lazy(() => import("@/pages/dashboard/WaiterOrdersPage"));
+const StaffProfilePage = lazy(() => import("@/pages/dashboard/StaffProfilePage"));
 
 // Storefront Pages
 const StorefrontPage = lazy(() => import("@/pages/storefront/StorefrontPage"));
@@ -146,6 +148,9 @@ function AnimatedRoutes() {
             <Route path="settings" element={<SettingsPage />} />
             <Route path="subscription" element={<SubscriptionPage />} />
             <Route path="staff" element={<StaffManagementPage />} />
+            <Route path="audit" element={<AuditLogsPage />} />
+            <Route path="my-orders" element={<WaiterOrdersPage />} />
+            <Route path="profile" element={<StaffProfilePage />} />
             <Route path="audit" element={<AuditLogsPage />} />
           </Route>
           
