@@ -94,7 +94,7 @@ const managementItems: MenuItemWithRoles[] = [
   { title: "Relatórios", url: "/dashboard/analytics", icon: BarChart3, allowedRoles: ['admin'] },
   { title: "Integrações", url: "/dashboard/integrations", icon: Plug },
   { title: "WhatsApp", url: "/dashboard/whatsapp-messages", icon: MessageSquare },
-  { title: "Usuários", url: "/dashboard/staff", icon: UserCog },
+  { title: "Garçons", url: "/dashboard/staff", icon: UserCog },
   { title: "Auditoria", url: "/dashboard/audit", icon: Activity },
   { title: "Configurações", url: "/dashboard/settings", icon: Settings },
 ];
