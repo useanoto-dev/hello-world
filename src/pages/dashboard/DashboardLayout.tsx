@@ -632,8 +632,8 @@ export default function DashboardLayout() {
                   "flex items-center gap-2 w-full",
                   sidebarCollapsed ? "justify-center p-1.5" : "px-3 py-1.5",
                 store?.is_open_override 
-                    ? "bg-green-600/30"
-                    : "bg-red-600/30"
+                    ? "bg-gray-900/80"
+                    : "bg-gray-900/60"
                 )}
               >
                 <motion.div
@@ -649,8 +649,8 @@ export default function DashboardLayout() {
                   className={cn(
                     "w-2.5 h-2.5 rounded-full flex-shrink-0",
                     store?.is_open_override 
-                      ? "bg-[#39FF14] shadow-[0_0_12px_4px_rgba(57,255,20,0.7)]" 
-                      : "bg-red-600 shadow-[0_0_6px_2px_rgba(239,68,68,0.5)]"
+                      ? "bg-green-500 shadow-[0_0_8px_2px_rgba(34,197,94,0.6)]" 
+                      : "bg-red-500 shadow-[0_0_6px_2px_rgba(239,68,68,0.5)]"
                   )}
                 />
                 <AnimatePresence mode="wait">
@@ -661,7 +661,7 @@ export default function DashboardLayout() {
                       exit={{ opacity: 0 }}
                       className={cn(
                         "text-[11px] font-semibold",
-                        store?.is_open_override ? "text-green-700" : "text-red-700"
+                        store?.is_open_override ? "text-white" : "text-white/80"
                       )}
                     >
                       {store?.is_open_override ? "Loja Aberta" : "Loja Fechada"}
