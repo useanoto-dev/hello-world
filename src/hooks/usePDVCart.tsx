@@ -25,7 +25,7 @@ export function usePDVCart(
   allOptionItems: OptionItem[]
 ) {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [customerName, setCustomerName] = useState("Cliente Balcão");
+  const [customerName, setCustomerName] = useState("Cliente");
   
   // Complements modal
   const [isComplementsOpen, setIsComplementsOpen] = useState(false);
@@ -228,7 +228,7 @@ export function usePDVCart(
 
   const clearCart = useCallback(() => {
     setCart([]);
-    setCustomerName("Cliente Balcão");
+    setCustomerName("Cliente");
     setAppliedReward(null);
     setCpfForPoints(null);
     setSplitPayments([]);
