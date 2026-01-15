@@ -1302,7 +1302,7 @@ export default function CategoryEditorPage() {
         </div>
 
         {/* Model Selection */}
-        <div className="flex-1 flex items-center justify-center p-6" style={{ backgroundColor: '#F1F2F3' }}>
+        <div className="flex-1 flex items-center justify-center p-6 bg-white">
           <div className="max-w-2xl w-full">
             <h2 className="text-lg font-semibold text-foreground text-center mb-2">
               Qual modelo de produto?
