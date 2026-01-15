@@ -70,7 +70,6 @@ const allMenuItems: MenuItem[] = [
   { icon: LayoutDashboard, label: "Início", path: "/dashboard", showAlways: true, allowedRoles: ['admin'] },
   { icon: Monitor, label: "PDV", path: "/dashboard/pdv", showAlways: true, allowedRoles: ['admin', 'caixa'] },
   { icon: Monitor, label: "Fazer Pedido", path: "/dashboard/waiter-pos", showAlways: true, allowedRoles: ['garcom'], staffOnly: true },
-  { icon: UtensilsCrossed, label: "Mesas", path: "/dashboard/tables", showAlways: true, allowedRoles: ['admin', 'caixa'] },
   { icon: ChefHat, label: "Cozinha", path: "/dashboard/comandas", showAlways: false, requiresComandaMode: true, allowedRoles: ['admin', 'caixa'] },
   { icon: ClipboardList, label: "Meus Pedidos", path: "/dashboard/waiter-orders", showAlways: true, allowedRoles: ['garcom'], staffOnly: true },
   { icon: ShoppingBag, label: "Pedidos", path: "/dashboard/orders", showAlways: true, allowedRoles: ['admin', 'caixa'] },

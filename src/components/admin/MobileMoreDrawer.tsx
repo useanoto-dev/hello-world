@@ -34,7 +34,6 @@ interface MenuItemConfig {
 const allMenuItems: MenuItemConfig[] = [
   { icon: LayoutDashboard, label: "Início", path: "/dashboard", allowedRoles: ['admin'] },
   { icon: Monitor, label: "PDV", path: "/dashboard/pdv", allowedRoles: ['admin', 'caixa'] },
-  { icon: UtensilsCrossed, label: "Mesas", path: "/dashboard/tables", allowedRoles: ['admin', 'caixa'] },
   { icon: ShoppingBag, label: "Fazer Pedido", path: "/dashboard/waiter-pos", allowedRoles: ['garcom'], staffOnly: true },
   { icon: ChefHat, label: "Cozinha", path: "/dashboard/comandas", requiresComandaMode: true, allowedRoles: ['admin', 'caixa'] },
   { icon: ClipboardList, label: "Meus Pedidos", path: "/dashboard/my-orders", allowedRoles: ['garcom'], staffOnly: true },

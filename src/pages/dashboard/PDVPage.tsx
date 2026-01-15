@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import { 
-  Plus, Minus, Check, X, Tag, Printer, DoorOpen
+  Plus, Minus, Check, X, Tag, Printer, DoorOpen, Monitor, Users
 } from "lucide-react";
 import { PDVLoyaltyRedemption } from "@/components/pdv/PDVLoyaltyRedemption";
 import { PDVPaymentSection } from "@/components/pdv/PDVPaymentSection";
@@ -10,10 +10,12 @@ import { PDVTablesPanel } from "@/components/pdv/PDVTablesPanel";
 import { PDVProductsPanel } from "@/components/pdv/PDVProductsPanel";
 import { PDVCartPanel } from "@/components/pdv/PDVCartPanel";
 import { PDVFullscreenHeader } from "@/components/pdv/PDVFullscreenHeader";
+import TablesManagement from "@/components/pdv/TablesManagement";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -50,6 +52,9 @@ import { useFullscreen } from "@/hooks/useFullscreen";
 export default function PDVPage() {
   const { store } = useOutletContext<{ store: any }>();
   const { isFullscreen, toggleFullscreen, isSupported: fullscreenSupported } = useFullscreen();
+  
+  // State for active module tab
+  const [activeModule, setActiveModule] = useState<string>("vendas");
   
   // Use extracted hooks
   const {
@@ -581,49 +586,72 @@ export default function PDVPage() {
         <PDVFullscreenHeader onExitFullscreen={toggleFullscreen} />
       )}
 
-      <div className="flex-1 flex gap-4 p-4 overflow-hidden">
-      {/* Left Panel - Tables */}
-      <PDVTablesPanel
-        tables={tables}
-        selectedTable={selectedTable}
-        isCounter={isCounter}
-        onSelectTable={selectTable}
-        onSelectCounter={selectCounter}
-        onRequestReleaseTable={requestReleaseTable}
-      />
-
-      {/* Center Panel - Products */}
-      <PDVProductsPanel
-        allDisplayItems={allDisplayItems}
-        allDisplayCategories={allDisplayCategories}
-        getSecondaryGroups={getSecondaryGroups}
-        onProductClick={openComplementsModal}
-      />
-
-      {/* Right Panel - Cart */}
-      <PDVCartPanel
-        storeId={store?.id}
-        selectedTable={selectedTable}
-        isCounter={isCounter}
-        customerName={customerName}
-        onCustomerNameChange={setCustomerName}
-        cart={cart}
-        getCartItemTotal={getCartItemTotal}
-        updateQuantity={updateQuantity}
-        removeFromCart={removeFromCart}
-        updateItemNotes={updateItemNotes}
-        clearCart={handleClearCart}
-        manualDiscount={manualDiscount}
-        manualDiscountAmount={manualDiscountAmount}
-        appliedReward={appliedReward}
-        loyaltyDiscount={loyaltyDiscount}
-        finalTotal={finalTotal}
-        onOpenPayment={() => setIsPaymentOpen(true)}
-        isFullscreen={isFullscreen}
-        onToggleFullscreen={toggleFullscreen}
-        fullscreenSupported={fullscreenSupported}
-      />
+      {/* Module Tabs */}
+      <div className="border-b bg-background px-4 pt-2">
+        <Tabs value={activeModule} onValueChange={setActiveModule} className="w-full">
+          <TabsList className="h-10 bg-muted/50">
+            <TabsTrigger value="vendas" className="text-sm gap-2 px-6">
+              <Monitor className="w-4 h-4" />
+              Vendas
+            </TabsTrigger>
+            <TabsTrigger value="mesas" className="text-sm gap-2 px-6">
+              <Users className="w-4 h-4" />
+              Mesas
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
+
+      {/* Content based on active module */}
+      {activeModule === "vendas" ? (
+        <div className="flex-1 flex gap-4 p-4 overflow-hidden">
+          {/* Left Panel - Tables */}
+          <PDVTablesPanel
+            tables={tables}
+            selectedTable={selectedTable}
+            isCounter={isCounter}
+            onSelectTable={selectTable}
+            onSelectCounter={selectCounter}
+            onRequestReleaseTable={requestReleaseTable}
+          />
+
+          {/* Center Panel - Products */}
+          <PDVProductsPanel
+            allDisplayItems={allDisplayItems}
+            allDisplayCategories={allDisplayCategories}
+            getSecondaryGroups={getSecondaryGroups}
+            onProductClick={openComplementsModal}
+          />
+
+          {/* Right Panel - Cart */}
+          <PDVCartPanel
+            storeId={store?.id}
+            selectedTable={selectedTable}
+            isCounter={isCounter}
+            customerName={customerName}
+            onCustomerNameChange={setCustomerName}
+            cart={cart}
+            getCartItemTotal={getCartItemTotal}
+            updateQuantity={updateQuantity}
+            removeFromCart={removeFromCart}
+            updateItemNotes={updateItemNotes}
+            clearCart={handleClearCart}
+            manualDiscount={manualDiscount}
+            manualDiscountAmount={manualDiscountAmount}
+            appliedReward={appliedReward}
+            loyaltyDiscount={loyaltyDiscount}
+            finalTotal={finalTotal}
+            onOpenPayment={() => setIsPaymentOpen(true)}
+            isFullscreen={isFullscreen}
+            onToggleFullscreen={toggleFullscreen}
+            fullscreenSupported={fullscreenSupported}
+          />
+        </div>
+      ) : (
+        <div className="flex-1 overflow-auto">
+          <TablesManagement store={store} />
+        </div>
+      )}
 
       {/* Complements Modal */}
       <Dialog open={isComplementsOpen} onOpenChange={setIsComplementsOpen}>

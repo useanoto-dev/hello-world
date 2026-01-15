@@ -130,7 +130,6 @@ function AnimatedRoutes() {
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardHome />} />
             <Route path="comandas" element={<ComandaPanel />} />
-            <Route path="tables" element={<TablesPage />} />
             <Route path="pdv" element={<PDVPage />} />
             <Route path="products" element={<MenuManagerPage />} />
             <Route path="menu-manager" element={<MenuManagerPage />} />
