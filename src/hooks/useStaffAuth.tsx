@@ -72,16 +72,20 @@ export const routePermissions: Record<string, StaffRole[]> = {
 export const canAccessRoute = (route: string, role: StaffRole | null): boolean => {
   if (!role) return true; // Admin via Supabase Auth has full access
   
-  // Find matching route pattern
-  const matchingRoute = Object.keys(routePermissions).find(pattern => {
-    if (route === pattern) return true;
-    if (route.startsWith(pattern + '/')) return true;
-    return false;
-  });
+  // Check exact match first
+  if (routePermissions[route]) {
+    return routePermissions[route].includes(role);
+  }
   
-  if (!matchingRoute) return true; // Route not in permissions = allowed
+  // Check if route starts with any permitted pattern
+  for (const pattern of Object.keys(routePermissions)) {
+    if (route.startsWith(pattern + '/')) {
+      return routePermissions[pattern].includes(role);
+    }
+  }
   
-  return routePermissions[matchingRoute].includes(role);
+  // Route not in permissions = allowed by default
+  return true;
 };
 
 // ============================================
