@@ -20,12 +20,17 @@ export default function StaffLoginPage() {
   const [cpf, setCpf] = useState("");
   const [password, setPassword] = useState("");
 
-  const cleanCpf = cpf.replace(/\D/g, "");
+  
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!cleanCpf || cleanCpf.length !== 11) {
+    // Get value directly from input in case of autofill not triggering state update
+    const cpfInput = document.getElementById('cpf') as HTMLInputElement;
+    const actualCpf = cpfInput?.value || cpf;
+    const actualCleanCpf = actualCpf.replace(/\D/g, "");
+    
+    if (!actualCleanCpf || actualCleanCpf.length !== 11) {
       toast.error("CPF inválido");
       return;
     }
@@ -38,11 +43,11 @@ export default function StaffLoginPage() {
     setIsLoading(true);
 
     try {
-      console.log("Attempting login with CPF:", cleanCpf);
+      console.log("Attempting login with CPF:", actualCleanCpf);
       
       const { data: staff, error } = await (supabase.from("store_staff") as any)
         .select("id, name, role, is_active, password_hash, locked_until, failed_login_attempts, store_id, cpf")
-        .eq("cpf", cleanCpf)
+        .eq("cpf", actualCleanCpf)
         .eq("is_deleted", false)
         .maybeSingle();
 
@@ -56,7 +61,7 @@ export default function StaffLoginPage() {
       }
 
       if (!staff) {
-        await logAudit(null, null, "login_failed", "auth", null, { cpf: cleanCpf, reason: "user_not_found" });
+        await logAudit(null, null, "login_failed", "auth", null, { cpf: actualCleanCpf, reason: "user_not_found" });
         toast.error("CPF não encontrado");
         setIsLoading(false);
         return;
@@ -108,7 +113,7 @@ export default function StaffLoginPage() {
         staffId: staff.id,
         storeId: staff.store_id,
         name: staff.name,
-        cpf: cleanCpf,
+        cpf: actualCleanCpf,
         role: staff.role
       }));
 
