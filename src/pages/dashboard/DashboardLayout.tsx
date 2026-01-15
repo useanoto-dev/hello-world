@@ -69,9 +69,10 @@ interface MenuItem {
 const allMenuItems: MenuItem[] = [
   { icon: LayoutDashboard, label: "Início", path: "/dashboard", showAlways: true, allowedRoles: ['admin'] },
   { icon: Monitor, label: "PDV", path: "/dashboard/pdv", showAlways: true, allowedRoles: ['admin', 'caixa'] },
+  { icon: Monitor, label: "Fazer Pedido", path: "/dashboard/waiter-pos", showAlways: true, allowedRoles: ['garcom'], staffOnly: true },
   { icon: UtensilsCrossed, label: "Mesas", path: "/dashboard/tables", showAlways: true, allowedRoles: ['admin', 'caixa', 'garcom'] },
   { icon: ChefHat, label: "Cozinha", path: "/dashboard/comandas", showAlways: false, requiresComandaMode: true, allowedRoles: ['admin', 'caixa'] },
-  { icon: ClipboardList, label: "Meus Pedidos", path: "/dashboard/my-orders", showAlways: true, allowedRoles: ['garcom'], staffOnly: true },
+  { icon: ClipboardList, label: "Meus Pedidos", path: "/dashboard/waiter-orders", showAlways: true, allowedRoles: ['garcom'], staffOnly: true },
   { icon: ShoppingBag, label: "Pedidos", path: "/dashboard/orders", showAlways: true, allowedRoles: ['admin', 'caixa'] },
   { icon: TrendingUp, label: "Analytics", path: "/dashboard/analytics", showAlways: true, allowedRoles: ['admin', 'caixa'] },
   { icon: DollarSign, label: "Financeiro", path: "/dashboard/financeiro", showAlways: true, allowedRoles: ['admin'] },
@@ -115,6 +116,7 @@ export default function DashboardLayout() {
 
   // Check route access for staff - wait for both DashboardLayout and StaffAuth to finish loading
   useEffect(() => {
+    // Only check access for staff members (not admin via Supabase Auth)
     if (isStaffLoggedIn && role && !loading && !staffLoading) {
       if (!canAccessRoute(location.pathname, role)) {
         const defaultRoute = getDefaultRouteForRole(role);
