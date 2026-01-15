@@ -75,7 +75,10 @@ export default function CategoryEditorPage() {
   const [initialLoading, setInitialLoading] = useState(!!searchParams.get('edit'));
   const [storeId, setStoreId] = useState<string | null>(null);
   
-  // Form state - Always pizza mode now
+  // Model selection state - null means not selected yet (only for new categories)
+  const [modelo, setModelo] = useState<"pizza" | "padrao" | null>(editId ? "pizza" : null);
+  
+  // Form state
   const [currentStep, setCurrentStep] = useState(1);
   const [name, setName] = useState("");
   const [isPromotion, setIsPromotion] = useState(false);
@@ -1275,6 +1278,64 @@ export default function CategoryEditorPage() {
           <div className="max-w-3xl mx-auto space-y-4">
             <div className="h-10 bg-card rounded animate-pulse" />
             <div className="h-32 bg-card rounded animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Model selection screen (only for new categories)
+  if (!editId && modelo === null) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        {/* Header */}
+        <div className="bg-card border-b border-border px-4 py-2.5">
+          <div className="flex items-center gap-3">
+            <button onClick={handleClose} className="text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div>
+              <h1 className="text-sm font-semibold text-foreground">Nova categoria</h1>
+              <p className="text-xs text-muted-foreground">Gestor de cardápio › Selecionar modelo</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Model Selection */}
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="max-w-2xl w-full">
+            <h2 className="text-lg font-semibold text-foreground text-center mb-2">
+              Qual modelo de produto?
+            </h2>
+            <p className="text-sm text-muted-foreground text-center mb-8">
+              Selecione o tipo de categoria que deseja criar
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Pizza Model */}
+              <button
+                onClick={() => setModelo("pizza")}
+                className="group p-6 bg-card border-2 border-border rounded-xl hover:border-primary transition-all text-left"
+              >
+                <div className="text-4xl mb-3">🍕</div>
+                <h3 className="text-base font-semibold text-foreground mb-1">Pizzas</h3>
+                <p className="text-xs text-muted-foreground">
+                  Ideal para pizzas com tamanhos, sabores, bordas e massas personalizáveis
+                </p>
+              </button>
+
+              {/* Standard Model */}
+              <button
+                onClick={() => setModelo("padrao")}
+                className="group p-6 bg-card border-2 border-border rounded-xl hover:border-primary transition-all text-left"
+              >
+                <div className="text-4xl mb-3">🍔</div>
+                <h3 className="text-base font-semibold text-foreground mb-1">Padrão</h3>
+                <p className="text-xs text-muted-foreground">
+                  Para hambúrgueres, bebidas, sobremesas e outros produtos com tamanhos e adicionais
+                </p>
+              </button>
+            </div>
           </div>
         </div>
       </div>
