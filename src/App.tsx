@@ -55,6 +55,7 @@ const StaffManagementPage = lazy(() => import("@/pages/dashboard/StaffManagement
 const AuditLogsPage = lazy(() => import("@/pages/dashboard/AuditLogsPage"));
 const StaffLoginPage = lazy(() => import("@/pages/StaffLoginPage"));
 const WaiterOrdersPage = lazy(() => import("@/pages/dashboard/WaiterOrdersPage"));
+const WaiterPOSPage = lazy(() => import("@/pages/dashboard/WaiterPOSPage"));
 const StaffProfilePage = lazy(() => import("@/pages/dashboard/StaffProfilePage"));
 
 // Storefront Pages
@@ -150,8 +151,8 @@ function AnimatedRoutes() {
             <Route path="staff" element={<StaffManagementPage />} />
             <Route path="audit" element={<AuditLogsPage />} />
             <Route path="my-orders" element={<WaiterOrdersPage />} />
+            <Route path="waiter-pos" element={<WaiterPOSPage />} />
             <Route path="profile" element={<StaffProfilePage />} />
-            <Route path="audit" element={<AuditLogsPage />} />
           </Route>
           
           {/* Public Storefront */}

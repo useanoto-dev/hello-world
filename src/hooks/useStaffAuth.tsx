@@ -57,6 +57,7 @@ export const routePermissions: Record<string, StaffRole[]> = {
   '/dashboard': ['admin'],
   '/dashboard/pdv': ['admin', 'caixa'],
   '/dashboard/tables': ['admin', 'caixa', 'garcom'],
+  '/dashboard/waiter-pos': ['admin', 'garcom'],
   '/dashboard/comandas': ['admin', 'caixa'],
   '/dashboard/orders': ['admin', 'caixa'],
   '/dashboard/my-orders': ['garcom'],
