@@ -100,7 +100,7 @@ export default function DashboardLayout() {
   const location = useLocation();
   const isMobile = useIsMobile();
   const { isFullscreen, toggleFullscreen, isSupported: fullscreenSupported } = useFullscreen();
-  const { isStaffLoggedIn, role, name: staffName, logout: staffLogout } = useStaffAuth();
+  const { isStaffLoggedIn, role, name: staffName, logout: staffLogout, loading: staffLoading } = useStaffAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
@@ -113,16 +113,16 @@ export default function DashboardLayout() {
   // Check if on PDV page for fullscreen button
   const isPDVPage = location.pathname === "/dashboard/pdv";
 
-  // Check route access for staff
+  // Check route access for staff - wait for both DashboardLayout and StaffAuth to finish loading
   useEffect(() => {
-    if (isStaffLoggedIn && role && !loading) {
+    if (isStaffLoggedIn && role && !loading && !staffLoading) {
       if (!canAccessRoute(location.pathname, role)) {
         const defaultRoute = getDefaultRouteForRole(role);
         toast.error("Acesso não autorizado");
         navigate(defaultRoute);
       }
     }
-  }, [location.pathname, isStaffLoggedIn, role, loading, navigate]);
+  }, [location.pathname, isStaffLoggedIn, role, loading, staffLoading, navigate]);
   // Auto-expand menu if current path is a subitem
   useEffect(() => {
     allMenuItems.forEach(item => {
@@ -362,7 +362,7 @@ export default function DashboardLayout() {
     return true;
   }), [store?.use_comanda_mode, isStaffLoggedIn, role]);
 
-  if (loading) {
+  if (loading || staffLoading) {
     return (
       <div className="min-h-screen bg-background flex">
         <div className="w-14 bg-amber-400 border-r border-amber-500 p-2 space-y-2">
