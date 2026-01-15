@@ -1845,8 +1845,8 @@ export default function SettingsPage() {
                   <UserCog className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold">Usuários</h3>
-                  <p className="text-sm text-muted-foreground">Gerenciar funcionários e acessos</p>
+                  <h3 className="font-semibold">Garçons</h3>
+                  <p className="text-sm text-muted-foreground">Gerenciar garçons do App</p>
                 </div>
                 <ChevronDown className="w-5 h-5 text-muted-foreground -rotate-90" />
               </CardContent>
@@ -1877,8 +1877,8 @@ export default function SettingsPage() {
                   <ExternalLink className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold">Acesso Funcionários</h3>
-                  <p className="text-sm text-muted-foreground">Tela de login para equipe</p>
+                  <h3 className="font-semibold">App do Garçom</h3>
+                  <p className="text-sm text-muted-foreground">Tela de login para garçons</p>
                 </div>
                 <ChevronDown className="w-5 h-5 text-muted-foreground -rotate-90" />
               </CardContent>

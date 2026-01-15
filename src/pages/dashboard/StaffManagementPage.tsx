@@ -60,7 +60,7 @@ interface StaffMember {
   id: string;
   name: string;
   cpf: string;
-  role: "admin" | "garcom" | "caixa";
+  role: "admin" | "garcom";
   is_active: boolean;
   is_deleted: boolean;
   created_at: string;
@@ -84,13 +84,11 @@ interface StaffPermissions {
 const roleLabels: Record<string, string> = {
   admin: "Administrador",
   garcom: "Garçom",
-  caixa: "Caixa",
 };
 
 const roleBadgeColors: Record<string, string> = {
   admin: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
   garcom: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-  caixa: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
 };
 
 export default function StaffManagementPage() {
@@ -108,7 +106,7 @@ export default function StaffManagementPage() {
   const [formData, setFormData] = useState({
     name: "",
     cpf: "",
-    role: "garcom" as "admin" | "garcom" | "caixa",
+    role: "garcom" as "admin" | "garcom",
     password: "",
   });
 
@@ -362,15 +360,15 @@ export default function StaffManagementPage() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Users className="w-6 h-6" />
-            Gestão de Usuários
+            Garçons
           </h1>
           <p className="text-muted-foreground mt-1">
-            Gerencie os funcionários e seus acessos ao sistema
+            Gerencie os garçons do App do Garçom
           </p>
         </div>
         <Button onClick={() => setShowCreateModal(true)} className="gap-2">
           <Plus className="w-4 h-4" />
-          Novo Usuário
+          Novo Garçom
         </Button>
       </div>
 
@@ -392,10 +390,9 @@ export default function StaffManagementPage() {
                 <SelectValue placeholder="Filtrar por cargo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos os cargos</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 <SelectItem value="admin">Administrador</SelectItem>
                 <SelectItem value="garcom">Garçom</SelectItem>
-                <SelectItem value="caixa">Caixa</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -485,12 +482,6 @@ export default function StaffManagementPage() {
                             <Edit className="w-4 h-4 mr-2" />
                             Editar
                           </DropdownMenuItem>
-                          {staff.role === "caixa" && (
-                            <DropdownMenuItem onClick={() => handlePermissionsClick(staff)}>
-                              <Shield className="w-4 h-4 mr-2" />
-                              Permissões
-                            </DropdownMenuItem>
-                          )}
                           <DropdownMenuSeparator />
                           {staff.is_active ? (
                             <DropdownMenuItem 
@@ -531,9 +522,9 @@ export default function StaffManagementPage() {
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Novo Usuário</DialogTitle>
+            <DialogTitle>Novo Garçom</DialogTitle>
             <DialogDescription>
-              Adicione um novo funcionário ao sistema
+              Adicione um novo garçom ao App do Garçom
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -543,7 +534,7 @@ export default function StaffManagementPage() {
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Nome do funcionário"
+                placeholder="Nome do garçom"
               />
             </div>
             <div className="space-y-2">
@@ -560,7 +551,7 @@ export default function StaffManagementPage() {
               <Label htmlFor="role">Cargo</Label>
               <Select 
                 value={formData.role} 
-                onValueChange={(value: "admin" | "garcom" | "caixa") => 
+                onValueChange={(value: "admin" | "garcom") => 
                   setFormData({ ...formData, role: value })
                 }
               >
@@ -570,7 +561,6 @@ export default function StaffManagementPage() {
                 <SelectContent>
                   <SelectItem value="admin">Administrador</SelectItem>
                   <SelectItem value="garcom">Garçom</SelectItem>
-                  <SelectItem value="caixa">Caixa</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -585,7 +575,7 @@ export default function StaffManagementPage() {
                 minLength={6}
               />
               <p className="text-xs text-muted-foreground">
-                O funcionário usará esta senha para fazer login
+                O garçom usará esta senha para fazer login no App do Garçom
               </p>
             </div>
           </div>
@@ -597,7 +587,7 @@ export default function StaffManagementPage() {
               onClick={() => createStaffMutation.mutate(formData)}
               disabled={!formData.name || !formData.cpf || !formData.password || formData.password.length < 6 || createStaffMutation.isPending}
             >
-              {createStaffMutation.isPending ? "Criando..." : "Criar usuário"}
+              {createStaffMutation.isPending ? "Criando..." : "Criar garçom"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -634,7 +624,7 @@ export default function StaffManagementPage() {
               <Label htmlFor="edit-role">Cargo</Label>
               <Select 
                 value={formData.role} 
-                onValueChange={(value: "admin" | "garcom" | "caixa") => 
+                onValueChange={(value: "admin" | "garcom") => 
                   setFormData({ ...formData, role: value })
                 }
               >
@@ -644,7 +634,6 @@ export default function StaffManagementPage() {
                 <SelectContent>
                   <SelectItem value="admin">Administrador</SelectItem>
                   <SelectItem value="garcom">Garçom</SelectItem>
-                  <SelectItem value="caixa">Caixa</SelectItem>
                 </SelectContent>
               </Select>
             </div>

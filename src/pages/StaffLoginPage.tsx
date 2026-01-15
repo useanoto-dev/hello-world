@@ -166,7 +166,7 @@ export default function StaffLoginPage() {
           <div className="flex justify-center mb-4">
             <img src={logoFull} alt="Anoto" className="h-12" />
           </div>
-          <CardTitle className="text-2xl font-bold">Acesso Funcionários</CardTitle>
+          <CardTitle className="text-2xl font-bold">App do Garçom</CardTitle>
           <CardDescription>
             Entre com seu CPF e senha
           </CardDescription>
