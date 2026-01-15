@@ -1332,7 +1332,7 @@ export default function CategoryEditorPage() {
                 <div className="text-4xl mb-3">🍔</div>
                 <h3 className="text-base font-semibold text-foreground mb-1">Padrão</h3>
                 <p className="text-xs text-muted-foreground">
-                  Para hambúrgueres, bebidas, sobremesas e outros produtos com tamanhos e adicionais
+                  Para hambúrgueres, açaí, bebidas, sobremesas e outros produtos com tamanhos e adicionais
                 </p>
               </button>
             </div>
