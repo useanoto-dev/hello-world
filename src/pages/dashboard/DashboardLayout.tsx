@@ -123,8 +123,6 @@ export default function DashboardLayout() {
       }
     }
   }, [location.pathname, isStaffLoggedIn, role, loading, navigate]);
-  const isPDVPage = location.pathname === "/dashboard/pdv";
-
   // Auto-expand menu if current path is a subitem
   useEffect(() => {
     allMenuItems.forEach(item => {
