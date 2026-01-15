@@ -52,15 +52,16 @@ export const getDefaultRouteForRole = (role: StaffRole | null): string => {
   }
 };
 
-// Routes allowed per role
+// Routes allowed per role - garcom and caixa have specific routes, admin has access to all
 export const routePermissions: Record<string, StaffRole[]> = {
   '/dashboard': ['admin'],
   '/dashboard/pdv': ['admin', 'caixa'],
   '/dashboard/tables': ['admin', 'caixa', 'garcom'],
   '/dashboard/waiter-pos': ['admin', 'garcom'],
+  '/dashboard/waiter-orders': ['admin', 'garcom'],
   '/dashboard/comandas': ['admin', 'caixa'],
   '/dashboard/orders': ['admin', 'caixa'],
-  '/dashboard/my-orders': ['garcom'],
+  '/dashboard/my-orders': ['admin', 'garcom'],
   '/dashboard/analytics': ['admin', 'caixa'],
   '/dashboard/financeiro': ['admin'],
   '/dashboard/customers': ['admin'],
@@ -79,7 +80,7 @@ export const routePermissions: Record<string, StaffRole[]> = {
   '/dashboard/audit': ['admin'],
   '/dashboard/settings': ['admin'],
   '/dashboard/subscription': ['admin'],
-  '/dashboard/profile': ['caixa', 'garcom'],
+  '/dashboard/profile': ['admin', 'caixa', 'garcom'],
 };
 
 // Check if a role has access to a route

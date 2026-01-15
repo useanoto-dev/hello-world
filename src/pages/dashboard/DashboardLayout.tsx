@@ -245,6 +245,45 @@ export default function DashboardLayout() {
 
   const checkAuth = async () => {
     try {
+      // First check if staff is logged in via localStorage
+      const staffSession = localStorage.getItem('staff_session');
+      if (staffSession) {
+        try {
+          const parsed = JSON.parse(staffSession);
+          const staffStoreId = parsed.storeId || parsed.store_id;
+          
+          if (staffStoreId) {
+            // Staff is logged in - load store data directly
+            const { data: storeData } = await supabase
+              .from("stores")
+              .select("*")
+              .eq("id", staffStoreId)
+              .maybeSingle();
+
+            if (storeData) {
+              setStore(storeData);
+            }
+
+            const { data: subData } = await supabase
+              .from("subscriptions")
+              .select("status, trial_ends_at")
+              .eq("store_id", staffStoreId)
+              .maybeSingle();
+
+            if (subData) {
+              setSubscription(subData);
+            }
+            
+            setLoading(false);
+            return;
+          }
+        } catch (e) {
+          console.error("Error parsing staff session:", e);
+          localStorage.removeItem('staff_session');
+        }
+      }
+
+      // Check Supabase Auth for admin users
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
