@@ -56,7 +56,6 @@ export const getDefaultRouteForRole = (role: StaffRole | null): string => {
 export const routePermissions: Record<string, StaffRole[]> = {
   '/dashboard': ['admin'],
   '/dashboard/pdv': ['admin', 'caixa'],
-  '/dashboard/tables': ['admin', 'caixa'],
   '/dashboard/waiter-pos': ['admin', 'garcom'],
   '/dashboard/waiter-orders': ['admin', 'garcom'],
   '/dashboard/comandas': ['admin', 'caixa'],
