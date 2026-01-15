@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -99,38 +99,90 @@ export const canAccessRoute = (route: string, role: StaffRole | null): boolean =
   return routePermissions[matchingRoute].includes(role);
 };
 
+// ============================================
+// Shared state store for staff session
+// Ensures all components see the same state instantly
+// ============================================
+interface StaffStore {
+  session: StaffSession | null;
+  loading: boolean;
+}
+
+let store: StaffStore = { session: null, loading: true };
+const listeners = new Set<() => void>();
+
+const notifyListeners = () => {
+  listeners.forEach(listener => listener());
+};
+
+const setStore = (newStore: Partial<StaffStore>) => {
+  store = { ...store, ...newStore };
+  notifyListeners();
+};
+
+// Initialize session from localStorage (runs once on module load)
+const initializeSession = () => {
+  try {
+    const savedSession = localStorage.getItem('staff_session');
+    if (savedSession) {
+      const parsed = JSON.parse(savedSession);
+      store = {
+        session: {
+          staffId: parsed.staffId || parsed.id,
+          storeId: parsed.storeId || parsed.store_id,
+          name: parsed.name,
+          cpf: parsed.cpf || '',
+          role: parsed.role
+        },
+        loading: false
+      };
+    } else {
+      store = { session: null, loading: false };
+    }
+  } catch (error) {
+    console.error('Error loading staff session:', error);
+    localStorage.removeItem('staff_session');
+    store = { session: null, loading: false };
+  }
+};
+
+// Initialize immediately when module loads
+initializeSession();
+
+const subscribe = (callback: () => void) => {
+  listeners.add(callback);
+  return () => {
+    listeners.delete(callback);
+  };
+};
+
+const getSnapshot = (): StaffStore => store;
+const getServerSnapshot = (): StaffStore => ({ session: null, loading: false });
+
+// Export function to clear session (used by logout)
+export const clearStaffSession = () => {
+  localStorage.removeItem('staff_session');
+  setStore({ session: null });
+};
+
+// Export function to set session (used by login)
+export const setStaffSession = (session: StaffSession) => {
+  localStorage.setItem('staff_session', JSON.stringify(session));
+  setStore({ session });
+};
+
+// ============================================
+// Main Hook
+// ============================================
 export function useStaffAuth(): UseStaffAuthReturn {
   const navigate = useNavigate();
-  const [staffSession, setStaffSession] = useState<StaffSession | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Load staff session from localStorage
-  useEffect(() => {
-    const loadSession = () => {
-      try {
-        const savedSession = localStorage.getItem('staff_session');
-        if (savedSession) {
-          const parsed = JSON.parse(savedSession);
-          // Map 'id' to 'staffId' and 'store_id' to 'storeId' for compatibility
-          const normalizedSession: StaffSession = {
-            staffId: parsed.staffId || parsed.id,
-            storeId: parsed.storeId || parsed.store_id,
-            name: parsed.name,
-            cpf: parsed.cpf || '',
-            role: parsed.role
-          };
-          setStaffSession(normalizedSession);
-        }
-      } catch (error) {
-        console.error('Error loading staff session:', error);
-        localStorage.removeItem('staff_session');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    loadSession();
-  }, []);
+  
+  // Use sync external store for shared state across all components
+  const { session: staffSession, loading } = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    getServerSnapshot
+  );
 
   // Fetch permissions for caixa role
   const { data: permissions } = useQuery({
@@ -182,8 +234,7 @@ export function useStaffAuth(): UseStaffAuthReturn {
 
   // Logout function
   const logout = useCallback(() => {
-    localStorage.removeItem('staff_session');
-    setStaffSession(null);
+    clearStaffSession();
     toast.success('Sessão encerrada');
     navigate('/funcionario');
   }, [navigate]);
