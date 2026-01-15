@@ -149,7 +149,7 @@ function AnimatedRoutes() {
             <Route path="subscription" element={<SubscriptionPage />} />
             <Route path="staff" element={<StaffManagementPage />} />
             <Route path="audit" element={<AuditLogsPage />} />
-            <Route path="my-orders" element={<WaiterOrdersPage />} />
+            <Route path="waiter-orders" element={<WaiterOrdersPage />} />
             <Route path="waiter-pos" element={<WaiterPOSPage />} />
             <Route path="profile" element={<StaffProfilePage />} />
           </Route>
