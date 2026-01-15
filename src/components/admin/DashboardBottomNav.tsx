@@ -39,7 +39,7 @@ export function DashboardBottomNav({
 
   return (
     <nav 
-      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#2B2E31] border-t border-[#3a3d41]"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#FEDE01] border-t border-[#e5c801]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
       {/* Store Status Indicator */}
@@ -84,7 +84,7 @@ export function DashboardBottomNav({
               key={item.path}
               to={item.path}
               onClick={triggerHaptic}
-              className="relative flex flex-col items-center justify-center flex-1 h-12 gap-0.5 rounded-lg mx-0.5 bg-amber-400 text-gray-900"
+              className="relative flex flex-col items-center justify-center flex-1 h-12 gap-0.5 rounded-lg mx-0.5 hover:bg-[#e5c801] text-gray-900 transition-colors"
             >
               {/* Active indicator - removed, using bg color instead */}
               
@@ -119,7 +119,7 @@ export function DashboardBottomNav({
             triggerHaptic();
             onMoreClick();
           }}
-          className="relative flex flex-col items-center justify-center flex-1 h-12 gap-0.5 bg-amber-400 text-gray-900 rounded-lg mx-0.5"
+          className="relative flex flex-col items-center justify-center flex-1 h-12 gap-0.5 hover:bg-[#e5c801] text-gray-900 rounded-lg mx-0.5 transition-colors"
         >
           <MoreHorizontal className="h-5 w-5" />
           <span className="text-[10px] font-medium">Mais</span>
