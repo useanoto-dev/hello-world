@@ -9,19 +9,10 @@ export interface StaffSession {
   storeId: string;
   name: string;
   cpf: string;
-  role: 'admin' | 'caixa' | 'garcom';
+  role: 'admin' | 'garcom';
 }
 
-export interface StaffPermissions {
-  can_open_cashier: boolean;
-  can_close_cashier: boolean;
-  can_cancel_orders: boolean;
-  can_apply_discounts: boolean;
-  can_view_reports: boolean;
-  can_finalize_sales: boolean;
-}
-
-export type StaffRole = 'admin' | 'caixa' | 'garcom';
+export type StaffRole = 'admin' | 'garcom';
 
 interface UseStaffAuthReturn {
   staffSession: StaffSession | null;
@@ -31,10 +22,7 @@ interface UseStaffAuthReturn {
   name: string | null;
   role: StaffRole | null;
   isAdmin: boolean;
-  isCaixa: boolean;
   isGarcom: boolean;
-  permissions: StaffPermissions | null;
-  hasPermission: (permission: keyof StaffPermissions) => boolean;
   logout: () => void;
   loading: boolean;
 }
@@ -44,24 +32,22 @@ export const getDefaultRouteForRole = (role: StaffRole | null): string => {
   switch (role) {
     case 'garcom':
       return '/dashboard/waiter-pos';
-    case 'caixa':
-      return '/dashboard/pdv';
     case 'admin':
     default:
       return '/dashboard';
   }
 };
 
-// Routes allowed per role - garcom and caixa have specific routes, admin has access to all
+// Routes allowed per role - admin has access to all, garcom has specific routes
 export const routePermissions: Record<string, StaffRole[]> = {
   '/dashboard': ['admin'],
-  '/dashboard/pdv': ['admin', 'caixa'],
+  '/dashboard/pdv': ['admin'],
   '/dashboard/waiter-pos': ['admin', 'garcom'],
   '/dashboard/waiter-orders': ['admin', 'garcom'],
-  '/dashboard/comandas': ['admin', 'caixa'],
-  '/dashboard/orders': ['admin', 'caixa'],
+  '/dashboard/comandas': ['admin'],
+  '/dashboard/orders': ['admin'],
   '/dashboard/my-orders': ['admin', 'garcom'],
-  '/dashboard/analytics': ['admin', 'caixa'],
+  '/dashboard/analytics': ['admin'],
   '/dashboard/financeiro': ['admin'],
   '/dashboard/customers': ['admin'],
   '/dashboard/products': ['admin'],
@@ -79,7 +65,7 @@ export const routePermissions: Record<string, StaffRole[]> = {
   '/dashboard/audit': ['admin'],
   '/dashboard/settings': ['admin'],
   '/dashboard/subscription': ['admin'],
-  '/dashboard/profile': ['admin', 'caixa', 'garcom'],
+  '/dashboard/profile': ['admin', 'garcom'],
 };
 
 // Check if a role has access to a route
@@ -183,28 +169,6 @@ export function useStaffAuth(): UseStaffAuthReturn {
     getServerSnapshot
   );
 
-  // Fetch permissions for caixa role
-  const { data: permissions } = useQuery({
-    queryKey: ['staff-permissions', staffSession?.staffId],
-    queryFn: async () => {
-      if (!staffSession?.staffId || staffSession.role !== 'caixa') return null;
-      
-      const { data, error } = await supabase
-        .from('staff_permissions')
-        .select('*')
-        .eq('staff_id', staffSession.staffId)
-        .maybeSingle();
-      
-      if (error) {
-        console.error('Error fetching staff permissions:', error);
-        return null;
-      }
-      
-      return data as StaffPermissions | null;
-    },
-    enabled: !!staffSession?.staffId && staffSession.role === 'caixa',
-  });
-
   const isStaffLoggedIn = !!staffSession;
   const staffId = staffSession?.staffId ?? null;
   const storeId = staffSession?.storeId ?? null;
@@ -212,24 +176,7 @@ export function useStaffAuth(): UseStaffAuthReturn {
   const role = staffSession?.role ?? null;
 
   const isAdmin = role === 'admin';
-  const isCaixa = role === 'caixa';
   const isGarcom = role === 'garcom';
-
-  // Check if staff has a specific permission
-  const hasPermission = useCallback((permission: keyof StaffPermissions): boolean => {
-    // Admin has all permissions
-    if (isAdmin || !isStaffLoggedIn) return true;
-    
-    // Garçom has limited permissions
-    if (isGarcom) return false;
-    
-    // Caixa checks specific permissions
-    if (isCaixa && permissions) {
-      return permissions[permission] ?? false;
-    }
-    
-    return false;
-  }, [isAdmin, isCaixa, isGarcom, isStaffLoggedIn, permissions]);
 
   // Logout function
   const logout = useCallback(() => {
@@ -246,10 +193,7 @@ export function useStaffAuth(): UseStaffAuthReturn {
     name,
     role,
     isAdmin,
-    isCaixa,
     isGarcom,
-    permissions: permissions ?? null,
-    hasPermission,
     logout,
     loading,
   };

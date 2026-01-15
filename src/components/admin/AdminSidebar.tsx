@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useStaffAuth, type StaffRole, type StaffPermissions } from "@/hooks/useStaffAuth";
+import { useStaffAuth, type StaffRole } from "@/hooks/useStaffAuth";
 import {
   Sidebar,
   SidebarContent,
@@ -58,19 +58,18 @@ interface MenuItemWithRoles {
   url: string;
   icon: React.ComponentType<{ className?: string }>;
   allowedRoles?: StaffRole[]; // undefined = only admin (Supabase Auth)
-  requiresPermission?: keyof StaffPermissions;
   staffOnly?: boolean; // Items only for staff, not admin (Supabase Auth)
 }
 
-// Quick access items - PDV is for admin and caixa
+// Quick access items - PDV is admin only
 const quickAccessItems: MenuItemWithRoles[] = [
-  { title: "PDV", url: "/dashboard/pdv", icon: CreditCard, allowedRoles: ['admin', 'caixa'] },
+  { title: "PDV", url: "/dashboard/pdv", icon: CreditCard, allowedRoles: ['admin'] },
 ];
 
 // Operational items
 const operationalItems: MenuItemWithRoles[] = [
-  { title: "Mesas", url: "/dashboard/tables", icon: UtensilsCrossed, allowedRoles: ['admin', 'caixa', 'garcom'] },
-  { title: "Cozinha", url: "/dashboard/comandas", icon: ChefHat, allowedRoles: ['admin', 'caixa'] },
+  { title: "Mesas", url: "/dashboard/tables", icon: UtensilsCrossed, allowedRoles: ['admin', 'garcom'] },
+  { title: "Cozinha", url: "/dashboard/comandas", icon: ChefHat, allowedRoles: ['admin'] },
   { title: "Meus Pedidos", url: "/dashboard/my-orders", icon: Receipt, allowedRoles: ['garcom'], staffOnly: true },
 ];
 
@@ -83,16 +82,16 @@ const menuManagerSubItems: MenuItemWithRoles[] = [
   { title: "Edição em massa", url: "/dashboard/menu-bulk-edit", icon: Edit3 },
 ];
 
-// Management items with permissions
+// Management items
 const managementItems: MenuItemWithRoles[] = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Pedidos", url: "/dashboard/orders", icon: ClipboardList, allowedRoles: ['admin', 'caixa'], requiresPermission: 'can_view_reports' },
+  { title: "Pedidos", url: "/dashboard/orders", icon: ClipboardList, allowedRoles: ['admin'] },
   { title: "Estoque", url: "/dashboard/inventory", icon: Package },
   { title: "Banners", url: "/dashboard/banners", icon: ImageIcon },
   { title: "Clientes", url: "/dashboard/customers", icon: Users },
   { title: "Cupons", url: "/dashboard/coupons", icon: Ticket },
   { title: "Financeiro", url: "/dashboard/financeiro", icon: DollarSign },
-  { title: "Relatórios", url: "/dashboard/analytics", icon: BarChart3, allowedRoles: ['admin', 'caixa'], requiresPermission: 'can_view_reports' },
+  { title: "Relatórios", url: "/dashboard/analytics", icon: BarChart3, allowedRoles: ['admin'] },
   { title: "Integrações", url: "/dashboard/integrations", icon: Plug },
   { title: "WhatsApp", url: "/dashboard/whatsapp-messages", icon: MessageSquare },
   { title: "Usuários", url: "/dashboard/staff", icon: UserCog },
@@ -105,7 +104,7 @@ const staffProfileItem: MenuItemWithRoles = {
   title: "Meu Perfil",
   url: "/dashboard/profile",
   icon: UserCircle,
-  allowedRoles: ['caixa', 'garcom'],
+  allowedRoles: ['garcom'],
   staffOnly: true,
 };
 
@@ -115,7 +114,7 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
   const { signOut, user, profile } = useAuth();
-  const { isStaffLoggedIn, role: staffRole, name: staffName, permissions, logout: staffLogout, hasPermission } = useStaffAuth();
+  const { isStaffLoggedIn, role: staffRole, name: staffName, logout: staffLogout } = useStaffAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { state } = useSidebar();
@@ -144,11 +143,6 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
           // Check if current role is allowed
           if (!item.allowedRoles.includes(staffRole)) return false;
           
-          // Check specific permission for caixa
-          if (item.requiresPermission && staffRole === 'caixa') {
-            return hasPermission(item.requiresPermission);
-          }
-          
           return true;
         } else {
           // Admin via Supabase Auth - hide staff-only items
@@ -157,7 +151,7 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
         }
       });
     };
-  }, [isStaffLoggedIn, staffRole, hasPermission]);
+  }, [isStaffLoggedIn, staffRole]);
 
   // Filtered items
   const filteredQuickAccess = useMemo(() => filterItems(quickAccessItems), [filterItems]);
@@ -269,7 +263,7 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
                   {isStaffLoggedIn ? staffName : "Pizzaria"}
                 </h2>
                 <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">
-                  {isStaffLoggedIn ? (staffRole === 'garcom' ? 'Garçom' : staffRole === 'caixa' ? 'Caixa' : 'Admin') : "Portuguesa"}
+                  {isStaffLoggedIn ? (staffRole === 'garcom' ? 'Garçom' : 'Admin') : "Portuguesa"}
                 </p>
               </motion.div>
             )}
