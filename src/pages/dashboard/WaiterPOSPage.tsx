@@ -81,6 +81,25 @@ export default function WaiterPOSPage() {
   const [splitPayments, setSplitPayments] = useState<SplitPayment[]>([]);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [isCounter, setIsCounter] = useState(false);
+  const [paymentMethods, setPaymentMethods] = useState<{ id: string; name: string; icon_type: string }[]>([]);
+
+  // Fetch payment methods
+  useEffect(() => {
+    if (!store?.id) return;
+    
+    const fetchPaymentMethods = async () => {
+      const { data } = await supabase
+        .from("payment_methods")
+        .select("id, name, icon_type")
+        .eq("store_id", store.id)
+        .eq("is_active", true)
+        .order("display_order");
+      
+      if (data) setPaymentMethods(data);
+    };
+    
+    fetchPaymentMethods();
+  }, [store?.id]);
 
   // Auto-set customer name with waiter name
   useEffect(() => {
@@ -680,15 +699,13 @@ export default function WaiterPOSPage() {
               </div>
             </div>
 
-            {/* Payment Section - uses internal fetching */}
-            {store?.id && (
-              <PDVPaymentSectionWithFetch
-                storeId={store.id}
-                totalAmount={finalTotal}
-                payments={splitPayments}
-                onPaymentsChange={setSplitPayments}
-              />
-            )}
+            {/* Payment Section */}
+            <PDVPaymentSection
+              paymentMethods={paymentMethods}
+              totalAmount={finalTotal}
+              payments={splitPayments}
+              onPaymentsChange={setSplitPayments}
+            />
           </div>
           
           <DialogFooter>
