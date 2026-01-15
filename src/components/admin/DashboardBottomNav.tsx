@@ -5,10 +5,14 @@ import {
   ShoppingBag, 
   Monitor, 
   MoreHorizontal,
-  Package
+  Package,
+  UtensilsCrossed,
+  ClipboardList,
+  LucideIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
+import { useStaffAuth, type StaffRole } from "@/hooks/useStaffAuth";
 
 interface DashboardBottomNavProps {
   isStoreOpen: boolean;
@@ -16,11 +20,22 @@ interface DashboardBottomNavProps {
   onMoreClick: () => void;
 }
 
-const navItems = [
-  { path: "/dashboard", icon: LayoutDashboard, label: "Início" },
-  { path: "/dashboard/orders", icon: ShoppingBag, label: "Pedidos", showBadge: true },
-  { path: "/dashboard/pdv", icon: Monitor, label: "PDV" },
-  { path: "/dashboard/products", icon: Package, label: "Cardápio" },
+interface NavItemConfig {
+  path: string;
+  icon: LucideIcon;
+  label: string;
+  showBadge?: boolean;
+  allowedRoles: StaffRole[];
+}
+
+// All possible nav items with their allowed roles
+const allNavItems: NavItemConfig[] = [
+  { path: "/dashboard", icon: LayoutDashboard, label: "Início", allowedRoles: ['admin'] },
+  { path: "/dashboard/orders", icon: ShoppingBag, label: "Pedidos", showBadge: true, allowedRoles: ['admin', 'caixa'] },
+  { path: "/dashboard/pdv", icon: Monitor, label: "PDV", allowedRoles: ['admin', 'caixa'] },
+  { path: "/dashboard/tables", icon: UtensilsCrossed, label: "Mesas", allowedRoles: ['admin', 'caixa', 'garcom'] },
+  { path: "/dashboard/my-orders", icon: ClipboardList, label: "Meus Pedidos", allowedRoles: ['garcom'] },
+  { path: "/dashboard/products", icon: Package, label: "Cardápio", allowedRoles: ['admin'] },
 ];
 
 export function DashboardBottomNav({ 
@@ -29,6 +44,20 @@ export function DashboardBottomNav({
   onMoreClick
 }: DashboardBottomNavProps) {
   const location = useLocation();
+  const { isStaffLoggedIn, role } = useStaffAuth();
+  
+  // Filter nav items based on role
+  const navItems = useMemo(() => {
+    if (!isStaffLoggedIn || !role) {
+      // Admin via Supabase Auth - show admin items
+      return allNavItems.filter(item => item.allowedRoles.includes('admin')).slice(0, 4);
+    }
+    
+    // Staff - filter by their role
+    const filtered = allNavItems.filter(item => item.allowedRoles.includes(role));
+    // Return max 4 items to keep layout balanced
+    return filtered.slice(0, 4);
+  }, [isStaffLoggedIn, role]);
   
   // Haptic feedback
   const triggerHaptic = useCallback(() => {
@@ -86,8 +115,6 @@ export function DashboardBottomNav({
               onClick={triggerHaptic}
               className="relative flex flex-col items-center justify-center flex-1 h-12 gap-0.5 rounded-lg mx-0.5 hover:bg-[#e5c801] text-gray-900 transition-colors"
             >
-              {/* Active indicator - removed, using bg color instead */}
-              
               <div className="relative z-10">
                 <Icon className={cn(
                   "h-5 w-5 transition-all",
