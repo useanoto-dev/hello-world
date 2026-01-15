@@ -216,8 +216,8 @@ export function PDVNewCartPanel({
           disabled={cart.length === 0}
           onClick={onFinishOrder}
         >
-          <CreditCard className="w-4 h-4" />
-          Finalizar Pedido
+          <ShoppingCart className="w-4 h-4" />
+          Enviar Pedido
         </Button>
       </div>
     </div>
