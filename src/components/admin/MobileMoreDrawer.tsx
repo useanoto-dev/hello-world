@@ -36,7 +36,7 @@ const allMenuItems: MenuItemConfig[] = [
   { icon: Monitor, label: "PDV", path: "/dashboard/pdv", allowedRoles: ['admin'] },
   { icon: ShoppingBag, label: "Fazer Pedido", path: "/dashboard/waiter-pos", allowedRoles: ['garcom'], staffOnly: true },
   { icon: ChefHat, label: "Cozinha", path: "/dashboard/comandas", requiresComandaMode: true, allowedRoles: ['admin'] },
-  { icon: ClipboardList, label: "Meus Pedidos", path: "/dashboard/my-orders", allowedRoles: ['garcom'], staffOnly: true },
+  { icon: ClipboardList, label: "Meus Pedidos", path: "/dashboard/waiter-orders", allowedRoles: ['garcom'], staffOnly: true },
   { icon: ShoppingBag, label: "Pedidos", path: "/dashboard/orders", allowedRoles: ['admin'] },
   { icon: TrendingUp, label: "Analytics", path: "/dashboard/analytics", allowedRoles: ['admin'] },
   { icon: Users, label: "Clientes", path: "/dashboard/customers", allowedRoles: ['admin'] },
