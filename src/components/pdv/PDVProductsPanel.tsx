@@ -102,12 +102,12 @@ export function PDVProductsPanel({
                     )}
                     <div className="flex items-center gap-2 mt-1">
                       {hasVariations ? (
-                        <p className="text-primary font-semibold text-sm">
+                        <p className="text-gray-700 font-semibold text-sm">
                           {formatCurrency(Math.min(...item.variations!.map(v => v.price)))} - {formatCurrency(Math.max(...item.variations!.map(v => v.price)))}
                         </p>
                       ) : (
                         <>
-                          <p className="text-primary font-semibold">
+                          <p className="text-gray-700 font-semibold">
                             {formatCurrency(price)}
                           </p>
                           {hasPromo && (

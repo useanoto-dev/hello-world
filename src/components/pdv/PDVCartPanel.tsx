@@ -141,7 +141,7 @@ export function PDVCartPanel({
                           ))}
                         </div>
                       )}
-                      <p className="text-xs text-primary font-medium mt-1">
+                      <p className="text-xs text-gray-700 font-medium mt-1">
                         {formatCurrency(itemTotal)}
                       </p>
                     </div>
@@ -215,7 +215,7 @@ export function PDVCartPanel({
         )}
         <div className="flex items-center justify-between text-lg font-bold">
           <span>Total</span>
-          <span className="text-primary">{formatCurrency(finalTotal)}</span>
+          <span className="text-gray-700">{formatCurrency(finalTotal)}</span>
         </div>
         
         <div className="flex gap-2">
