@@ -1,21 +1,20 @@
 import { useEffect, useState, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import { 
-  Plus, Minus, Check, X, Tag, Printer, DoorOpen, Monitor, Users
+  Plus, Minus, Check, X, Tag, Printer, Monitor, Users
 } from "lucide-react";
 import { PDVLoyaltyRedemption } from "@/components/pdv/PDVLoyaltyRedemption";
 import { PDVPaymentSection } from "@/components/pdv/PDVPaymentSection";
 import { PDVManualDiscount } from "@/components/pdv/PDVManualDiscount";
-import { PDVTablesPanel } from "@/components/pdv/PDVTablesPanel";
 import { PDVProductsPanel } from "@/components/pdv/PDVProductsPanel";
-import { PDVCartPanel } from "@/components/pdv/PDVCartPanel";
+import { PDVNewCartPanel } from "@/components/pdv/PDVNewCartPanel";
 import { PDVFullscreenHeader } from "@/components/pdv/PDVFullscreenHeader";
+import { PDVTableSelectionModal } from "@/components/pdv/PDVTableSelectionModal";
 import TablesManagement from "@/components/pdv/TablesManagement";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -23,29 +22,18 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/formatters";
-import { ComandaData, TableBillData, PrinterWidth } from "@/lib/thermalPrinter";
+import { ComandaData, PrinterWidth } from "@/lib/thermalPrinter";
 import { 
   printComanda, 
-  printTableBill, 
   showPrintResultToast,
   isUSBPrintingSupported,
   isUSBPrinterConnected
 } from "@/services/PrintService";
-import { usePDVData, Table, getItemPrice, formatOccupationTime } from "@/hooks/usePDVData";
+import { usePDVData, Table, getItemPrice } from "@/hooks/usePDVData";
 import { usePDVCart } from "@/hooks/usePDVCart";
 import { useFullscreen } from "@/hooks/useFullscreen";
 
@@ -88,8 +76,6 @@ export default function PDVPage() {
     setSplitPayments,
     manualDiscount,
     setManualDiscount,
-    releaseTableAfterOrder,
-    setReleaseTableAfterOrder,
     openComplementsModal,
     toggleComplement,
     addComplementQuantity,
@@ -108,208 +94,65 @@ export default function PDVPage() {
     complementsTotal,
   } = usePDVCart(getSecondaryGroups, getGroupItems, allOptionItems);
 
-  // PDV State
+  // NEW FLOW: Table selection happens AFTER order is built
+  const [isTableSelectionOpen, setIsTableSelectionOpen] = useState(false);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
-  const [isCounter, setIsCounter] = useState(false);
+  const [isCounter, setIsCounter] = useState(true); // Default to counter
   
   // Payment modal
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  
-  // Table release confirmation
-  const [tableToRelease, setTableToRelease] = useState<Table | null>(null);
-  const [pendingOrdersForRelease, setPendingOrdersForRelease] = useState<any[]>([]);
-  
-  // Timer ticker for occupation time (updates every minute)
-  useEffect(() => {
-    const interval = setInterval(() => {}, 60000);
-    return () => clearInterval(interval);
-  }, []);
 
-  const selectTable = async (table: Table) => {
-    setSelectedTable(table);
-    setIsCounter(false);
-    setCustomerName(`Mesa ${table.number}`);
-    
-    if (table.status === "available") {
-      await supabase
-        .from("tables")
-        .update({ status: "occupied", updated_at: new Date().toISOString() })
-        .eq("id", table.id);
-        
-      setTables(prev => prev.map(t => 
-        t.id === table.id ? { ...t, status: "occupied" } : t
-      ));
+  const handleFinishOrder = () => {
+    if (cart.length === 0) {
+      toast.error("Carrinho vazio");
+      return;
     }
+    // Open table selection modal first
+    setIsTableSelectionOpen(true);
   };
 
-  const selectCounter = () => {
-    setSelectedTable(null);
-    setIsCounter(true);
-    setCustomerName("Cliente Balcão");
+  const handleTableSelected = async (table: Table | null) => {
+    if (table) {
+      setSelectedTable(table);
+      setIsCounter(false);
+      if (customerName === "Cliente" || customerName === "Cliente Balcão") {
+        setCustomerName(`Mesa ${table.number}`);
+      }
+      
+      // Automatically occupy table if available
+      if (table.status === "available") {
+        await supabase
+          .from("tables")
+          .update({ status: "occupied", updated_at: new Date().toISOString() })
+          .eq("id", table.id);
+          
+        setTables(prev => prev.map(t => 
+          t.id === table.id ? { ...t, status: "occupied" } : t
+        ));
+      }
+    } else {
+      setSelectedTable(null);
+      setIsCounter(true);
+      if (customerName.startsWith("Mesa ")) {
+        setCustomerName("Cliente Balcão");
+      }
+    }
+    
+    // Open payment modal
+    setIsPaymentOpen(true);
   };
 
   const handleClearCart = useCallback(() => {
     clearCart();
     setSelectedTable(null);
-    setIsCounter(false);
-  }, [clearCart]);
-
-  const requestReleaseTable = async (table: Table, e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    const { data: pendingOrders } = await supabase
-      .from("orders")
-      .select("id, order_number, total, status, items, created_at")
-      .eq("store_id", store.id)
-      .eq("table_id", table.id)
-      .in("status", ["pending", "preparing", "ready"])
-      .order("created_at", { ascending: false });
-    
-    setPendingOrdersForRelease(pendingOrders || []);
-    setTableToRelease(table);
-  };
-
-  const confirmReleaseTable = async (orderAction?: "cancel" | "complete") => {
-    if (!tableToRelease) return;
-    
-    try {
-      if (orderAction && pendingOrdersForRelease.length > 0) {
-        const newStatus = orderAction === "cancel" ? "cancelled" : "completed";
-        const orderIds = pendingOrdersForRelease.map(o => o.id);
-        
-        await supabase
-          .from("orders")
-          .update({ status: newStatus, updated_at: new Date().toISOString() })
-          .in("id", orderIds);
-        
-        const actionLabel = orderAction === "cancel" ? "cancelados" : "finalizados";
-        toast.success(`${pendingOrdersForRelease.length} pedido(s) ${actionLabel}`);
-      }
-      
-      await supabase
-        .from("tables")
-        .update({ status: "available", updated_at: new Date().toISOString() })
-        .eq("id", tableToRelease.id);
-        
-      setTables(prev => prev.map(t => 
-        t.id === tableToRelease.id ? { ...t, status: "available", updated_at: new Date().toISOString() } : t
-      ));
-      
-      if (selectedTable?.id === tableToRelease.id) {
-        setSelectedTable(null);
-        setCustomerName("Cliente Balcão");
-      }
-      
-      toast.success(`Mesa ${tableToRelease.number} liberada!`);
-    } catch {
-      toast.error("Erro ao liberar mesa");
-    } finally {
-      setTableToRelease(null);
-      setPendingOrdersForRelease([]);
-    }
-  };
-
-  const printConsolidatedBill = async () => {
-    if (!tableToRelease || pendingOrdersForRelease.length === 0) return;
-    
-    const printerWidth = (store?.printer_width as PrinterWidth) || '80mm';
-    
-    if (printerWidth !== 'a4' && !store?.printnode_printer_id && !isUSBPrintingSupported()) {
-      toast.error("Impressão USB não disponível. Configure PrintNode ou use impressão A4.");
-      return;
-    }
-    
-    if (printerWidth !== 'a4' && !store?.printnode_printer_id && !isUSBPrinterConnected()) {
-      toast.error("Impressora USB não conectada");
-      return;
-    }
-    
-    const occupationTime = tableToRelease.updated_at 
-      ? formatOccupationTime(tableToRelease.updated_at)
-      : "N/A";
-    
-    const consolidatedItems: TableBillData["items"] = [];
-    
-    pendingOrdersForRelease.forEach(order => {
-      const items = order.items as any[];
-      items.forEach((item: any) => {
-        const existingItem = consolidatedItems.find(i => i.nome === item.name);
-        if (existingItem) {
-          existingItem.qty += item.quantity;
-          existingItem.total += item.price * item.quantity;
-        } else {
-          consolidatedItems.push({
-            qty: item.quantity,
-            nome: item.name,
-            preco_unitario: item.price,
-            total: item.price * item.quantity,
-          });
-        }
-        
-        if (item.complements && Array.isArray(item.complements)) {
-          item.complements.forEach((comp: any) => {
-            const compName = `  + ${comp.name}`;
-            const existingComp = consolidatedItems.find(i => i.nome === compName);
-            if (existingComp) {
-              existingComp.qty += comp.quantity * item.quantity;
-              existingComp.total += comp.price * comp.quantity * item.quantity;
-            } else {
-              consolidatedItems.push({
-                qty: comp.quantity * item.quantity,
-                nome: compName,
-                preco_unitario: comp.price,
-                total: comp.price * comp.quantity * item.quantity,
-              });
-            }
-          });
-        }
-      });
-    });
-    
-    const total = pendingOrdersForRelease.reduce((sum, o) => sum + (o.total || 0), 0);
-    
-    const billData: TableBillData = {
-      mesa: tableToRelease.number,
-      hora: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-      tempo_permanencia: occupationTime,
-      items: consolidatedItems,
-      subtotal: total,
-      total: total,
-      pagamentos: [{ metodo: "A receber", valor: total }],
-    };
-    
-    const result = await printTableBill(billData, {
-      printerWidth,
-      printNodePrinterId: store?.printnode_printer_id,
-      storeId: store?.id,
-      printerName: store?.printnode_printer_name,
-      maxRetries: store?.printnode_max_retries ?? 2,
-      logoUrl: store?.logo_url,
-      storeInfo: {
-        nome: store?.name,
-        endereco: store?.address,
-        telefone: store?.phone,
-        whatsapp: store?.whatsapp,
-        mensagemPersonalizada: store?.print_footer_message,
-      }
-    });
-    
-    if (result.success) {
-      toast.success("Comanda consolidada impressa!");
-    } else {
-      toast.error(result.error || "Erro ao imprimir comanda");
-    }
-  };
+    setIsCounter(true);
+    setCustomerName("Cliente");
+  }, [clearCart, setCustomerName]);
 
   const handleSaveOrder = async () => {
     if (cart.length === 0) {
       toast.error("Carrinho vazio");
-      return;
-    }
-    
-    if (!selectedTable && !isCounter) {
-      toast.error("Selecione uma mesa ou balcão");
       return;
     }
     
@@ -545,19 +388,7 @@ export default function PDVPage() {
         showPrintResultToast(result, order.order_number);
       }
       
-      // Release table if option is selected
-      if (selectedTable && releaseTableAfterOrder) {
-        await supabase
-          .from("tables")
-          .update({ status: "available", updated_at: new Date().toISOString() })
-          .eq("id", selectedTable.id);
-          
-        setTables(prev => prev.map(t => 
-          t.id === selectedTable.id ? { ...t, status: "available" } : t
-        ));
-      }
-      
-      toast.success(`Pedido #${order.order_number} criado!`);
+      toast.success(`Pedido #${order.order_number} criado!${selectedTable ? ` - Mesa ${selectedTable.number}` : ''}`);
       setIsPaymentOpen(false);
       handleClearCart();
       
@@ -605,17 +436,7 @@ export default function PDVPage() {
       {/* Content based on active module */}
       {activeModule === "vendas" ? (
         <div className="flex-1 flex gap-4 p-4 overflow-hidden">
-          {/* Left Panel - Tables */}
-          <PDVTablesPanel
-            tables={tables}
-            selectedTable={selectedTable}
-            isCounter={isCounter}
-            onSelectTable={selectTable}
-            onSelectCounter={selectCounter}
-            onRequestReleaseTable={requestReleaseTable}
-          />
-
-          {/* Center Panel - Products */}
+          {/* Products Panel - Takes most space now (no tables panel on left) */}
           <PDVProductsPanel
             allDisplayItems={allDisplayItems}
             allDisplayCategories={allDisplayCategories}
@@ -623,13 +444,8 @@ export default function PDVPage() {
             onProductClick={openComplementsModal}
           />
 
-          {/* Right Panel - Cart */}
-          <PDVCartPanel
-            storeId={store?.id}
-            selectedTable={selectedTable}
-            isCounter={isCounter}
-            customerName={customerName}
-            onCustomerNameChange={setCustomerName}
+          {/* Cart Panel - New simplified version */}
+          <PDVNewCartPanel
             cart={cart}
             getCartItemTotal={getCartItemTotal}
             updateQuantity={updateQuantity}
@@ -641,7 +457,7 @@ export default function PDVPage() {
             appliedReward={appliedReward}
             loyaltyDiscount={loyaltyDiscount}
             finalTotal={finalTotal}
-            onOpenPayment={() => setIsPaymentOpen(true)}
+            onFinishOrder={handleFinishOrder}
             isFullscreen={isFullscreen}
             onToggleFullscreen={toggleFullscreen}
             fullscreenSupported={fullscreenSupported}
@@ -652,6 +468,16 @@ export default function PDVPage() {
           <TablesManagement store={store} />
         </div>
       )}
+
+      {/* Table Selection Modal */}
+      <PDVTableSelectionModal
+        isOpen={isTableSelectionOpen}
+        onClose={() => setIsTableSelectionOpen(false)}
+        tables={tables}
+        onSelectTable={handleTableSelected}
+        customerName={customerName}
+        onCustomerNameChange={setCustomerName}
+      />
 
       {/* Complements Modal */}
       <Dialog open={isComplementsOpen} onOpenChange={setIsComplementsOpen}>
@@ -832,7 +658,7 @@ export default function PDVPage() {
           
           <div className="space-y-4">
             <div>
-              <Label>Local</Label>
+              <Label>Destino</Label>
               <p className="text-sm text-muted-foreground">
                 {selectedTable ? `Mesa ${selectedTable.number}` : "Balcão"} - {customerName}
               </p>
@@ -909,24 +735,6 @@ export default function PDVPage() {
               payments={splitPayments}
               onPaymentsChange={setSplitPayments}
             />
-            
-            {/* Release table option */}
-            {selectedTable && (
-              <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
-                <Checkbox 
-                  id="release-table" 
-                  checked={releaseTableAfterOrder}
-                  onCheckedChange={(checked) => setReleaseTableAfterOrder(checked === true)}
-                />
-                <label 
-                  htmlFor="release-table" 
-                  className="flex-1 text-sm cursor-pointer flex items-center gap-2"
-                >
-                  <DoorOpen className="w-4 h-4 text-muted-foreground" />
-                  Liberar Mesa {selectedTable.number} após o pedido
-                </label>
-              </div>
-            )}
           </div>
           
           <DialogFooter>
@@ -942,116 +750,6 @@ export default function PDVPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Confirm Release Table Dialog */}
-      <AlertDialog open={!!tableToRelease} onOpenChange={(open) => { if (!open) { setTableToRelease(null); setPendingOrdersForRelease([]); } }}>
-        <AlertDialogContent className="max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Liberar Mesa {tableToRelease?.number}?</AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div className="space-y-3">
-                {pendingOrdersForRelease.length > 0 ? (
-                  <>
-                    <p className="text-destructive font-medium">
-                      ⚠️ Esta mesa possui {pendingOrdersForRelease.length} pedido(s) pendente(s):
-                    </p>
-                    <div className="max-h-48 overflow-y-auto space-y-2">
-                      {pendingOrdersForRelease.map((order) => {
-                        const items = order.items as any[];
-                        const statusLabels: Record<string, string> = {
-                          pending: "Pendente",
-                          preparing: "Preparando",
-                          ready: "Pronto",
-                        };
-                        return (
-                          <div 
-                            key={order.id} 
-                            className="bg-muted/50 border rounded-md p-2 text-xs"
-                          >
-                            <div className="flex justify-between items-center mb-1">
-                              <span className="font-mono font-bold">#{order.order_number}</span>
-                              <Badge variant="outline" className="text-[10px]">
-                                {statusLabels[order.status] || order.status}
-                              </Badge>
-                            </div>
-                            <div className="text-muted-foreground space-y-0.5">
-                              {items.slice(0, 3).map((item, idx) => (
-                                <div key={idx} className="truncate">
-                                  {item.quantity}x {item.name}
-                                </div>
-                              ))}
-                              {items.length > 3 && (
-                                <div className="text-muted-foreground/70">
-                                  +{items.length - 3} item(s)...
-                                </div>
-                              )}
-                            </div>
-                            <div className="text-right font-medium mt-1">
-                              {formatCurrency(order.total)}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <div className="bg-primary/10 border border-primary/20 rounded-md p-3 mt-2">
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="font-medium">Total pendente:</span>
-                        <span className="font-bold text-lg text-primary">
-                          {formatCurrency(pendingOrdersForRelease.reduce((sum, o) => sum + (o.total || 0), 0))}
-                        </span>
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="w-full mt-2"
-                        onClick={printConsolidatedBill}
-                      >
-                        <Printer className="w-4 h-4 mr-1" />
-                        Imprimir Comanda Consolidada
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  <p>Esta mesa não possui pedidos pendentes. Deseja liberar?</p>
-                )}
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <AlertDialogCancel>Voltar</AlertDialogCancel>
-            {pendingOrdersForRelease.length > 0 ? (
-              <>
-                <Button 
-                  variant="outline"
-                  className="border-destructive text-destructive hover:bg-destructive/10"
-                  onClick={() => confirmReleaseTable("cancel")}
-                >
-                  <X className="w-4 h-4 mr-1" />
-                  Cancelar Pedidos e Liberar
-                </Button>
-                <Button 
-                  variant="outline"
-                  className="border-green-600 text-green-600 hover:bg-green-600/10"
-                  onClick={() => confirmReleaseTable("complete")}
-                >
-                  <Check className="w-4 h-4 mr-1" />
-                  Fechar Pedidos e Liberar
-                </Button>
-                <Button 
-                  variant="secondary"
-                  onClick={() => confirmReleaseTable()}
-                >
-                  Apenas Liberar Mesa
-                </Button>
-              </>
-            ) : (
-              <AlertDialogAction onClick={() => confirmReleaseTable()}>
-                Liberar Mesa
-              </AlertDialogAction>
-            )}
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
