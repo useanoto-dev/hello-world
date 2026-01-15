@@ -577,12 +577,11 @@ export default function CategoryEditorPage() {
         if (error) throw error;
         categoryId = editId;
         
-        if (isPizza) {
-          await supabase
-            .from("category_option_groups")
-            .delete()
-            .eq("category_id", categoryId);
-        }
+        // Always clean up option groups before saving (pizza mode only now)
+        await supabase
+          .from("category_option_groups")
+          .delete()
+          .eq("category_id", categoryId);
       } else {
         const { data: result, error } = await supabase
           .from("categories")
@@ -1280,7 +1279,6 @@ export default function CategoryEditorPage() {
         </div>
       </div>
     );
-  }
   }
 
   // Pizza mode
