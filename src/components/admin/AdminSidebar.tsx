@@ -21,6 +21,8 @@ import {
   GitBranch,
   Plug,
   MessageSquare,
+  UserCog,
+  Activity,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -73,6 +75,8 @@ const managementItems = [
   { title: "Relatórios", url: "/dashboard/analytics", icon: BarChart3 },
   { title: "Integrações", url: "/dashboard/integrations", icon: Plug },
   { title: "WhatsApp", url: "/dashboard/whatsapp-messages", icon: MessageSquare },
+  { title: "Usuários", url: "/dashboard/staff", icon: UserCog },
+  { title: "Auditoria", url: "/dashboard/audit", icon: Activity },
   { title: "Configurações", url: "/dashboard/settings", icon: Settings },
 ];
 

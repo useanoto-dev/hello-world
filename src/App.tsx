@@ -52,6 +52,8 @@ const IntegrationsPage = lazy(() => import("@/pages/dashboard/IntegrationsPage")
 const WhatsAppMessagesPage = lazy(() => import("@/pages/dashboard/WhatsAppMessagesPage"));
 const SubscriptionPage = lazy(() => import("@/pages/dashboard/SubscriptionPage"));
 const StaffManagementPage = lazy(() => import("@/pages/dashboard/StaffManagementPage"));
+const AuditLogsPage = lazy(() => import("@/pages/dashboard/AuditLogsPage"));
+const StaffLoginPage = lazy(() => import("@/pages/StaffLoginPage"));
 
 // Storefront Pages
 const StorefrontPage = lazy(() => import("@/pages/storefront/StorefrontPage"));
@@ -111,6 +113,7 @@ function AnimatedRoutes() {
           <Route path="/termos" element={<TermsOfUse />} />
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/instalar" element={<InstallPWA />} />
+          <Route path="/funcionario" element={<StaffLoginPage />} />
           
           {/* Dashboard Fullscreen Pages - MUST be before DashboardLayout */}
           <Route path="/dashboard/onboarding" element={<OnboardingWizard />} />
@@ -143,6 +146,7 @@ function AnimatedRoutes() {
             <Route path="settings" element={<SettingsPage />} />
             <Route path="subscription" element={<SubscriptionPage />} />
             <Route path="staff" element={<StaffManagementPage />} />
+            <Route path="audit" element={<AuditLogsPage />} />
           </Route>
           
           {/* Public Storefront */}
