@@ -698,7 +698,7 @@ export default function DashboardLayout() {
           </AlertDialog>
 
           {/* Menu - Scrollable */}
-          <nav className="flex-1 p-1.5 space-y-0.5 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <nav className="flex-1 p-1.5 space-y-0.5 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-amber-400">
             {menuItems.map(item => (
               <NavItem key={item.path} item={item} />
             ))}
