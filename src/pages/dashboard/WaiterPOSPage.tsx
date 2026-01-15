@@ -1,15 +1,16 @@
 import { useEffect, useState, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import { 
-  Plus, Minus, Check, X, Tag
+  Plus, Minus, Check, X, Tag, ShoppingCart, Trash2, MessageSquare
 } from "lucide-react";
 import { PDVPaymentSection, SplitPayment } from "@/components/pdv/PDVPaymentSection";
 import { PDVProductsPanel } from "@/components/pdv/PDVProductsPanel";
-import { PDVNewCartPanel } from "@/components/pdv/PDVNewCartPanel";
 import { PDVTableSelectionModal } from "@/components/pdv/PDVTableSelectionModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
@@ -17,6 +18,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+} from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { toast } from "sonner";
@@ -69,6 +77,9 @@ export default function WaiterPOSPage() {
     complementsTotal,
   } = usePDVCart(getSecondaryGroups, getGroupItems, allOptionItems);
 
+  // Cart drawer state
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
   // Table selection modal
   const [isTableSelectionOpen, setIsTableSelectionOpen] = useState(false);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
@@ -90,6 +101,7 @@ export default function WaiterPOSPage() {
       toast.error("Carrinho vazio");
       return;
     }
+    setIsCartOpen(false);
     setIsTableSelectionOpen(true);
   };
 
@@ -302,6 +314,8 @@ export default function WaiterPOSPage() {
     }
   };
 
+  const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -314,8 +328,8 @@ export default function WaiterPOSPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-8rem)] md:h-[calc(100vh-4rem)] flex flex-col md:flex-row gap-4 p-4">
-      {/* Products Panel - Same as PDV */}
+    <div className="h-[calc(100vh-8rem)] md:h-[calc(100vh-4rem)] flex flex-col p-4">
+      {/* Products Panel - Full width */}
       <PDVProductsPanel
         allDisplayItems={allDisplayItems}
         allDisplayCategories={allDisplayCategories}
@@ -323,23 +337,141 @@ export default function WaiterPOSPage() {
         onProductClick={openComplementsModal}
       />
 
-      {/* Cart Panel - Same as PDV */}
-      <div className="w-full md:w-[400px] flex-shrink-0">
-        <PDVNewCartPanel
-          cart={cart}
-          getCartItemTotal={getCartItemTotal}
-          updateQuantity={updateQuantity}
-          removeFromCart={removeFromCart}
-          updateItemNotes={updateItemNotes}
-          clearCart={handleClearCart}
-          manualDiscount={null}
-          manualDiscountAmount={0}
-          appliedReward={null}
-          loyaltyDiscount={0}
-          finalTotal={finalTotal}
-          onFinishOrder={handleFinishOrder}
-        />
-      </div>
+      {/* Floating Cart Button */}
+      {cart.length > 0 && (
+        <div className="fixed bottom-24 md:bottom-8 right-4 z-50">
+          <Button
+            size="lg"
+            className="rounded-full h-16 w-16 shadow-xl relative"
+            onClick={() => setIsCartOpen(true)}
+          >
+            <ShoppingCart className="w-6 h-6" />
+            <Badge className="absolute -top-1 -right-1 h-6 w-6 p-0 flex items-center justify-center text-xs">
+              {cartItemsCount}
+            </Badge>
+          </Button>
+        </div>
+      )}
+
+      {/* Cart Sheet/Drawer */}
+      <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
+        <SheetContent className="w-full sm:max-w-md flex flex-col p-0">
+          <SheetHeader className="p-4 border-b">
+            <div className="flex items-center justify-between">
+              <SheetTitle className="flex items-center gap-2">
+                <ShoppingCart className="w-5 h-5 text-primary" />
+                Pedido Atual
+              </SheetTitle>
+              {cart.length > 0 && (
+                <Button variant="ghost" size="icon" onClick={handleClearCart}>
+                  <Trash2 className="w-4 h-4 text-muted-foreground" />
+                </Button>
+              )}
+            </div>
+          </SheetHeader>
+          
+          {/* Cart Items */}
+          <ScrollArea className="flex-1 p-4">
+            {cart.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
+                <ShoppingCart className="w-8 h-8 mb-2 opacity-30" />
+                <p className="text-sm">Carrinho vazio</p>
+                <p className="text-xs mt-1">Clique nos produtos para adicionar</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {cart.map(cartItem => {
+                  const itemTotal = getCartItemTotal(cartItem);
+                  return (
+                    <div key={cartItem.id} className="p-3 bg-muted/30 rounded-lg space-y-2">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm">
+                            {cartItem.item.name}
+                            {cartItem.selectedVariation && (
+                              <span className="text-muted-foreground font-normal"> ({cartItem.selectedVariation.name})</span>
+                            )}
+                          </p>
+                          {cartItem.complements.length > 0 && (
+                            <div className="mt-1 space-y-0.5">
+                              {cartItem.complements.map(c => (
+                                <p key={c.item.id} className="text-[10px] text-muted-foreground">
+                                  + {c.quantity}x {c.item.name} ({formatCurrency(getItemPrice(c.item))})
+                                </p>
+                              ))}
+                            </div>
+                          )}
+                          <p className="text-sm text-primary font-semibold mt-1">
+                            {formatCurrency(itemTotal)}
+                          </p>
+                        </div>
+                        
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => updateQuantity(cartItem.id, -1)}
+                          >
+                            <Minus className="w-3 h-3" />
+                          </Button>
+                          <span className="w-8 text-center font-medium">{cartItem.quantity}</span>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => updateQuantity(cartItem.id, 1)}
+                          >
+                            <Plus className="w-3 h-3" />
+                          </Button>
+                        </div>
+                        
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => removeFromCart(cartItem.id)}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      
+                      {/* Notes field */}
+                      <div className="flex items-start gap-2">
+                        <MessageSquare className="w-3 h-3 text-muted-foreground mt-2 flex-shrink-0" />
+                        <Input
+                          placeholder="Observação do item..."
+                          value={cartItem.notes || ""}
+                          onChange={(e) => updateItemNotes(cartItem.id, e.target.value)}
+                          className="h-8 text-xs"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </ScrollArea>
+          
+          {/* Cart Footer */}
+          <SheetFooter className="p-4 border-t flex-col gap-3">
+            <div className="flex items-center justify-between w-full text-lg font-bold">
+              <span>Total</span>
+              <span className="text-primary">{formatCurrency(finalTotal)}</span>
+            </div>
+            
+            <Button
+              className="w-full gap-2"
+              size="lg"
+              disabled={cart.length === 0}
+              onClick={handleFinishOrder}
+            >
+              <ShoppingCart className="w-4 h-4" />
+              Enviar Pedido
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
 
       {/* Table Selection Modal */}
       <PDVTableSelectionModal
@@ -351,7 +483,7 @@ export default function WaiterPOSPage() {
         onCustomerNameChange={setCustomerName}
       />
 
-      {/* Complements Modal - Same as PDV */}
+      {/* Complements Modal */}
       <Dialog open={isComplementsOpen} onOpenChange={setIsComplementsOpen}>
         <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -450,7 +582,7 @@ export default function WaiterPOSPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Variations Modal - Same as PDV */}
+      {/* Variations Modal */}
       <Dialog open={isVariationsOpen} onOpenChange={setIsVariationsOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
