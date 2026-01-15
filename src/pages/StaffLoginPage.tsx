@@ -27,11 +27,18 @@ export default function StaffLoginPage() {
     
     // Get value directly from input in case of autofill not triggering state update
     const cpfInput = document.getElementById('cpf') as HTMLInputElement;
-    const actualCpf = cpfInput?.value || cpf;
+    const inputValue = cpfInput?.value || '';
+    const stateValue = cpf || '';
+    
+    // Use whichever has content, prefer input value for autofill cases
+    const actualCpf = inputValue || stateValue;
     const actualCleanCpf = actualCpf.replace(/\D/g, "");
+    
+    console.log("Login attempt - Input value:", inputValue, "State value:", stateValue, "Clean CPF:", actualCleanCpf);
     
     if (!actualCleanCpf || actualCleanCpf.length !== 11) {
       toast.error("CPF inválido");
+      console.log("CPF validation failed - length:", actualCleanCpf.length);
       return;
     }
 
