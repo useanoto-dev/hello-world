@@ -1,11 +1,12 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { 
   Plus, Users, Clock, CreditCard, ChefHat, 
-  MoreHorizontal, Trash2, Edit2, CheckCircle, XCircle, 
-  Sparkles, Coffee, Split, Minus, Receipt, Printer, Timer,
-  Banknote, CalendarDays, MoveRight
+  MoreHorizontal, Trash2, Edit2, CheckCircle,
+  Sparkles, Coffee, Receipt, Printer, Timer,
+  CalendarDays, MoveRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PDVPaymentSection, SplitPayment } from "./PDVPaymentSection";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -77,13 +78,6 @@ interface PaymentMethod {
   id: string;
   name: string;
   icon_type: string;
-}
-
-interface SplitPayment {
-  id: string;
-  method: string;
-  methodName: string;
-  amount: number;
 }
 
 interface TablesManagementProps {
@@ -366,73 +360,28 @@ export default function TablesManagement({ store }: TablesManagementProps) {
     return getTableTotal(checkoutTable.id);
   };
 
-  const getPaidAmount = () => {
+  const handlePaymentsChange = (newPayments: SplitPayment[]) => {
+    setSplitPayments(newPayments);
+  };
+
+  const getTotalPaid = () => {
     return splitPayments.reduce((sum, p) => sum + p.amount, 0);
   };
 
-  const getRemainingAmount = () => {
-    return getCheckoutTotal() - getPaidAmount();
-  };
-
-  const getChangeAmount = () => {
-    const paid = getPaidAmount();
+  const getChange = () => {
     const total = getCheckoutTotal();
+    const paid = getTotalPaid();
     return paid > total ? paid - total : 0;
-  };
-
-  const hasCashPayment = useMemo(() => {
-    return splitPayments.some(p => {
-      const method = paymentMethods.find(m => m.id === p.method);
-      return method?.icon_type === 'cash' || method?.name?.toLowerCase().includes('dinheiro');
-    });
-  }, [splitPayments, paymentMethods]);
-
-  const addSplitPayment = () => {
-    if (paymentMethods.length === 0) {
-      toast.error("Nenhuma forma de pagamento cadastrada");
-      return;
-    }
-    const remaining = getRemainingAmount();
-    if (remaining <= 0) {
-      toast.error("Valor total já foi atingido");
-      return;
-    }
-    const defaultMethod = paymentMethods[0];
-    setSplitPayments(prev => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        method: defaultMethod.id,
-        methodName: defaultMethod.name,
-        amount: remaining,
-      },
-    ]);
-  };
-
-  const updateSplitPayment = (id: string, field: "method" | "amount", value: string | number) => {
-    setSplitPayments(prev =>
-      prev.map(p => {
-        if (p.id !== id) return p;
-        if (field === "method") {
-          const method = paymentMethods.find(m => m.id === value);
-          return { ...p, method: value as string, methodName: method?.name || "" };
-        }
-        return { ...p, amount: Number(value) };
-      })
-    );
-  };
-
-  const removeSplitPayment = (id: string) => {
-    setSplitPayments(prev => prev.filter(p => p.id !== id));
   };
 
   const handleCloseAccount = async (shouldPrint: boolean = false) => {
     if (!checkoutTable) return;
     
-    const remaining = getRemainingAmount();
-    const changeAmount = getChangeAmount();
+    const totalPaid = getTotalPaid();
+    const total = getCheckoutTotal();
+    const changeAmount = getChange();
     
-    if (remaining > 0.01) {
+    if (totalPaid < total - 0.01) {
       toast.error("O valor pago não cobre o total da conta");
       return;
     }
@@ -955,88 +904,12 @@ export default function TablesManagement({ store }: TablesManagementProps) {
 
               <Separator />
 
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label className="text-xs text-muted-foreground">Formas de Pagamento</Label>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={addSplitPayment}
-                    className="h-7 text-xs gap-1"
-                  >
-                    <Split className="w-3 h-3" />
-                    Dividir
-                  </Button>
-                </div>
-
-                {splitPayments.length === 0 ? (
-                  <div className="text-center py-4 text-muted-foreground text-sm">
-                    <CreditCard className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                    <p>Clique em "Dividir" para adicionar formas de pagamento</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {splitPayments.map((payment, index) => (
-                      <div key={payment.id} className="flex items-center gap-2 p-2 bg-muted/30 rounded-lg">
-                        <span className="text-xs text-muted-foreground w-4">{index + 1}.</span>
-                        <Select
-                          value={payment.method}
-                          onValueChange={(v) => updateSplitPayment(payment.id, "method", v)}
-                        >
-                          <SelectTrigger className="flex-1 h-8">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {paymentMethods.map((m) => (
-                              <SelectItem key={m.id} value={m.id}>
-                                {m.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Input
-                          type="number"
-                          value={payment.amount}
-                          onChange={(e) => updateSplitPayment(payment.id, "amount", e.target.value)}
-                          className="w-28 h-8 text-right"
-                          min={0}
-                          step={0.01}
-                        />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => removeSplitPayment(payment.id)}
-                        >
-                          <Minus className="w-4 h-4 text-destructive" />
-                        </Button>
-                      </div>
-                    ))}
-
-                    <div className="pt-2 border-t space-y-1">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Total pago</span>
-                        <span className="font-medium">{formatCurrency(getPaidAmount())}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Restante</span>
-                        <span className={getRemainingAmount() > 0 ? "text-amber-500 font-medium" : "text-emerald-500 font-medium"}>
-                          {formatCurrency(Math.max(0, getRemainingAmount()))}
-                        </span>
-                      </div>
-                      {getChangeAmount() > 0 && hasCashPayment && (
-                        <div className="flex justify-between text-sm bg-emerald-500/10 p-2 rounded-lg mt-2">
-                          <span className="text-emerald-600 font-medium flex items-center gap-1">
-                            <Banknote className="w-4 h-4" />
-                            Troco
-                          </span>
-                          <span className="text-emerald-600 font-bold">{formatCurrency(getChangeAmount())}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <PDVPaymentSection
+                paymentMethods={paymentMethods}
+                totalAmount={getCheckoutTotal()}
+                payments={splitPayments}
+                onPaymentsChange={handlePaymentsChange}
+              />
             </div>
           )}
 
@@ -1047,7 +920,7 @@ export default function TablesManagement({ store }: TablesManagementProps) {
             <Button
               variant="secondary"
               onClick={() => handleCloseAccount(true)}
-              disabled={isProcessing || isPrinting || splitPayments.length === 0 || getRemainingAmount() > 0.01}
+              disabled={isProcessing || isPrinting || splitPayments.length === 0 || getTotalPaid() < getCheckoutTotal() - 0.01}
               className="gap-2"
             >
               {isPrinting ? (
@@ -1059,7 +932,7 @@ export default function TablesManagement({ store }: TablesManagementProps) {
             </Button>
             <Button
               onClick={() => handleCloseAccount(false)}
-              disabled={isProcessing || splitPayments.length === 0 || getRemainingAmount() > 0.01}
+              disabled={isProcessing || splitPayments.length === 0 || getTotalPaid() < getCheckoutTotal() - 0.01}
               className="gap-2"
             >
               {isProcessing ? (
