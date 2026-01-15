@@ -45,8 +45,9 @@ export function PDVTableSelectionModal({
     onClose();
   };
 
-  const availableTables = tables.filter(t => t.status === "available");
-  const occupiedTables = tables.filter(t => t.status === "occupied");
+  // Sort tables: available first, then occupied
+  const availableTables = tables.filter(t => t.status === "available" || t.status === "livre" || !t.status);
+  const occupiedTables = tables.filter(t => t.status === "occupied" || t.status === "ocupada");
 
   const isCounter = selectedOption === "counter";
 
