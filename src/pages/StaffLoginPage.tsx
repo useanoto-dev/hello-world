@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MaskedInput } from "@/components/ui/masked-input";
 import logoFull from "@/assets/anoto-logo-full.png";
-import { getDefaultRouteForRole, type StaffRole } from "@/hooks/useStaffAuth";
+import { getDefaultRouteForRole, setStaffSession, type StaffRole } from "@/hooks/useStaffAuth";
 
 export default function StaffLoginPage() {
   const navigate = useNavigate();
@@ -115,14 +115,14 @@ export default function StaffLoginPage() {
 
       await logAudit(staff.store_id, staff.id, "login", "auth", staff.id, { role: staff.role });
 
-      // Store staff session in localStorage
-      localStorage.setItem("staff_session", JSON.stringify({
+      // Store staff session using shared state
+      setStaffSession({
         staffId: staff.id,
         storeId: staff.store_id,
         name: staff.name,
         cpf: actualCleanCpf,
         role: staff.role
-      }));
+      });
 
       toast.success(`Bem-vindo, ${staff.name}!`);
       const defaultRoute = getDefaultRouteForRole(staff.role as StaffRole);
