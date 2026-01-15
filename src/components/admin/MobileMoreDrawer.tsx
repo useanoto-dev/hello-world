@@ -33,12 +33,12 @@ interface MenuItemConfig {
 
 const allMenuItems: MenuItemConfig[] = [
   { icon: LayoutDashboard, label: "Início", path: "/dashboard", allowedRoles: ['admin'] },
-  { icon: Monitor, label: "PDV", path: "/dashboard/pdv", allowedRoles: ['admin', 'caixa'] },
+  { icon: Monitor, label: "PDV", path: "/dashboard/pdv", allowedRoles: ['admin'] },
   { icon: ShoppingBag, label: "Fazer Pedido", path: "/dashboard/waiter-pos", allowedRoles: ['garcom'], staffOnly: true },
-  { icon: ChefHat, label: "Cozinha", path: "/dashboard/comandas", requiresComandaMode: true, allowedRoles: ['admin', 'caixa'] },
+  { icon: ChefHat, label: "Cozinha", path: "/dashboard/comandas", requiresComandaMode: true, allowedRoles: ['admin'] },
   { icon: ClipboardList, label: "Meus Pedidos", path: "/dashboard/my-orders", allowedRoles: ['garcom'], staffOnly: true },
-  { icon: ShoppingBag, label: "Pedidos", path: "/dashboard/orders", allowedRoles: ['admin', 'caixa'] },
-  { icon: TrendingUp, label: "Analytics", path: "/dashboard/analytics", allowedRoles: ['admin', 'caixa'] },
+  { icon: ShoppingBag, label: "Pedidos", path: "/dashboard/orders", allowedRoles: ['admin'] },
+  { icon: TrendingUp, label: "Analytics", path: "/dashboard/analytics", allowedRoles: ['admin'] },
   { icon: Users, label: "Clientes", path: "/dashboard/customers", allowedRoles: ['admin'] },
   { icon: Package, label: "Gestor de Cardápio", path: "/dashboard/products", allowedRoles: ['admin'] },
   { icon: Warehouse, label: "Estoque", path: "/dashboard/inventory", allowedRoles: ['admin'] },
@@ -47,7 +47,7 @@ const allMenuItems: MenuItemConfig[] = [
   { icon: Plug, label: "Integrações", path: "/dashboard/integrations", allowedRoles: ['admin'] },
   { icon: Settings, label: "Configurações", path: "/dashboard/settings", allowedRoles: ['admin'] },
   { icon: CreditCard, label: "Assinatura", path: "/dashboard/subscription", allowedRoles: ['admin'] },
-  { icon: UserCircle, label: "Meu Perfil", path: "/dashboard/profile", allowedRoles: ['caixa', 'garcom'], staffOnly: true },
+  { icon: UserCircle, label: "Meu Perfil", path: "/dashboard/profile", allowedRoles: ['garcom'], staffOnly: true },
 ];
 
 export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreDrawerProps) {

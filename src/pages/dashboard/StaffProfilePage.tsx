@@ -16,12 +16,11 @@ import { motion } from "framer-motion";
 
 const roleLabels: Record<string, { label: string; color: string }> = {
   admin: { label: "Administrador", color: "bg-purple-500" },
-  caixa: { label: "Caixa", color: "bg-blue-500" },
   garcom: { label: "Garçom", color: "bg-green-500" },
 };
 
 export default function StaffProfilePage() {
-  const { staffSession, name, role, permissions, logout } = useStaffAuth();
+  const { staffSession, name, role, logout } = useStaffAuth();
   
   // Password change state
   const [currentPassword, setCurrentPassword] = useState("");
@@ -177,64 +176,6 @@ export default function StaffProfilePage() {
           </CardContent>
         </Card>
       </motion.div>
-
-      {/* Permissions Card (only for caixa) */}
-      {role === 'caixa' && permissions && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="w-5 h-5" />
-                Minhas Permissões
-              </CardTitle>
-              <CardDescription>
-                Permissões configuradas pelo administrador
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { key: 'can_open_cashier', label: 'Abrir caixa' },
-                  { key: 'can_close_cashier', label: 'Fechar caixa' },
-                  { key: 'can_cancel_orders', label: 'Cancelar pedidos' },
-                  { key: 'can_apply_discounts', label: 'Aplicar descontos' },
-                  { key: 'can_view_reports', label: 'Ver relatórios' },
-                  { key: 'can_finalize_sales', label: 'Finalizar vendas' },
-                ].map(({ key, label }) => {
-                  const hasPermission = permissions[key as keyof typeof permissions];
-                  return (
-                    <div 
-                      key={key}
-                      className={cn(
-                        "flex items-center gap-2 p-2 rounded-lg",
-                        hasPermission 
-                          ? "bg-green-50 dark:bg-green-900/20" 
-                          : "bg-gray-50 dark:bg-gray-900/20"
-                      )}
-                    >
-                      {hasPermission ? (
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                      ) : (
-                        <AlertCircle className="w-4 h-4 text-muted-foreground" />
-                      )}
-                      <span className={cn(
-                        "text-sm",
-                        hasPermission ? "text-green-700 dark:text-green-400" : "text-muted-foreground"
-                      )}>
-                        {label}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
 
       {/* Change Password Card */}
       <motion.div

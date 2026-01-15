@@ -68,12 +68,12 @@ interface MenuItem {
 
 const allMenuItems: MenuItem[] = [
   { icon: LayoutDashboard, label: "Início", path: "/dashboard", showAlways: true, allowedRoles: ['admin'] },
-  { icon: Monitor, label: "PDV", path: "/dashboard/pdv", showAlways: true, allowedRoles: ['admin', 'caixa'] },
+  { icon: Monitor, label: "PDV", path: "/dashboard/pdv", showAlways: true, allowedRoles: ['admin'] },
   { icon: Monitor, label: "Fazer Pedido", path: "/dashboard/waiter-pos", showAlways: true, allowedRoles: ['garcom'], staffOnly: true },
-  { icon: ChefHat, label: "Cozinha", path: "/dashboard/comandas", showAlways: false, requiresComandaMode: true, allowedRoles: ['admin', 'caixa'] },
+  { icon: ChefHat, label: "Cozinha", path: "/dashboard/comandas", showAlways: false, requiresComandaMode: true, allowedRoles: ['admin'] },
   { icon: ClipboardList, label: "Meus Pedidos", path: "/dashboard/waiter-orders", showAlways: true, allowedRoles: ['garcom'], staffOnly: true },
-  { icon: ShoppingBag, label: "Pedidos", path: "/dashboard/orders", showAlways: true, allowedRoles: ['admin', 'caixa'] },
-  { icon: TrendingUp, label: "Analytics", path: "/dashboard/analytics", showAlways: true, allowedRoles: ['admin', 'caixa'] },
+  { icon: ShoppingBag, label: "Pedidos", path: "/dashboard/orders", showAlways: true, allowedRoles: ['admin'] },
+  { icon: TrendingUp, label: "Analytics", path: "/dashboard/analytics", showAlways: true, allowedRoles: ['admin'] },
   { icon: DollarSign, label: "Financeiro", path: "/dashboard/financeiro", showAlways: true, allowedRoles: ['admin'] },
   { icon: Users, label: "Clientes", path: "/dashboard/customers", showAlways: true, allowedRoles: ['admin'] },
   { 
@@ -92,7 +92,7 @@ const allMenuItems: MenuItem[] = [
   { icon: Plug, label: "Integrações", path: "/dashboard/integrations", showAlways: true, allowedRoles: ['admin'] },
   { icon: Settings, label: "Configurações", path: "/dashboard/settings", showAlways: true, allowedRoles: ['admin'] },
   { icon: CreditCard, label: "Assinatura", path: "/dashboard/subscription", showAlways: true, allowedRoles: ['admin'] },
-  { icon: UserCircle, label: "Meu Perfil", path: "/dashboard/profile", showAlways: true, allowedRoles: ['caixa', 'garcom'], staffOnly: true },
+  { icon: UserCircle, label: "Meu Perfil", path: "/dashboard/profile", showAlways: true, allowedRoles: ['garcom'], staffOnly: true },
 ];
 
 export default function DashboardLayout() {

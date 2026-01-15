@@ -1,13 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import { 
-  Plus, Minus, Check, X, Send, ShoppingCart, UtensilsCrossed
+  Plus, Minus, Check, X, Send, ShoppingCart, UtensilsCrossed, CreditCard
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -31,6 +30,8 @@ import { usePDVData, Table, getItemPrice, OptionItem } from "@/hooks/usePDVData"
 import { usePDVCart } from "@/hooks/usePDVCart";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { cn } from "@/lib/utils";
+import { PDVTableSelectionModal } from "@/components/pdv/PDVTableSelectionModal";
+import { PDVPaymentSection, SplitPayment } from "@/components/pdv/PDVPaymentSection";
 
 export default function WaiterPOSPage() {
   const { store } = useOutletContext<{ store: any }>();
@@ -69,12 +70,17 @@ export default function WaiterPOSPage() {
   } = usePDVCart(getSecondaryGroups, getGroupItems, allOptionItems);
 
   // Waiter POS State
-  const [selectedTable, setSelectedTable] = useState<Table | null>(null);
-  const [isTableSelectorOpen, setIsTableSelectorOpen] = useState(false);
+  const [isTableSelectionOpen, setIsTableSelectionOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [orderNotes, setOrderNotes] = useState("");
+  
+  // Payment state
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [splitPayments, setSplitPayments] = useState<SplitPayment[]>([]);
+  const [selectedTable, setSelectedTable] = useState<Table | null>(null);
+  const [isCounter, setIsCounter] = useState(false);
 
   // Auto-set customer name with waiter name
   useEffect(() => {
@@ -83,29 +89,12 @@ export default function WaiterPOSPage() {
     }
   }, [waiterName, setCustomerName]);
 
-  // Available tables only
-  const availableTables = tables.filter(t => t.status === "occupied" || t.status === "available");
-
-  const selectTable = async (table: Table) => {
-    setSelectedTable(table);
-    setIsTableSelectorOpen(false);
-    
-    if (table.status === "available") {
-      await supabase
-        .from("tables")
-        .update({ status: "occupied", updated_at: new Date().toISOString() })
-        .eq("id", table.id);
-        
-      setTables(prev => prev.map(t => 
-        t.id === table.id ? { ...t, status: "occupied" } : t
-      ));
-    }
-  };
-
   const handleClearCart = useCallback(() => {
     clearCart();
     setSelectedTable(null);
     setOrderNotes("");
+    setSplitPayments([]);
+    setIsCounter(false);
   }, [clearCart]);
 
   // Filter products by category
@@ -113,23 +102,52 @@ export default function WaiterPOSPage() {
     ? allDisplayItems.filter(item => item.category_id === selectedCategory)
     : allDisplayItems;
 
-  const handleSendOrder = async () => {
+  // Open table/counter selection when finishing order
+  const handleFinishOrder = () => {
     if (cart.length === 0) {
       toast.error("Carrinho vazio");
       return;
     }
-    
-    if (!selectedTable) {
-      toast.error("Selecione uma mesa");
-      return;
+    setIsTableSelectionOpen(true);
+  };
+
+  // Handle table/counter selection
+  const handleTableSelected = async (table: Table | null, isCounterOrder: boolean) => {
+    if (table) {
+      setSelectedTable(table);
+      setIsCounter(false);
+      
+      // Occupy table if available
+      if (table.status === "available") {
+        await supabase
+          .from("tables")
+          .update({ status: "occupied", updated_at: new Date().toISOString() })
+          .eq("id", table.id);
+          
+        setTables(prev => prev.map(t => 
+          t.id === table.id ? { ...t, status: "occupied" } : t
+        ));
+      }
+      
+      // Send directly to kitchen
+      await handleSendToKitchen(table);
+    } else {
+      // Counter order - open payment
+      setSelectedTable(null);
+      setIsCounter(true);
+      setIsPaymentOpen(true);
     }
-    
+    setIsCartOpen(false);
+  };
+
+  // Send order to kitchen (for table orders)
+  const handleSendToKitchen = async (table: Table) => {
     setIsSaving(true);
     
     try {
       const orderData = {
         store_id: store.id,
-        customer_name: `Mesa ${selectedTable.number} - ${waiterName}`,
+        customer_name: `Mesa ${table.number} - ${waiterName}`,
         customer_phone: "00000000000",
         order_type: "dine_in",
         staff_id: staffId,
@@ -176,7 +194,7 @@ export default function WaiterPOSPage() {
         payment_method: null,
         status: "pending",
         order_source: "waiter",
-        table_id: selectedTable.id,
+        table_id: table.id,
         notes: orderNotes || null,
       };
       
@@ -189,11 +207,100 @@ export default function WaiterPOSPage() {
       if (error) throw error;
       
       toast.success(`Pedido #${order.order_number} enviado para a cozinha!`);
-      setIsCartOpen(false);
       handleClearCart();
       
     } catch (error: any) {
       toast.error(error.message || "Erro ao enviar pedido");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Save counter order with payment
+  const handleSaveCounterOrder = async () => {
+    const totalPaid = splitPayments.reduce((sum, p) => sum + p.amount, 0);
+    
+    if (totalPaid < finalTotal) {
+      toast.error("Pagamento insuficiente");
+      return;
+    }
+    
+    setIsSaving(true);
+    
+    try {
+      // Build payment method string
+      const paymentMethodStr = splitPayments.length === 1 
+        ? splitPayments[0].methodName
+        : splitPayments.map(p => `${p.methodName}: ${formatCurrency(p.amount)}`).join(" | ");
+      
+      const orderData = {
+        store_id: store.id,
+        customer_name: customerName || `Balcão - ${waiterName}`,
+        customer_phone: "00000000000",
+        order_type: "counter",
+        staff_id: staffId,
+        items: cart.map(cartItem => {
+          let productId: string | undefined = undefined;
+          const itemId = cartItem.item.id;
+          
+          if (itemId.startsWith('prod-')) {
+            productId = itemId.substring(5);
+          } else if (itemId.startsWith('inv-')) {
+            productId = itemId.substring(4);
+          }
+          
+          const itemData: Record<string, unknown> = {
+            id: itemId,
+            name: cartItem.item.name,
+            quantity: cartItem.quantity,
+            price: getItemPrice(cartItem.item),
+            notes: cartItem.notes || null,
+            complements: cartItem.complements.map(c => ({
+              name: c.item.name,
+              quantity: c.quantity,
+              price: getItemPrice(c.item),
+            })),
+          };
+          
+          if (productId) {
+            itemData.product_id = productId;
+          }
+          
+          if (cartItem.selectedVariation) {
+            itemData.selectedVariation = {
+              name: cartItem.selectedVariation.name,
+              price: cartItem.selectedVariation.price,
+            };
+          }
+          
+          return itemData;
+        }) as Json,
+        subtotal: cartTotal,
+        total: finalTotal,
+        discount: 0,
+        delivery_fee: 0,
+        payment_method: paymentMethodStr,
+        payment_change: totalPaid > finalTotal ? totalPaid - finalTotal : null,
+        status: "completed",
+        paid: true,
+        order_source: "waiter",
+        notes: orderNotes || null,
+      };
+      
+      const { data: order, error } = await supabase
+        .from("orders")
+        .insert(orderData)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      
+      toast.success(`Pedido #${order.order_number} finalizado!`);
+      setIsPaymentOpen(false);
+      handleClearCart();
+      
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao salvar pedido");
     } finally {
       setIsSaving(false);
     }
@@ -215,15 +322,6 @@ export default function WaiterPOSPage() {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b bg-background">
         <div className="flex items-center gap-3">
-          <Button
-            variant={selectedTable ? "default" : "outline"}
-            onClick={() => setIsTableSelectorOpen(true)}
-            className="gap-2"
-          >
-            <UtensilsCrossed className="w-4 h-4" />
-            {selectedTable ? `Mesa ${selectedTable.number}` : "Selecionar Mesa"}
-          </Button>
-          
           {waiterName && (
             <Badge variant="secondary" className="hidden sm:flex">
               Garçom: {waiterName}
@@ -332,34 +430,15 @@ export default function WaiterPOSPage() {
         </div>
       )}
 
-      {/* Table Selector Dialog */}
-      <Dialog open={isTableSelectorOpen} onOpenChange={setIsTableSelectorOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Selecionar Mesa</DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="max-h-[60vh]">
-            <div className="grid grid-cols-3 gap-3 p-1">
-              {availableTables.map(table => (
-                <Button
-                  key={table.id}
-                  variant={table.status === "occupied" ? "secondary" : "outline"}
-                  className={cn(
-                    "h-16 flex flex-col gap-1",
-                    selectedTable?.id === table.id && "ring-2 ring-primary"
-                  )}
-                  onClick={() => selectTable(table)}
-                >
-                  <span className="font-bold">{table.number}</span>
-                  <span className="text-[10px] opacity-70">
-                    {table.status === "occupied" ? "Ocupada" : "Livre"}
-                  </span>
-                </Button>
-              ))}
-            </div>
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
+      {/* Table Selection Modal */}
+      <PDVTableSelectionModal
+        isOpen={isTableSelectionOpen}
+        onClose={() => setIsTableSelectionOpen(false)}
+        tables={tables}
+        onSelectTable={handleTableSelected}
+        customerName={customerName}
+        onCustomerNameChange={setCustomerName}
+      />
 
       {/* Complements Modal */}
       <Dialog open={isComplementsOpen} onOpenChange={setIsComplementsOpen}>
@@ -468,9 +547,6 @@ export default function WaiterPOSPage() {
             <SheetTitle className="flex items-center gap-2">
               <ShoppingCart className="w-5 h-5" />
               Carrinho
-              {selectedTable && (
-                <Badge variant="secondary">Mesa {selectedTable.number}</Badge>
-              )}
             </SheetTitle>
           </SheetHeader>
           
@@ -563,8 +639,8 @@ export default function WaiterPOSPage() {
                   Limpar
                 </Button>
                 <Button
-                  onClick={handleSendOrder}
-                  disabled={isSaving || !selectedTable}
+                  onClick={handleFinishOrder}
+                  disabled={isSaving}
                   className="flex-1 gap-2"
                 >
                   {isSaving ? (
@@ -572,7 +648,7 @@ export default function WaiterPOSPage() {
                   ) : (
                     <>
                       <Send className="w-4 h-4" />
-                      Enviar Pedido
+                      Finalizar
                     </>
                   )}
                 </Button>
@@ -581,6 +657,61 @@ export default function WaiterPOSPage() {
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Payment Modal */}
+      <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CreditCard className="w-5 h-5" />
+              Pagamento - Balcão
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Order Summary */}
+            <div className="bg-muted/50 rounded-lg p-3">
+              <div className="text-sm text-muted-foreground mb-2">
+                {cart.length} item(s)
+              </div>
+              <div className="flex justify-between items-center text-lg font-bold">
+                <span>Total:</span>
+                <span className="text-primary">{formatCurrency(finalTotal)}</span>
+              </div>
+            </div>
+
+            {/* Payment Section - uses internal fetching */}
+            {store?.id && (
+              <PDVPaymentSectionWithFetch
+                storeId={store.id}
+                totalAmount={finalTotal}
+                payments={splitPayments}
+                onPaymentsChange={setSplitPayments}
+              />
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsPaymentOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSaveCounterOrder}
+              disabled={isSaving || splitPayments.reduce((sum, p) => sum + p.amount, 0) < finalTotal}
+              className="gap-2"
+            >
+              {isSaving ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  <CreditCard className="w-4 h-4" />
+                  Confirmar Pagamento
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
