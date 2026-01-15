@@ -380,7 +380,7 @@ export default function DashboardLayout() {
             onClick={() => toggleMenuExpand(item.path)}
             className={cn(
               "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium outline-none",
-              "bg-amber-400 text-gray-900"
+              "bg-white/60 hover:bg-white/80 text-gray-900 transition-colors"
             )}
           >
             <item.icon className="flex-shrink-0 w-4 h-4" />
@@ -406,7 +406,7 @@ export default function DashboardLayout() {
                     to={item.path}
                     className={cn(
                       "relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[13px]",
-                      "bg-amber-500 text-gray-900 font-medium"
+                      "bg-white/50 hover:bg-white/70 text-gray-900 font-medium transition-colors"
                     )}
                     onMouseEnter={() => prefetchRoute(item.path)}
                   >
@@ -426,7 +426,7 @@ export default function DashboardLayout() {
                         to={subItem.path}
                         className={cn(
                           "relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[13px]",
-                          "bg-amber-500 text-gray-900 font-medium"
+                          "bg-white/50 hover:bg-white/70 text-gray-900 font-medium transition-colors"
                         )}
                         onMouseEnter={() => prefetchRoute(subItem.path)}
                       >
@@ -452,7 +452,7 @@ export default function DashboardLayout() {
         onClick={handleClick}
         className={cn(
           "ripple-container relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium outline-none",
-          "bg-[#FEDE01] text-gray-900 hover:bg-[#e5c801]",
+          "bg-white/60 text-gray-900 hover:bg-white/80 transition-colors",
           sidebarCollapsed && "justify-center px-2"
         )}
         onMouseEnter={() => prefetchRoute(item.path)}
