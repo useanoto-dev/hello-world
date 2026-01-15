@@ -113,17 +113,22 @@ export default function DashboardLayout() {
   // Check if on PDV page for fullscreen button
   const isPDVPage = location.pathname === "/dashboard/pdv";
 
-  // Check route access for staff - wait for both DashboardLayout and StaffAuth to finish loading
+  // Check route access for staff - wait for everything to load
   useEffect(() => {
+    // Skip check during loading
+    if (loading || staffLoading) return;
+    
     // Only check access for staff members (not admin via Supabase Auth)
-    if (isStaffLoggedIn && role && !loading && !staffLoading) {
-      if (!canAccessRoute(location.pathname, role)) {
+    // Also ensure store is loaded to avoid false negatives
+    if (isStaffLoggedIn && role && store) {
+      const hasAccess = canAccessRoute(location.pathname, role);
+      if (!hasAccess) {
         const defaultRoute = getDefaultRouteForRole(role);
         toast.error("Acesso não autorizado");
-        navigate(defaultRoute);
+        navigate(defaultRoute, { replace: true });
       }
     }
-  }, [location.pathname, isStaffLoggedIn, role, loading, staffLoading, navigate]);
+  }, [location.pathname, isStaffLoggedIn, role, loading, staffLoading, navigate, store]);
   // Auto-expand menu if current path is a subitem
   useEffect(() => {
     allMenuItems.forEach(item => {
