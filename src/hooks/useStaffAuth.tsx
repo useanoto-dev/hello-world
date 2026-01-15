@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -108,8 +108,16 @@ export function useStaffAuth(): UseStaffAuthReturn {
       try {
         const savedSession = localStorage.getItem('staff_session');
         if (savedSession) {
-          const parsed = JSON.parse(savedSession) as StaffSession;
-          setStaffSession(parsed);
+          const parsed = JSON.parse(savedSession);
+          // Map 'id' to 'staffId' and 'store_id' to 'storeId' for compatibility
+          const normalizedSession: StaffSession = {
+            staffId: parsed.staffId || parsed.id,
+            storeId: parsed.storeId || parsed.store_id,
+            name: parsed.name,
+            cpf: parsed.cpf || '',
+            role: parsed.role
+          };
+          setStaffSession(normalizedSession);
         }
       } catch (error) {
         console.error('Error loading staff session:', error);
