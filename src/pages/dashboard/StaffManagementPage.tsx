@@ -43,11 +43,9 @@ import {
   MoreHorizontal, 
   Edit, 
   Trash2, 
-  Key, 
   UserCheck, 
   UserX,
   Shield,
-  Copy,
   CheckCircle,
   Clock,
   Search
@@ -68,6 +66,7 @@ interface StaffMember {
   created_at: string;
   last_login_at: string | null;
   created_by: string | null;
+  password_hash?: string | null;
   permissions?: StaffPermissions;
 }
 
@@ -81,10 +80,6 @@ interface StaffPermissions {
   can_finalize_sales: boolean;
 }
 
-interface AccessCode {
-  code: string;
-  expires_at: string;
-}
 
 const roleLabels: Record<string, string> = {
   admin: "Administrador",
@@ -107,15 +102,14 @@ export default function StaffManagementPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
-  const [showAccessCodeModal, setShowAccessCodeModal] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
-  const [generatedCode, setGeneratedCode] = useState<AccessCode | null>(null);
   
   // Form state
   const [formData, setFormData] = useState({
     name: "",
     cpf: "",
     role: "garcom" as "admin" | "garcom" | "caixa",
+    password: "",
   });
 
   const [permissions, setPermissions] = useState<Omit<StaffPermissions, "id">>({
@@ -158,7 +152,7 @@ export default function StaffManagementPage() {
     mutationFn: async (data: typeof formData) => {
       if (!restaurantId) throw new Error("Restaurante não encontrado");
       
-      // Create staff member
+      // Create staff member with password
       const { data: newStaff, error } = await supabase
         .from("store_staff")
         .insert({
@@ -166,29 +160,12 @@ export default function StaffManagementPage() {
           name: data.name,
           cpf: data.cpf.replace(/\D/g, ""),
           role: data.role,
+          password_hash: data.password, // In production, hash this server-side
         })
         .select()
         .single();
       
       if (error) throw error;
-      
-      // Generate access code
-      const expiresAt = new Date();
-      expiresAt.setHours(expiresAt.getHours() + 24);
-      
-      const { data: codeResult } = await supabase.rpc("generate_access_code");
-      const code = codeResult || Math.random().toString(36).substring(2, 10).toUpperCase();
-      
-      const { error: codeError } = await supabase
-        .from("access_codes")
-        .insert({
-          staff_id: newStaff.id,
-          store_id: restaurantId,
-          code,
-          expires_at: expiresAt.toISOString(),
-        });
-      
-      if (codeError) throw codeError;
       
       // Log audit
       await supabase.from("audit_logs").insert({
@@ -199,14 +176,12 @@ export default function StaffManagementPage() {
         details: { name: data.name, role: data.role },
       });
       
-      return { staff: newStaff, code, expires_at: expiresAt.toISOString() };
+      return { staff: newStaff };
     },
-    onSuccess: (result) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["store-staff"] });
       setShowCreateModal(false);
-      setGeneratedCode({ code: result.code, expires_at: result.expires_at });
-      setShowAccessCodeModal(true);
-      setFormData({ name: "", cpf: "", role: "garcom" });
+      setFormData({ name: "", cpf: "", role: "garcom", password: "" });
       toast.success("Usuário criado com sucesso!");
     },
     onError: (error: any) => {
@@ -336,47 +311,6 @@ export default function StaffManagementPage() {
     },
   });
 
-  // Generate new access code mutation
-  const generateCodeMutation = useMutation({
-    mutationFn: async (staffId: string) => {
-      if (!restaurantId) throw new Error("Restaurante não encontrado");
-      
-      const expiresAt = new Date();
-      expiresAt.setHours(expiresAt.getHours() + 24);
-      
-      const { data: codeResult } = await supabase.rpc("generate_access_code");
-      const code = codeResult || Math.random().toString(36).substring(2, 10).toUpperCase();
-      
-      const { error } = await supabase
-        .from("access_codes")
-        .insert({
-          staff_id: staffId,
-          store_id: restaurantId,
-          code,
-          expires_at: expiresAt.toISOString(),
-        });
-      
-      if (error) throw error;
-      
-      await supabase.from("audit_logs").insert({
-        store_id: restaurantId,
-        action: "GENERATE_ACCESS_CODE",
-        module: "staff",
-        record_id: staffId,
-      });
-      
-      return { code, expires_at: expiresAt.toISOString() };
-    },
-    onSuccess: (result) => {
-      setGeneratedCode({ code: result.code, expires_at: result.expires_at });
-      setShowAccessCodeModal(true);
-      toast.success("Código gerado com sucesso!");
-    },
-    onError: () => {
-      toast.error("Erro ao gerar código");
-    },
-  });
-
   // Filter staff members
   const filteredStaff = staffMembers.filter(staff => {
     const matchesSearch = staff.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -391,6 +325,7 @@ export default function StaffManagementPage() {
       name: staff.name,
       cpf: staff.cpf,
       role: staff.role,
+      password: "",
     });
     setShowEditModal(true);
   };
@@ -474,7 +409,8 @@ export default function StaffManagementPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
-                <TableHead>CPF</TableHead>
+                <TableHead>CPF (Login)</TableHead>
+                <TableHead>Senha</TableHead>
                 <TableHead>Cargo</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Último acesso</TableHead>
@@ -484,13 +420,13 @@ export default function StaffManagementPage() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
+                  <TableCell colSpan={7} className="text-center py-8">
                     Carregando...
                   </TableCell>
                 </TableRow>
               ) : filteredStaff.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     Nenhum usuário encontrado
                   </TableCell>
                 </TableRow>
@@ -500,6 +436,11 @@ export default function StaffManagementPage() {
                     <TableCell className="font-medium">{staff.name}</TableCell>
                     <TableCell className="font-mono text-sm">
                       {formatCPF(staff.cpf)}
+                    </TableCell>
+                    <TableCell className="font-mono text-sm">
+                      <span className="bg-muted px-2 py-1 rounded text-xs">
+                        {staff.password_hash || "Não definida"}
+                      </span>
                     </TableCell>
                     <TableCell>
                       <Badge className={roleBadgeColors[staff.role]}>
@@ -550,10 +491,6 @@ export default function StaffManagementPage() {
                               Permissões
                             </DropdownMenuItem>
                           )}
-                          <DropdownMenuItem onClick={() => generateCodeMutation.mutate(staff.id)}>
-                            <Key className="w-4 h-4 mr-2" />
-                            Gerar novo acesso
-                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           {staff.is_active ? (
                             <DropdownMenuItem 
@@ -637,6 +574,20 @@ export default function StaffManagementPage() {
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Senha de acesso</Label>
+              <Input
+                id="password"
+                type="text"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                placeholder="Mínimo 6 caracteres"
+                minLength={6}
+              />
+              <p className="text-xs text-muted-foreground">
+                O funcionário usará esta senha para fazer login
+              </p>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreateModal(false)}>
@@ -644,7 +595,7 @@ export default function StaffManagementPage() {
             </Button>
             <Button 
               onClick={() => createStaffMutation.mutate(formData)}
-              disabled={!formData.name || !formData.cpf || createStaffMutation.isPending}
+              disabled={!formData.name || !formData.cpf || !formData.password || formData.password.length < 6 || createStaffMutation.isPending}
             >
               {createStaffMutation.isPending ? "Criando..." : "Criar usuário"}
             </Button>
@@ -671,6 +622,15 @@ export default function StaffManagementPage() {
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="edit-cpf">CPF (login)</Label>
+              <Input
+                id="edit-cpf"
+                value={formatCPF(formData.cpf)}
+                disabled
+                className="bg-muted"
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="edit-role">Cargo</Label>
               <Select 
                 value={formData.role} 
@@ -688,17 +648,40 @@ export default function StaffManagementPage() {
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-password">Nova senha (deixe vazio para manter)</Label>
+              <Input
+                id="edit-password"
+                type="text"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                placeholder="Digite para redefinir a senha"
+              />
+              <p className="text-xs text-muted-foreground">
+                Mínimo 6 caracteres. Deixe em branco para manter a senha atual.
+              </p>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowEditModal(false)}>
               Cancelar
             </Button>
             <Button 
-              onClick={() => selectedStaff && updateStaffMutation.mutate({
-                id: selectedStaff.id,
-                data: { name: formData.name, role: formData.role }
-              })}
-              disabled={updateStaffMutation.isPending}
+              onClick={() => {
+                if (!selectedStaff) return;
+                const updateData: Record<string, unknown> = { 
+                  name: formData.name, 
+                  role: formData.role 
+                };
+                if (formData.password && formData.password.length >= 6) {
+                  updateData.password_hash = formData.password;
+                }
+                updateStaffMutation.mutate({
+                  id: selectedStaff.id,
+                  data: updateData as Partial<StaffMember>
+                });
+              }}
+              disabled={updateStaffMutation.isPending || (formData.password.length > 0 && formData.password.length < 6)}
             >
               {updateStaffMutation.isPending ? "Salvando..." : "Salvar"}
             </Button>
@@ -801,47 +784,6 @@ export default function StaffManagementPage() {
               disabled={updatePermissionsMutation.isPending}
             >
               {updatePermissionsMutation.isPending ? "Salvando..." : "Salvar permissões"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Access Code Modal */}
-      <Dialog open={showAccessCodeModal} onOpenChange={setShowAccessCodeModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Key className="w-5 h-5 text-primary" />
-              Código de Acesso
-            </DialogTitle>
-            <DialogDescription>
-              Compartilhe este código com o funcionário para o primeiro acesso
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-6">
-            <div className="bg-muted rounded-lg p-4 text-center">
-              <p className="text-3xl font-mono font-bold tracking-widest">
-                {generatedCode?.code}
-              </p>
-            </div>
-            <div className="flex items-center justify-center gap-2 mt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => generatedCode && copyToClipboard(generatedCode.code)}
-              >
-                <Copy className="w-4 h-4 mr-2" />
-                Copiar código
-              </Button>
-            </div>
-            <p className="text-sm text-muted-foreground text-center mt-4">
-              <Clock className="w-4 h-4 inline mr-1" />
-              Válido por 24 horas
-            </p>
-          </div>
-          <DialogFooter>
-            <Button onClick={() => setShowAccessCodeModal(false)}>
-              Entendi
             </Button>
           </DialogFooter>
         </DialogContent>
