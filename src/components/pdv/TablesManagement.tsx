@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { 
   Plus, Users, Clock, CreditCard, ChefHat, 
   MoreHorizontal, Trash2, Edit2, CheckCircle,
-  Sparkles, Coffee, Receipt, Printer, Timer,
+  Sparkles, Receipt, Printer, Timer,
   CalendarDays, MoveRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -126,7 +126,7 @@ function useOccupancyTimer(tables: Table[], tableOrders: Record<string, TableOrd
 export default function TablesManagement({ store }: TablesManagementProps) {
   const [tables, setTables] = useState<Table[]>([]);
   const [tableOrders, setTableOrders] = useState<Record<string, TableOrder[]>>({});
-  const [counterOrders, setCounterOrders] = useState<TableOrder[]>([]);
+  
   const [loading, setLoading] = useState(true);
   const [editingTable, setEditingTable] = useState<Table | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -213,7 +213,7 @@ export default function TablesManagement({ store }: TablesManagementProps) {
       });
       
       setTableOrders(grouped);
-      setCounterOrders(counter);
+      // Counter orders are now managed in the Orders/Kitchen flow
     } catch (error) {
       console.error("Error loading orders:", error);
     } finally {
@@ -542,10 +542,6 @@ export default function TablesManagement({ store }: TablesManagementProps) {
             <CalendarDays className="w-3.5 h-3.5" />
             Reservas
           </TabsTrigger>
-          <TabsTrigger value="counter" className="text-xs h-7 gap-1.5">
-            <Coffee className="w-3.5 h-3.5" />
-            Balcão ({counterOrders.length})
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="tables" className="flex-1 mt-4">
@@ -645,42 +641,6 @@ export default function TablesManagement({ store }: TablesManagementProps) {
           )}
         </TabsContent>
 
-        <TabsContent value="counter" className="flex-1 mt-4">
-          {counterOrders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-              <Coffee className="w-12 h-12 mb-4 opacity-30" />
-              <p>Nenhuma venda de balcão pendente</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {counterOrders.map(order => (
-                <Card key={order.id} className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-primary">#{order.order_number}</span>
-                    <Badge variant={order.paid ? "default" : "secondary"}>
-                      {order.paid ? "Pago" : "Pendente"}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{order.customer_name}</p>
-                  <div className="mt-2 text-xs space-y-1">
-                    {order.items.slice(0, 3).map((item, i) => (
-                      <div key={i}>{item.quantity}x {item.name}</div>
-                    ))}
-                    {order.items.length > 3 && (
-                      <span className="text-muted-foreground">+{order.items.length - 3} mais</span>
-                    )}
-                  </div>
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className="font-semibold">{formatCurrency(order.total)}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {format(new Date(order.created_at), "HH:mm")}
-                    </span>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
       </Tabs>
 
       {/* Transfer Orders Modal */}
