@@ -34,7 +34,7 @@ const allNavItems: NavItemConfig[] = [
   { path: "/dashboard/orders", icon: ShoppingBag, label: "Pedidos", showBadge: true, allowedRoles: ['admin'] },
   { path: "/dashboard/pdv", icon: Monitor, label: "PDV", allowedRoles: ['admin'] },
   { path: "/dashboard/waiter-pos", icon: ShoppingBag, label: "Fazer Pedido", allowedRoles: ['garcom'] },
-  { path: "/dashboard/my-orders", icon: ClipboardList, label: "Meus Pedidos", allowedRoles: ['garcom'] },
+  { path: "/dashboard/waiter-orders", icon: ClipboardList, label: "Meus Pedidos", allowedRoles: ['garcom'] },
   { path: "/dashboard/products", icon: Package, label: "Cardápio", allowedRoles: ['admin'] },
 ];
 
