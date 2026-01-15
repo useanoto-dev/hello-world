@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -118,6 +119,7 @@ interface StoreSettings {
 }
 
 export default function SettingsPage() {
+  const navigate = useNavigate();
   const { profile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1836,7 +1838,7 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card 
               className="hover:bg-muted/50 cursor-pointer transition-colors border-muted"
-              onClick={() => window.location.href = '/dashboard/staff'}
+              onClick={() => navigate('/dashboard/staff')}
             >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
@@ -1852,7 +1854,7 @@ export default function SettingsPage() {
             
             <Card 
               className="hover:bg-muted/50 cursor-pointer transition-colors border-muted"
-              onClick={() => window.location.href = '/dashboard/audit'}
+              onClick={() => navigate('/dashboard/audit')}
             >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
