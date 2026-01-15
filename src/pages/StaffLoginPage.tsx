@@ -38,13 +38,24 @@ export default function StaffLoginPage() {
     setIsLoading(true);
 
     try {
+      console.log("Attempting login with CPF:", cleanCpf);
+      
       const { data: staff, error } = await (supabase.from("store_staff") as any)
-        .select("id, name, role, is_active, password_hash, locked_until, failed_login_attempts, store_id")
+        .select("id, name, role, is_active, password_hash, locked_until, failed_login_attempts, store_id, cpf")
         .eq("cpf", cleanCpf)
         .eq("is_deleted", false)
-        .single();
+        .maybeSingle();
 
-      if (error || !staff) {
+      console.log("Query result:", { staff, error });
+
+      if (error) {
+        console.error("Database error:", error);
+        toast.error("Erro ao buscar funcionário");
+        setIsLoading(false);
+        return;
+      }
+
+      if (!staff) {
         await logAudit(null, null, "login_failed", "auth", null, { cpf: cleanCpf, reason: "user_not_found" });
         toast.error("CPF não encontrado");
         setIsLoading(false);
