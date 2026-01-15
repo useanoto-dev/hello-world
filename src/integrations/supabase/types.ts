@@ -14,6 +14,124 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_codes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          is_used: boolean
+          staff_id: string
+          store_id: string
+          used_at: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          expires_at: string
+          id?: string
+          is_used?: boolean
+          staff_id: string
+          store_id: string
+          used_at?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          is_used?: boolean
+          staff_id?: string
+          store_id?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_codes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "store_staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "access_codes_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "store_staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "access_codes_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          ip_address: string | null
+          module: string
+          record_id: string | null
+          staff_id: string | null
+          staff_name: string | null
+          staff_role: string | null
+          store_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          module: string
+          record_id?: string | null
+          staff_id?: string | null
+          staff_name?: string | null
+          staff_role?: string | null
+          store_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          module?: string
+          record_id?: string | null
+          staff_id?: string | null
+          staff_name?: string | null
+          staff_role?: string | null
+          store_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "store_staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_logs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       banners: {
         Row: {
           created_at: string | null
@@ -991,6 +1109,7 @@ export type Database = {
           paid: boolean | null
           payment_change: number | null
           payment_method: string | null
+          staff_id: string | null
           status: string | null
           store_id: string
           stripe_payment_intent_id: string | null
@@ -1016,6 +1135,7 @@ export type Database = {
           paid?: boolean | null
           payment_change?: number | null
           payment_method?: string | null
+          staff_id?: string | null
           status?: string | null
           store_id: string
           stripe_payment_intent_id?: string | null
@@ -1041,6 +1161,7 @@ export type Database = {
           paid?: boolean | null
           payment_change?: number | null
           payment_method?: string | null
+          staff_id?: string | null
           status?: string | null
           store_id?: string
           stripe_payment_intent_id?: string | null
@@ -1050,6 +1171,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "store_staff"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orders_store_id_fkey"
             columns: ["store_id"]
@@ -1990,6 +2118,63 @@ export type Database = {
           },
         ]
       }
+      staff_permissions: {
+        Row: {
+          can_apply_discounts: boolean
+          can_cancel_orders: boolean
+          can_close_cashier: boolean
+          can_finalize_sales: boolean
+          can_open_cashier: boolean
+          can_view_reports: boolean
+          created_at: string
+          id: string
+          staff_id: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          can_apply_discounts?: boolean
+          can_cancel_orders?: boolean
+          can_close_cashier?: boolean
+          can_finalize_sales?: boolean
+          can_open_cashier?: boolean
+          can_view_reports?: boolean
+          created_at?: string
+          id?: string
+          staff_id: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          can_apply_discounts?: boolean
+          can_cancel_orders?: boolean
+          can_close_cashier?: boolean
+          can_finalize_sales?: boolean
+          can_open_cashier?: boolean
+          can_view_reports?: boolean
+          created_at?: string
+          id?: string
+          staff_id?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_permissions_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: true
+            referencedRelation: "store_staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_permissions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       standard_addon_prices: {
         Row: {
           addon_id: string
@@ -2241,6 +2426,72 @@ export type Database = {
           },
           {
             foreignKeyName: "standard_sizes_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_staff: {
+        Row: {
+          cpf: string
+          created_at: string
+          created_by: string | null
+          failed_login_attempts: number
+          id: string
+          is_active: boolean
+          is_deleted: boolean
+          last_login_at: string | null
+          locked_until: string | null
+          name: string
+          password_hash: string | null
+          role: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          cpf: string
+          created_at?: string
+          created_by?: string | null
+          failed_login_attempts?: number
+          id?: string
+          is_active?: boolean
+          is_deleted?: boolean
+          last_login_at?: string | null
+          locked_until?: string | null
+          name: string
+          password_hash?: string | null
+          role: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          cpf?: string
+          created_at?: string
+          created_by?: string | null
+          failed_login_attempts?: number
+          id?: string
+          is_active?: boolean
+          is_deleted?: boolean
+          last_login_at?: string | null
+          locked_until?: string | null
+          name?: string
+          password_hash?: string | null
+          role?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_staff_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "store_staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_staff_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
@@ -2858,6 +3109,7 @@ export type Database = {
         }
         Returns: string
       }
+      generate_access_code: { Args: never; Returns: string }
       get_user_store_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
