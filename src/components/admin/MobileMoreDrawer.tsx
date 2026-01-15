@@ -125,7 +125,7 @@ export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreD
                 key={item.path}
                 to={item.path}
                 onClick={onClose}
-                className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gray-900/10 hover:bg-[#e5c801] transition-colors"
+                className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white/60 hover:bg-white/80 transition-colors"
               >
                 <item.icon className="w-6 h-6 text-gray-900" />
                 <span className="text-[11px] font-medium text-gray-900 text-center leading-tight">
