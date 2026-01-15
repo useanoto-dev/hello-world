@@ -15,7 +15,7 @@ import { MenuThemeSelector, getThemeColors } from "@/components/admin/MenuThemeS
 import WeeklyScheduleEditor, { WeeklySchedule, DEFAULT_SCHEDULE } from "@/components/admin/WeeklyScheduleEditor";
 import { parseSchedule } from "@/lib/scheduleUtils";
 import { toast } from "sonner";
-import { Loader2, Save, Clock, MapPin, Phone, Palette, Info, ImageIcon, Timer, Store, DollarSign, Truck, QrCode, Printer, Download, ChevronDown, ChevronUp, Copy, ExternalLink, AlertTriangle, Link, ClipboardList, Settings, CreditCard, PanelLeft, User, Lock, Eye, EyeOff, Cloud } from "lucide-react";
+import { Loader2, Save, Clock, MapPin, Phone, Palette, Info, ImageIcon, Timer, Store, DollarSign, Truck, QrCode, Printer, Download, ChevronDown, ChevronUp, Copy, ExternalLink, AlertTriangle, Link, ClipboardList, Settings, CreditCard, PanelLeft, User, Lock, Eye, EyeOff, Cloud, UserCog, Activity } from "lucide-react";
 import { PrintNodeSettings } from "@/components/admin/PrintNodeSettings";
 import { PrintJobHistory } from "@/components/admin/PrintJobHistory";
 
@@ -1821,7 +1821,54 @@ export default function SettingsPage() {
         </TabsContent>
       </Tabs>
 
-      {/* QR Code Modal */}
+      {/* Administration Section */}
+      <Card className="border-primary/20 mt-6">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Settings className="w-5 h-5" />
+            Administração
+          </CardTitle>
+          <CardDescription>
+            Gerenciamento de usuários e histórico de atividades
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card 
+              className="hover:bg-muted/50 cursor-pointer transition-colors border-muted"
+              onClick={() => window.location.href = '/dashboard/staff'}
+            >
+              <CardContent className="flex items-center gap-4 p-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
+                  <UserCog className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold">Usuários</h3>
+                  <p className="text-sm text-muted-foreground">Gerenciar funcionários e acessos</p>
+                </div>
+                <ChevronDown className="w-5 h-5 text-muted-foreground -rotate-90" />
+              </CardContent>
+            </Card>
+            
+            <Card 
+              className="hover:bg-muted/50 cursor-pointer transition-colors border-muted"
+              onClick={() => window.location.href = '/dashboard/audit'}
+            >
+              <CardContent className="flex items-center gap-4 p-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
+                  <Activity className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold">Auditoria</h3>
+                  <p className="text-sm text-muted-foreground">Histórico de atividades do sistema</p>
+                </div>
+                <ChevronDown className="w-5 h-5 text-muted-foreground -rotate-90" />
+              </CardContent>
+            </Card>
+          </div>
+        </CardContent>
+      </Card>
+
       <Dialog open={showQrModal} onOpenChange={setShowQrModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

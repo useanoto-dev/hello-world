@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MaskedInput } from "@/components/ui/masked-input";
-import { cn } from "@/lib/utils";
 import logoFull from "@/assets/anoto-logo-full.png";
+import { getDefaultRouteForRole, type StaffRole } from "@/hooks/useStaffAuth";
 
 type LoginStep = "credentials" | "set_password";
 
@@ -97,16 +97,19 @@ export default function StaffLoginPage() {
 
         await logAudit(staff.store_id, staff.id, "login", "auth", staff.id, { role: staff.role });
 
-        // Store staff session in localStorage
+        // Store staff session in localStorage with correct field names
         localStorage.setItem("staff_session", JSON.stringify({
-          id: staff.id,
+          staffId: staff.id,
+          storeId: staff.store_id,
           name: staff.name,
-          role: staff.role,
-          store_id: staff.store_id
+          cpf: cleanCpf,
+          role: staff.role
         }));
 
         toast.success(`Bem-vindo, ${staff.name}!`);
-        navigate("/dashboard/pdv");
+        // Navigate to role-specific default route
+        const defaultRoute = getDefaultRouteForRole(staff.role as StaffRole);
+        navigate(defaultRoute);
         return;
       }
 
@@ -183,7 +186,7 @@ export default function StaffLoginPage() {
 
       // Get staff data for session
       const { data: staff } = await (supabase.from("store_staff") as any)
-        .select("id, name, role, store_id")
+        .select("id, name, role, store_id, cpf")
         .eq("id", staffData.id)
         .single();
 
@@ -191,14 +194,17 @@ export default function StaffLoginPage() {
         await logAudit(staff.store_id, staff.id, "login", "auth", staff.id, { first_login: true });
         
         localStorage.setItem("staff_session", JSON.stringify({
-          id: staff.id,
+          staffId: staff.id,
+          storeId: staff.store_id,
           name: staff.name,
-          role: staff.role,
-          store_id: staff.store_id
+          cpf: staff.cpf,
+          role: staff.role
         }));
 
         toast.success("Senha criada com sucesso!");
-        navigate("/dashboard/pdv");
+        // Navigate to role-specific default route
+        const defaultRoute = getDefaultRouteForRole(staff.role as StaffRole);
+        navigate(defaultRoute);
       }
     } catch (error) {
       console.error("Set password error:", error);
