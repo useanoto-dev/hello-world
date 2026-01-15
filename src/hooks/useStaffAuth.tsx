@@ -43,7 +43,7 @@ interface UseStaffAuthReturn {
 export const getDefaultRouteForRole = (role: StaffRole | null): string => {
   switch (role) {
     case 'garcom':
-      return '/dashboard/tables';
+      return '/dashboard/waiter-pos';
     case 'caixa':
       return '/dashboard/pdv';
     case 'admin':
@@ -56,7 +56,7 @@ export const getDefaultRouteForRole = (role: StaffRole | null): string => {
 export const routePermissions: Record<string, StaffRole[]> = {
   '/dashboard': ['admin'],
   '/dashboard/pdv': ['admin', 'caixa'],
-  '/dashboard/tables': ['admin', 'caixa', 'garcom'],
+  '/dashboard/tables': ['admin', 'caixa'],
   '/dashboard/waiter-pos': ['admin', 'garcom'],
   '/dashboard/waiter-orders': ['admin', 'garcom'],
   '/dashboard/comandas': ['admin', 'caixa'],

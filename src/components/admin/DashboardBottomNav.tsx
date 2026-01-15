@@ -33,7 +33,7 @@ const allNavItems: NavItemConfig[] = [
   { path: "/dashboard", icon: LayoutDashboard, label: "Início", allowedRoles: ['admin'] },
   { path: "/dashboard/orders", icon: ShoppingBag, label: "Pedidos", showBadge: true, allowedRoles: ['admin', 'caixa'] },
   { path: "/dashboard/pdv", icon: Monitor, label: "PDV", allowedRoles: ['admin', 'caixa'] },
-  { path: "/dashboard/tables", icon: UtensilsCrossed, label: "Mesas", allowedRoles: ['admin', 'caixa', 'garcom'] },
+  { path: "/dashboard/tables", icon: UtensilsCrossed, label: "Mesas", allowedRoles: ['admin', 'caixa'] },
   { path: "/dashboard/waiter-pos", icon: ShoppingBag, label: "Fazer Pedido", allowedRoles: ['garcom'] },
   { path: "/dashboard/my-orders", icon: ClipboardList, label: "Meus Pedidos", allowedRoles: ['garcom'] },
   { path: "/dashboard/products", icon: Package, label: "Cardápio", allowedRoles: ['admin'] },
