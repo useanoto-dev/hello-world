@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PDVPaymentSection, SplitPayment } from "./PDVPaymentSection";
+import { PDVLoyaltyRedemption, AppliedReward } from "./PDVLoyaltyRedemption";
+import { PDVManualDiscount, ManualDiscount } from "./PDVManualDiscount";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -137,6 +139,11 @@ export default function TablesManagement({ store }: TablesManagementProps) {
   const [splitPayments, setSplitPayments] = useState<SplitPayment[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
+  
+  // Loyalty and discount states for checkout
+  const [appliedReward, setAppliedReward] = useState<AppliedReward | null>(null);
+  const [cpfForPoints, setCpfForPoints] = useState<string | null>(null);
+  const [manualDiscount, setManualDiscount] = useState<ManualDiscount | null>(null);
   
   const [isTransferOpen, setIsTransferOpen] = useState(false);
   const [transferSourceTable, setTransferSourceTable] = useState<Table | null>(null);
@@ -352,12 +359,26 @@ export default function TablesManagement({ store }: TablesManagementProps) {
     setCheckoutTable(table);
     setSelectedTable(null);
     setSplitPayments([]);
+    setAppliedReward(null);
+    setCpfForPoints(null);
+    setManualDiscount(null);
     setIsCheckoutOpen(true);
   };
 
-  const getCheckoutTotal = () => {
+  const getCheckoutSubtotal = () => {
     if (!checkoutTable) return 0;
     return getTableTotal(checkoutTable.id);
+  };
+
+  // Calculate loyalty discount
+  const loyaltyDiscount = appliedReward?.discountAmount || 0;
+  
+  // Calculate manual discount amount
+  const manualDiscountAmount = manualDiscount?.discountAmount || 0;
+
+  const getCheckoutTotal = () => {
+    const subtotal = getCheckoutSubtotal();
+    return Math.max(0, subtotal - loyaltyDiscount - manualDiscountAmount);
   };
 
   const handlePaymentsChange = (newPayments: SplitPayment[]) => {
@@ -861,49 +882,72 @@ export default function TablesManagement({ store }: TablesManagementProps) {
 
       {/* Checkout Modal */}
       <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Receipt className="w-5 h-5" />
-              Fechar Conta - Mesa {checkoutTable?.number}
-            </DialogTitle>
-            <DialogDescription>
-              Consolide os pedidos e selecione as formas de pagamento
-            </DialogDescription>
+            <DialogTitle>Pagamento - Mesa {checkoutTable?.number}</DialogTitle>
           </DialogHeader>
 
           {checkoutTable && (
             <div className="space-y-4">
+              {/* Items/Orders */}
               <div>
-                <Label className="text-xs text-muted-foreground mb-2 block">Pedidos</Label>
-                <ScrollArea className="h-40 border rounded-lg p-2">
-                  <div className="space-y-2">
-                    {(tableOrders[checkoutTable.id] || []).map(order => (
-                      <div key={order.id} className="p-2 bg-muted/30 rounded">
-                        <div className="flex justify-between text-sm">
-                          <span className="font-medium">#{order.order_number}</span>
-                          <span>{formatCurrency(order.total)}</span>
+                <Label>Itens</Label>
+                <div className="mt-1 text-sm space-y-1 max-h-32 overflow-y-auto">
+                  {(tableOrders[checkoutTable.id] || []).map(order => (
+                    <div key={order.id}>
+                      {order.items.map((item, i) => (
+                        <div key={i} className="flex justify-between">
+                          <span>{item.quantity}x {item.name}</span>
+                          <span>{formatCurrency(item.quantity * (item.price || 0))}</span>
                         </div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {order.items.map((item, i) => (
-                            <span key={i}>{item.quantity}x {item.name}{i < order.items.length - 1 ? ", " : ""}</span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Loyalty Redemption */}
+              <PDVLoyaltyRedemption
+                storeId={store.id}
+                subtotal={getCheckoutSubtotal()}
+                onRewardApplied={setAppliedReward}
+                appliedReward={appliedReward}
+                onCpfForPoints={setCpfForPoints}
+                cpfForPoints={cpfForPoints}
+              />
+
+              {/* Manual Discount */}
+              <PDVManualDiscount
+                subtotal={getCheckoutSubtotal() - loyaltyDiscount}
+                discount={manualDiscount}
+                onDiscountChange={setManualDiscount}
+              />
+
+              {/* Totals */}
+              <div className="pt-2 border-t space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span>Subtotal</span>
+                  <span>{formatCurrency(getCheckoutSubtotal())}</span>
+                </div>
+                {manualDiscount && (
+                  <div className="flex justify-between text-sm text-emerald-600">
+                    <span>Desconto Manual</span>
+                    <span>-{formatCurrency(manualDiscountAmount)}</span>
                   </div>
-                </ScrollArea>
+                )}
+                {appliedReward && (
+                  <div className="flex justify-between text-sm text-amber-600">
+                    <span>Desconto Fidelidade</span>
+                    <span>-{formatCurrency(loyaltyDiscount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold text-lg">
+                  <span>Total</span>
+                  <span className="text-primary">{formatCurrency(getCheckoutTotal())}</span>
+                </div>
               </div>
 
-              <Separator />
-
-              <div className="flex justify-between items-center text-lg font-bold">
-                <span>Total da Conta</span>
-                <span className="text-primary">{formatCurrency(getCheckoutTotal())}</span>
-              </div>
-
-              <Separator />
-
+              {/* Payment Section */}
               <PDVPaymentSection
                 paymentMethods={paymentMethods}
                 totalAmount={getCheckoutTotal()}
@@ -913,34 +957,15 @@ export default function TablesManagement({ store }: TablesManagementProps) {
             </div>
           )}
 
-          <DialogFooter className="gap-2 flex-col sm:flex-row">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setIsCheckoutOpen(false)}>
               Cancelar
             </Button>
-            <Button
-              variant="secondary"
-              onClick={() => handleCloseAccount(true)}
-              disabled={isProcessing || isPrinting || splitPayments.length === 0 || getTotalPaid() < getCheckoutTotal() - 0.01}
-              className="gap-2"
-            >
-              {isPrinting ? (
-                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Printer className="w-4 h-4" />
-              )}
-              Imprimir e Fechar
-            </Button>
-            <Button
+            <Button 
               onClick={() => handleCloseAccount(false)}
               disabled={isProcessing || splitPayments.length === 0 || getTotalPaid() < getCheckoutTotal() - 0.01}
-              className="gap-2"
             >
-              {isProcessing ? (
-                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <CheckCircle className="w-4 h-4" />
-              )}
-              Confirmar Pagamento
+              {isProcessing ? "Processando..." : "Confirmar Pagamento"}
             </Button>
           </DialogFooter>
         </DialogContent>
