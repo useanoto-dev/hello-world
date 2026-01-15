@@ -39,7 +39,7 @@ export function DashboardBottomNav({
 
   return (
     <nav 
-      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#FEDE01] border-t border-[#e5c801]"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#FEDE01] border-t border-[#e5c801] rounded-t-3xl"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
       {/* Store Status Indicator */}
