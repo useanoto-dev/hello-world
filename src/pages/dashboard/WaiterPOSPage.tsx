@@ -6,6 +6,7 @@ import {
 import { PDVPaymentSection, SplitPayment } from "@/components/pdv/PDVPaymentSection";
 import { PDVProductsPanel } from "@/components/pdv/PDVProductsPanel";
 import { PDVTableSelectionModal } from "@/components/pdv/PDVTableSelectionModal";
+import { PDVTablesPanel } from "@/components/pdv/PDVTablesPanel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -327,15 +328,46 @@ export default function WaiterPOSPage() {
     );
   }
 
+  const handleRequestReleaseTable = (table: Table, e: React.MouseEvent) => {
+    e.stopPropagation();
+    toast.info(`Mesa ${table.number} está ocupada. Finalize os pedidos primeiro.`);
+  };
+
+  const handleSelectTableFromPanel = (table: Table) => {
+    setSelectedTable(table);
+    setIsCounter(false);
+    toast.info(`Mesa ${table.number} selecionada`);
+  };
+
+  const handleSelectCounter = () => {
+    setSelectedTable(null);
+    setIsCounter(true);
+    toast.info("Balcão selecionado");
+  };
+
   return (
-    <div className="h-[calc(100vh-8rem)] md:h-[calc(100vh-4rem)] flex flex-col p-4">
-      {/* Products Panel - Full width */}
-      <PDVProductsPanel
-        allDisplayItems={allDisplayItems}
-        allDisplayCategories={allDisplayCategories}
-        getSecondaryGroups={getSecondaryGroups}
-        onProductClick={openComplementsModal}
-      />
+    <div className="h-[calc(100vh-8rem)] md:h-[calc(100vh-4rem)] flex gap-4 p-4">
+      {/* Tables Panel - Hidden on mobile, visible on md+ */}
+      <div className="hidden md:block">
+        <PDVTablesPanel
+          tables={tables}
+          selectedTable={selectedTable}
+          isCounter={isCounter}
+          onSelectTable={handleSelectTableFromPanel}
+          onSelectCounter={handleSelectCounter}
+          onRequestReleaseTable={handleRequestReleaseTable}
+        />
+      </div>
+
+      {/* Products Panel */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <PDVProductsPanel
+          allDisplayItems={allDisplayItems}
+          allDisplayCategories={allDisplayCategories}
+          getSecondaryGroups={getSecondaryGroups}
+          onProductClick={openComplementsModal}
+        />
+      </div>
 
       {/* Floating Cart Button */}
       {cart.length > 0 && (
