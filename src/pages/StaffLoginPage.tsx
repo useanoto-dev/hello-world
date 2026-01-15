@@ -116,7 +116,7 @@ export default function StaffLoginPage() {
       // Try access code login
       if (accessCode) {
         const { data: codeData, error: codeError } = await (supabase.from("access_codes") as any)
-          .select("*, staff:store_staff(*)")
+          .select("*, staff:store_staff!access_codes_staff_id_fkey(*)")
           .eq("code", accessCode)
           .eq("is_used", false)
           .gt("expires_at", new Date().toISOString())
