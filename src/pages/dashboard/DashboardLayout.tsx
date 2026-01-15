@@ -6,7 +6,8 @@ import {
   LayoutDashboard, Image, ShoppingBag,
   Settings, CreditCard, LogOut, Menu, X, ExternalLink, Package,
   ChefHat, TicketPercent, Users, ChevronLeft, ChevronRight, TrendingUp,
-  Monitor, UtensilsCrossed, ChevronDown, Workflow, Warehouse, Plug, Maximize, Minimize, DollarSign
+  Monitor, UtensilsCrossed, ChevronDown, Workflow, Warehouse, Plug, Maximize, Minimize, DollarSign,
+  ClipboardList, UserCircle
 } from "lucide-react";
 import { QuickActionButtons } from "@/components/admin/QuickActionButtons";
 import { DashboardBottomNav } from "@/components/admin/DashboardBottomNav";
@@ -35,6 +36,7 @@ import { useStockNotifications } from "@/hooks/useStockNotifications";
 import { usePendingOrdersCount } from "@/hooks/usePendingOrdersCount";
 import { useFullscreen } from "@/hooks/useFullscreen";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useStaffAuth, canAccessRoute, getDefaultRouteForRole, type StaffRole } from "@/hooks/useStaffAuth";
 
 interface Store {
   id: string;
@@ -60,32 +62,37 @@ interface MenuItem {
   showAlways: boolean;
   requiresComandaMode?: boolean;
   subItems?: { icon: React.ComponentType<{ className?: string }>; label: string; path: string }[];
+  allowedRoles?: StaffRole[];
+  staffOnly?: boolean;
 }
 
 const allMenuItems: MenuItem[] = [
-  { icon: LayoutDashboard, label: "Início", path: "/dashboard", showAlways: true },
-  { icon: Monitor, label: "PDV", path: "/dashboard/pdv", showAlways: true },
-  { icon: UtensilsCrossed, label: "Mesas", path: "/dashboard/tables", showAlways: true },
-  { icon: ChefHat, label: "Cozinha", path: "/dashboard/comandas", showAlways: false, requiresComandaMode: true },
-  { icon: ShoppingBag, label: "Pedidos", path: "/dashboard/orders", showAlways: true },
-  { icon: TrendingUp, label: "Analytics", path: "/dashboard/analytics", showAlways: true },
-  { icon: DollarSign, label: "Financeiro", path: "/dashboard/financeiro", showAlways: true },
-  { icon: Users, label: "Clientes", path: "/dashboard/customers", showAlways: true },
+  { icon: LayoutDashboard, label: "Início", path: "/dashboard", showAlways: true, allowedRoles: ['admin'] },
+  { icon: Monitor, label: "PDV", path: "/dashboard/pdv", showAlways: true, allowedRoles: ['admin', 'caixa'] },
+  { icon: UtensilsCrossed, label: "Mesas", path: "/dashboard/tables", showAlways: true, allowedRoles: ['admin', 'caixa', 'garcom'] },
+  { icon: ChefHat, label: "Cozinha", path: "/dashboard/comandas", showAlways: false, requiresComandaMode: true, allowedRoles: ['admin', 'caixa'] },
+  { icon: ClipboardList, label: "Meus Pedidos", path: "/dashboard/my-orders", showAlways: true, allowedRoles: ['garcom'], staffOnly: true },
+  { icon: ShoppingBag, label: "Pedidos", path: "/dashboard/orders", showAlways: true, allowedRoles: ['admin', 'caixa'] },
+  { icon: TrendingUp, label: "Analytics", path: "/dashboard/analytics", showAlways: true, allowedRoles: ['admin', 'caixa'] },
+  { icon: DollarSign, label: "Financeiro", path: "/dashboard/financeiro", showAlways: true, allowedRoles: ['admin'] },
+  { icon: Users, label: "Clientes", path: "/dashboard/customers", showAlways: true, allowedRoles: ['admin'] },
   { 
     icon: Package, 
     label: "Gestor de Cardápio", 
     path: "/dashboard/products", 
     showAlways: true,
+    allowedRoles: ['admin'],
     subItems: [
       { icon: Workflow, label: "Fluxos", path: "/dashboard/flows" }
     ]
   },
-  { icon: Warehouse, label: "Estoque", path: "/dashboard/inventory", showAlways: true },
-  { icon: TicketPercent, label: "Cupons", path: "/dashboard/coupons", showAlways: true },
-  { icon: Image, label: "Banners", path: "/dashboard/banners", showAlways: true },
-  { icon: Plug, label: "Integrações", path: "/dashboard/integrations", showAlways: true },
-  { icon: Settings, label: "Configurações", path: "/dashboard/settings", showAlways: true },
-  { icon: CreditCard, label: "Assinatura", path: "/dashboard/subscription", showAlways: true },
+  { icon: Warehouse, label: "Estoque", path: "/dashboard/inventory", showAlways: true, allowedRoles: ['admin'] },
+  { icon: TicketPercent, label: "Cupons", path: "/dashboard/coupons", showAlways: true, allowedRoles: ['admin'] },
+  { icon: Image, label: "Banners", path: "/dashboard/banners", showAlways: true, allowedRoles: ['admin'] },
+  { icon: Plug, label: "Integrações", path: "/dashboard/integrations", showAlways: true, allowedRoles: ['admin'] },
+  { icon: Settings, label: "Configurações", path: "/dashboard/settings", showAlways: true, allowedRoles: ['admin'] },
+  { icon: CreditCard, label: "Assinatura", path: "/dashboard/subscription", showAlways: true, allowedRoles: ['admin'] },
+  { icon: UserCircle, label: "Meu Perfil", path: "/dashboard/profile", showAlways: true, allowedRoles: ['caixa', 'garcom'], staffOnly: true },
 ];
 
 export default function DashboardLayout() {
@@ -93,6 +100,7 @@ export default function DashboardLayout() {
   const location = useLocation();
   const isMobile = useIsMobile();
   const { isFullscreen, toggleFullscreen, isSupported: fullscreenSupported } = useFullscreen();
+  const { isStaffLoggedIn, role, name: staffName, logout: staffLogout } = useStaffAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
@@ -103,6 +111,18 @@ export default function DashboardLayout() {
   const [showCloseStoreDialog, setShowCloseStoreDialog] = useState(false);
 
   // Check if on PDV page for fullscreen button
+  const isPDVPage = location.pathname === "/dashboard/pdv";
+
+  // Check route access for staff
+  useEffect(() => {
+    if (isStaffLoggedIn && role && !loading) {
+      if (!canAccessRoute(location.pathname, role)) {
+        const defaultRoute = getDefaultRouteForRole(role);
+        toast.error("Acesso não autorizado");
+        navigate(defaultRoute);
+      }
+    }
+  }, [location.pathname, isStaffLoggedIn, role, loading, navigate]);
   const isPDVPage = location.pathname === "/dashboard/pdv";
 
   // Auto-expand menu if current path is a subitem
@@ -274,18 +294,36 @@ export default function DashboardLayout() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast.success("Logout realizado!");
-    navigate("/");
+    if (isStaffLoggedIn) {
+      staffLogout();
+    } else {
+      await supabase.auth.signOut();
+      toast.success("Logout realizado!");
+      navigate("/");
+    }
   };
 
-  // Filter menu items based on comanda mode
+  // Filter menu items based on comanda mode and role
   const menuItems = useMemo(() => allMenuItems.filter(item => {
-    if (item.requiresComandaMode) {
-      return store?.use_comanda_mode !== false;
+    // Filter by comanda mode
+    if (item.requiresComandaMode && store?.use_comanda_mode === false) {
+      return false;
     }
+    
+    // If staff is logged in, filter by role
+    if (isStaffLoggedIn && role) {
+      if (item.allowedRoles && !item.allowedRoles.includes(role)) {
+        return false;
+      }
+    } else {
+      // Admin via Supabase Auth - hide staff-only items
+      if (item.staffOnly) {
+        return false;
+      }
+    }
+    
     return true;
-  }), [store?.use_comanda_mode]);
+  }), [store?.use_comanda_mode, isStaffLoggedIn, role]);
 
   if (loading) {
     return (
