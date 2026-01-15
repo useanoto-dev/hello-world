@@ -70,18 +70,18 @@
     /* Surface for cards/elevated elements */
     --surface: 220 14% 97%;
     
-    /* Sidebar tokens - Gray #2B2E31 with yellow buttons + blue indicator */
-    --sidebar-bg: 210 6% 18%;
-    --sidebar-bg-end: 210 6% 15%;
-    --sidebar-border: 210 6% 25%;
-    --sidebar-hover: 45 100% 48%;
-    --sidebar-active: 45 100% 50%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-foreground-muted: 210 6% 65%;
-    --sidebar-accent: 210 100% 50%;
-    --sidebar-button-bg: 45 95% 55%;
-    --sidebar-button-hover: 45 95% 50%;
-    --sidebar-indicator: 210 100% 50%;
+    /* Sidebar tokens - Yellow brand color */
+    --sidebar-bg: 43 96% 50%;
+    --sidebar-bg-end: 43 96% 45%;
+    --sidebar-border: 43 96% 40%;
+    --sidebar-hover: 43 96% 40%;
+    --sidebar-active: 43 96% 35%;
+    --sidebar-foreground: 0 0% 0%;
+    --sidebar-foreground-muted: 0 0% 20%;
+    --sidebar-accent: 43 96% 35%;
+    --sidebar-button-bg: 0 0% 0%;
+    --sidebar-button-hover: 0 0% 15%;
+    --sidebar-indicator: 0 0% 0%;
     
     /* Admin specific - Uses primary sparingly */
     --admin-accent: 43 96% 50%;
