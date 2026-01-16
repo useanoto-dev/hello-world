@@ -1,6 +1,6 @@
 // Standard Category Editor - Universal model for any business type
 import { useState, useEffect } from "react";
-import { ArrowLeft, Plus, Trash2, AlertCircle, GripVertical, ChevronDown, ChevronUp, Layers, IceCream, Sandwich, UtensilsCrossed, Coffee, Sparkles, Check } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, AlertCircle, GripVertical, ChevronDown, ChevronUp, Layers, IceCream, Sandwich, UtensilsCrossed, Coffee, Sparkles, Check, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -287,7 +287,9 @@ interface StandardSize {
   name: string;
   basePrice: number;
   description?: string;
+  imageUrl?: string;
   isActive: boolean;
+  isExpanded?: boolean;
 }
 
 interface OptionGroupItem {
@@ -330,7 +332,7 @@ const DAYS = [
 const STEPS = [
   { id: 1, label: "Modelo" },
   { id: 2, label: "Categoria" },
-  { id: 3, label: "Tamanhos" },
+  { id: 3, label: "Itens/Tamanhos" },
   { id: 4, label: "Personalização" },
 ];
 
@@ -340,13 +342,18 @@ function SortableSizeItem({
   size, 
   onUpdate, 
   onRemove, 
-  canRemove 
+  canRemove,
+  storeId 
 }: { 
   size: StandardSize; 
   onUpdate: (id: string, field: keyof StandardSize, value: any) => void;
   onRemove: (id: string) => void;
   canRemove: boolean;
+  storeId: string;
 }) {
+  const [uploading, setUploading] = useState(false);
+  const inputRef = useState<HTMLInputElement | null>(null);
+  
   const {
     attributes,
     listeners,
@@ -361,64 +368,186 @@ function SortableSizeItem({
     transition,
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith("image/")) {
+      toast.error("Apenas imagens são permitidas");
+      return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Imagem muito grande. Máximo 5MB");
+      return;
+    }
+    
+    setUploading(true);
+    try {
+      const fileName = `sizes/${storeId}/${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from("images")
+        .upload(fileName, file, { contentType: file.type });
+      
+      if (uploadError) throw uploadError;
+      
+      const { data: urlData } = supabase.storage
+        .from("images")
+        .getPublicUrl(fileName);
+      
+      onUpdate(size.id, "imageUrl", urlData.publicUrl);
+      toast.success("Imagem enviada!");
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast.error(error.message || "Erro ao enviar imagem");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const isExpanded = size.isExpanded ?? false;
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex items-center gap-3 p-3 bg-card border border-border rounded-lg",
+        "bg-card border border-border rounded-lg overflow-hidden",
         isDragging && "opacity-50 shadow-lg"
       )}
     >
-      <button
-        type="button"
-        className="touch-none text-muted-foreground hover:text-foreground cursor-grab"
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical className="w-4 h-4" />
-      </button>
+      {/* Main row */}
+      <div className="flex items-center gap-3 p-3">
+        <button
+          type="button"
+          className="touch-none text-muted-foreground hover:text-foreground cursor-grab"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="w-4 h-4" />
+        </button>
 
-      <div className="flex-1">
-        <Input
-          value={size.name}
-          onChange={(e) => onUpdate(size.id, "name", e.target.value)}
-          placeholder="Ex: 300ml, Pequeno, Individual"
-          className="h-9"
-        />
-      </div>
+        {/* Thumbnail or image placeholder */}
+        <div 
+          className="relative w-10 h-10 rounded-lg border border-border bg-muted/50 flex items-center justify-center overflow-hidden cursor-pointer hover:border-primary transition-colors"
+          onClick={() => onUpdate(size.id, "isExpanded", !isExpanded)}
+        >
+          {size.imageUrl ? (
+            <img src={size.imageUrl} alt={size.name} className="w-full h-full object-cover" />
+          ) : (
+            <ImageIcon className="w-4 h-4 text-muted-foreground" />
+          )}
+        </div>
 
-      <div className="w-28">
-        <div className="relative">
-          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">R$</span>
+        <div className="flex-1">
           <Input
-            type="number"
-            step="0.01"
-            min="0"
-            value={size.basePrice || ""}
-            onChange={(e) => onUpdate(size.id, "basePrice", parseFloat(e.target.value) || 0)}
-            placeholder="0,00"
-            className="h-9 pl-8"
+            value={size.name}
+            onChange={(e) => onUpdate(size.id, "name", e.target.value)}
+            placeholder="Ex: 300ml, Pequeno, Individual"
+            className="h-9"
           />
         </div>
+
+        <div className="w-28">
+          <div className="relative">
+            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">R$</span>
+            <Input
+              type="number"
+              step="0.01"
+              min="0"
+              value={size.basePrice || ""}
+              onChange={(e) => onUpdate(size.id, "basePrice", parseFloat(e.target.value) || 0)}
+              placeholder="0,00"
+              className="h-9 pl-8"
+            />
+          </div>
+        </div>
+
+        <Switch
+          checked={size.isActive}
+          onCheckedChange={(checked) => onUpdate(size.id, "isActive", checked)}
+          className="data-[state=checked]:bg-primary"
+        />
+
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => onUpdate(size.id, "isExpanded", !isExpanded)}
+          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+        >
+          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </Button>
+
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => onRemove(size.id)}
+          disabled={!canRemove}
+          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
       </div>
 
-      <Switch
-        checked={size.isActive}
-        onCheckedChange={(checked) => onUpdate(size.id, "isActive", checked)}
-        className="data-[state=checked]:bg-primary"
-      />
+      {/* Expanded section with image and description */}
+      {isExpanded && (
+        <div className="px-3 pb-3 pt-1 border-t border-border bg-muted/30 space-y-3">
+          <div className="flex gap-4">
+            {/* Image upload */}
+            <div className="w-24 shrink-0">
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Imagem</label>
+              <div className="relative">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  id={`size-image-${size.id}`}
+                />
+                <label
+                  htmlFor={`size-image-${size.id}`}
+                  className={cn(
+                    "w-full aspect-square rounded-lg border-2 border-dashed border-border bg-card flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors overflow-hidden",
+                    uploading && "pointer-events-none opacity-50"
+                  )}
+                >
+                  {size.imageUrl ? (
+                    <img src={size.imageUrl} alt={size.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <>
+                      <ImageIcon className="w-5 h-5 text-muted-foreground mb-1" />
+                      <span className="text-[10px] text-muted-foreground">Adicionar</span>
+                    </>
+                  )}
+                </label>
+                {size.imageUrl && (
+                  <button
+                    type="button"
+                    onClick={() => onUpdate(size.id, "imageUrl", undefined)}
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow-sm hover:bg-destructive/90"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+            </div>
 
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        onClick={() => onRemove(size.id)}
-        disabled={!canRemove}
-        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-      >
-        <Trash2 className="w-4 h-4" />
-      </Button>
+            {/* Description */}
+            <div className="flex-1">
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Descrição (opcional)</label>
+              <textarea
+                value={size.description || ""}
+                onChange={(e) => onUpdate(size.id, "description", e.target.value)}
+                placeholder="Adicione uma descrição para este item..."
+                rows={3}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-card resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -780,7 +909,7 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
         const [{ data: sizesData, error: sizesError }, { data: groupsData, error: groupsError }] = await Promise.all([
           supabase
             .from("standard_sizes")
-            .select("id, name, base_price, description, is_active")
+            .select("id, name, base_price, description, image_url, is_active")
             .eq("category_id", editId)
             .order("display_order"),
           supabase
@@ -798,7 +927,9 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
           name: s.name,
           basePrice: Number(s.base_price ?? 0),
           description: s.description ?? undefined,
+          imageUrl: s.image_url ?? undefined,
           isActive: !!s.is_active,
+          isExpanded: false,
         })) as StandardSize[];
 
         setHasSizes(loadedSizes.length > 0 ? "yes" : "no");
@@ -1097,6 +1228,7 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
             name: s.name.trim(),
             base_price: s.basePrice || 0,
             description: s.description || null,
+            image_url: s.imageUrl || null,
             is_active: s.isActive,
             display_order: index,
           }));
@@ -1461,11 +1593,11 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
             </div>
           )}
 
-          {/* Step 3: Sizes */}
+          {/* Step 3: Itens/Tamanhos */}
           {currentStep === 3 && (
             <div className="bg-card rounded-lg shadow-sm border border-border p-4 space-y-4">
               <div className="flex items-center gap-4">
-                <Label className="text-sm font-medium text-foreground">Os produtos têm tamanhos?</Label>
+                <Label className="text-sm font-medium text-foreground">Os produtos têm itens/tamanhos?</Label>
                 <div className="flex items-center gap-3">
                   {["yes", "no"].map((opt) => (
                     <label key={opt} className="flex items-center gap-1.5 cursor-pointer">
@@ -1501,7 +1633,7 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
                 <>
                   <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
                     <p className="text-xs text-foreground">
-                      💡 Exemplos de tamanhos:
+                      💡 Exemplos de itens/tamanhos:
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       • Açaí: 300ml, 500ml, 700ml, 1L<br/>
@@ -1520,6 +1652,7 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
                             onUpdate={updateSize}
                             onRemove={removeSize}
                             canRemove={sizes.length > 1}
+                            storeId={storeId}
                           />
                         ))}
                       </div>
@@ -1532,7 +1665,7 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
                     className="flex items-center gap-1.5 text-primary hover:text-primary/80 text-sm font-medium"
                   >
                     <Plus className="w-4 h-4" />
-                    Adicionar tamanho
+                    Adicionar item/tamanho
                   </button>
                 </>
               )}
