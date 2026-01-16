@@ -143,6 +143,33 @@ interface PizzaFlavor {
   is_active: boolean;
 }
 
+interface StandardSize {
+  id: string;
+  name: string;
+  base_price: number;
+  description: string | null;
+  is_active: boolean;
+}
+
+interface StandardItem {
+  id: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  item_type: string;
+  is_premium: boolean;
+  is_active: boolean;
+}
+
+interface OptionGroup {
+  id: string;
+  name: string;
+  min_selections: number | null;
+  max_selections: number | null;
+  is_required: boolean | null;
+  items_count?: number;
+}
+
 export default function MenuManagerPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -157,6 +184,9 @@ export default function MenuManagerPage() {
   const [categoryProducts, setCategoryProducts] = useState<Record<string, Product[]>>({});
   const [categoryPizzaSizes, setCategoryPizzaSizes] = useState<Record<string, PizzaSize[]>>({});
   const [categoryPizzaFlavors, setCategoryPizzaFlavors] = useState<Record<string, PizzaFlavor[]>>({});
+  const [categoryStandardSizes, setCategoryStandardSizes] = useState<Record<string, StandardSize[]>>({});
+  const [categoryStandardItems, setCategoryStandardItems] = useState<Record<string, StandardItem[]>>({});
+  const [categoryOptionGroups, setCategoryOptionGroups] = useState<Record<string, OptionGroup[]>>({});
   const [loadingProducts, setLoadingProducts] = useState<Set<string>>(new Set());
   
   // Modal states
@@ -253,7 +283,53 @@ export default function MenuManagerPage() {
           ...prev,
           [categoryId]: (flavorsResult.data as PizzaFlavor[]) || []
         }));
+      } else if (categoryType === 'standard') {
+        // For standard categories (açaí, hambúrguer, etc.), load sizes, items and option groups
+        const [sizesResult, itemsResult, groupsResult] = await Promise.all([
+          supabase
+            .from("standard_sizes")
+            .select("id, name, base_price, description, is_active")
+            .eq("category_id", categoryId)
+            .order("display_order"),
+          supabase
+            .from("standard_items")
+            .select("id, name, description, image_url, item_type, is_premium, is_active")
+            .eq("category_id", categoryId)
+            .order("display_order"),
+          supabase
+            .from("category_option_groups")
+            .select("id, name, min_selections, max_selections, is_required")
+            .eq("category_id", categoryId)
+            .order("display_order")
+        ]);
+        
+        // Get items count for each group
+        const groupsWithCount = await Promise.all(
+          (groupsResult.data || []).map(async (group: any) => {
+            const { count } = await supabase
+              .from("category_option_items")
+              .select("*", { count: 'exact', head: true })
+              .eq("group_id", group.id);
+            return { ...group, items_count: count || 0 };
+          })
+        );
+        
+        setCategoryStandardSizes(prev => ({
+          ...prev,
+          [categoryId]: (sizesResult.data as StandardSize[]) || []
+        }));
+        
+        setCategoryStandardItems(prev => ({
+          ...prev,
+          [categoryId]: (itemsResult.data as StandardItem[]) || []
+        }));
+        
+        setCategoryOptionGroups(prev => ({
+          ...prev,
+          [categoryId]: groupsWithCount as OptionGroup[]
+        }));
       } else {
+        // For regular categories, load products
         const { data: products } = await supabase
           .from("products")
           .select("id, name, description, price, promotional_price, image_url, is_available, is_featured, has_stock_control, stock_quantity, min_stock_alert, display_mode, category_id")
@@ -283,10 +359,13 @@ export default function MenuManagerPage() {
         newSet.delete(categoryId);
       } else {
         newSet.add(categoryId);
-        // Load products/sizes when expanding
-        const isPizza = categoryType === 'pizza';
-        if (isPizza) {
+        // Load products/sizes when expanding based on category type
+        if (categoryType === 'pizza') {
           if (!categoryPizzaSizes[categoryId]) {
+            loadCategoryProducts(categoryId, categoryType);
+          }
+        } else if (categoryType === 'standard') {
+          if (!categoryStandardSizes[categoryId]) {
             loadCategoryProducts(categoryId, categoryType);
           }
         } else {
@@ -1133,6 +1212,198 @@ export default function MenuManagerPage() {
                         )}
                       </div>
                     </div>
+                  ) : category.category_type === 'standard' ? (
+                    // Standard Category Content (Sizes + Items + Option Groups)
+                    <div className="space-y-6">
+                      {/* Standard Sizes Section */}
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold text-foreground">Tamanhos</h4>
+                          <span className="text-xs text-muted-foreground">
+                            {categoryStandardSizes[category.id]?.length || 0} tamanhos
+                          </span>
+                        </div>
+                        
+                        {categoryStandardSizes[category.id]?.length > 0 ? (
+                          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+                            {categoryStandardSizes[category.id].map((size) => (
+                              <div 
+                                key={size.id}
+                                className={cn(
+                                  "bg-card rounded-lg border border-border p-3 transition-all hover:shadow-md",
+                                  !size.is_active && "opacity-60"
+                                )}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="font-medium text-foreground">{size.name}</span>
+                                  <Switch
+                                    checked={size.is_active}
+                                    onCheckedChange={async (checked) => {
+                                      try {
+                                        await supabase
+                                          .from("standard_sizes")
+                                          .update({ is_active: checked })
+                                          .eq("id", size.id);
+                                        
+                                        setCategoryStandardSizes(prev => ({
+                                          ...prev,
+                                          [category.id]: prev[category.id].map(s =>
+                                            s.id === size.id ? { ...s, is_active: checked } : s
+                                          )
+                                        }));
+                                      } catch (error) {
+                                        toast.error("Erro ao atualizar status");
+                                      }
+                                    }}
+                                    className="data-[state=checked]:bg-green-500"
+                                  />
+                                </div>
+                                <p className="text-sm text-primary font-semibold mt-1">
+                                  R$ {size.base_price.toFixed(2).replace('.', ',')}
+                                </p>
+                                {size.description && (
+                                  <p className="text-xs text-muted-foreground mt-1">{size.description}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-4 bg-muted/50 rounded-lg">
+                            <p className="text-muted-foreground text-sm">Nenhum tamanho configurado</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Option Groups Section */}
+                      {categoryOptionGroups[category.id]?.length > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="font-semibold text-foreground">Grupos de Opções</h4>
+                            <span className="text-xs text-muted-foreground">
+                              {categoryOptionGroups[category.id].length} grupos
+                            </span>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {categoryOptionGroups[category.id].map((group) => (
+                              <div 
+                                key={group.id}
+                                className="bg-card rounded-lg border border-border p-3"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="font-medium text-foreground">{group.name}</span>
+                                  {group.is_required && (
+                                    <Badge variant="secondary" className="text-xs">Obrigatório</Badge>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 mt-1.5">
+                                  <span className="text-xs text-muted-foreground">
+                                    {group.min_selections || 0} - {group.max_selections || 'N'} seleções
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">•</span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {group.items_count || 0} opções
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Standard Items Section */}
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold text-foreground">Itens do Cardápio</h4>
+                          <span className="text-xs text-muted-foreground">
+                            {categoryStandardItems[category.id]?.length || 0} itens
+                          </span>
+                        </div>
+                        
+                        {categoryStandardItems[category.id]?.length > 0 ? (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+                            {categoryStandardItems[category.id].map((item) => (
+                              <div 
+                                key={item.id}
+                                className={cn(
+                                  "group bg-card rounded-xl overflow-hidden border border-border transition-all duration-200 ease-out hover:shadow-lg hover:border-primary/30",
+                                  !item.is_active && "opacity-60"
+                                )}
+                              >
+                                <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                                  {item.image_url ? (
+                                    <img 
+                                      src={item.image_url} 
+                                      alt={item.name}
+                                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <span className="text-4xl opacity-50">🍨</span>
+                                    </div>
+                                  )}
+                                  
+                                  {item.is_premium && (
+                                    <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-xs font-bold bg-amber-500 text-white shadow-sm">
+                                      Premium
+                                    </div>
+                                  )}
+                                  
+                                  {!item.is_active && (
+                                    <div className="absolute top-2 right-2 px-2 py-0.5 rounded text-xs font-bold bg-muted text-muted-foreground shadow-sm">
+                                      Inativo
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <div className="p-3">
+                                  <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-2">
+                                    {item.name}
+                                  </h3>
+                                  {item.description && (
+                                    <p className="text-muted-foreground text-xs line-clamp-1 mt-1">
+                                      {item.description}
+                                    </p>
+                                  )}
+                                  <div className="mt-2 flex items-center justify-between">
+                                    <Badge variant="outline" className="text-xs">
+                                      {item.item_type === 'premium' ? 'Premium' : 'Tradicional'}
+                                    </Badge>
+                                    <Switch
+                                      checked={item.is_active}
+                                      onCheckedChange={async (checked) => {
+                                        try {
+                                          await supabase
+                                            .from("standard_items")
+                                            .update({ is_active: checked })
+                                            .eq("id", item.id);
+                                          
+                                          setCategoryStandardItems(prev => ({
+                                            ...prev,
+                                            [category.id]: prev[category.id].map(i =>
+                                              i.id === item.id ? { ...i, is_active: checked } : i
+                                            )
+                                          }));
+                                        } catch (error) {
+                                          toast.error("Erro ao atualizar status");
+                                        }
+                                      }}
+                                      className="data-[state=checked]:bg-green-500"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8 bg-muted/50 rounded-lg">
+                            <div className="text-5xl mb-3">🍨</div>
+                            <p className="text-lg font-medium text-foreground">Nenhum item cadastrado</p>
+                            <p className="text-muted-foreground text-sm">Adicione itens ao cardápio desta categoria</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   ) : categoryProducts[category.id]?.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
                       {categoryProducts[category.id].map((product, index) => {
@@ -1146,12 +1417,12 @@ export default function MenuManagerPage() {
                           <div 
                             key={product.id}
                             className={cn(
-                              "group bg-white rounded-xl overflow-hidden border border-gray-200 transition-all duration-200 ease-out hover:shadow-lg hover:border-primary/30",
+                              "group bg-card rounded-xl overflow-hidden border border-border transition-all duration-200 ease-out hover:shadow-lg hover:border-primary/30",
                               !product.is_available && "opacity-60"
                             )}
                           >
                             {/* Product Image - Aspect 4/3 como Base44 */}
-                            <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+                            <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                               {product.image_url ? (
                                 <img 
                                   src={product.image_url} 
@@ -1178,7 +1449,7 @@ export default function MenuManagerPage() {
                               )}
                               
                               {!hasPromo && !product.is_featured && !product.is_available && (
-                                <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-gray-800 text-white shadow-sm">
+                                <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-muted text-muted-foreground shadow-sm">
                                   Esgotado
                                 </div>
                               )}
@@ -1250,7 +1521,7 @@ export default function MenuManagerPage() {
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem 
                                       onClick={() => handleDeleteProduct(product, category.id)}
-                                      className="gap-2 text-sm text-red-600 focus:text-red-600 focus:bg-red-50"
+                                      className="gap-2 text-sm text-destructive focus:text-destructive focus:bg-destructive/10"
                                     >
                                       <Trash2 className="w-4 h-4" />
                                       Excluir
@@ -1262,12 +1533,12 @@ export default function MenuManagerPage() {
                             
                             {/* Product Info - Estilo Base44 */}
                             <div className="p-3">
-                              <h3 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2 min-h-[2.5rem]">
+                              <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-2 min-h-[2.5rem]">
                                 {product.name}
                               </h3>
                               
                               {product.description && (
-                                <p className="text-gray-500 text-xs line-clamp-1 mt-1">
+                                <p className="text-muted-foreground text-xs line-clamp-1 mt-1">
                                   {product.description}
                                 </p>
                               )}
@@ -1300,65 +1571,55 @@ export default function MenuManagerPage() {
                                       e.stopPropagation();
                                       openStockAdjustment(product, category.id);
                                     }}
-                                    className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition-colors"
-                                    title="Ajustar estoque"
+                                    className="text-[10px] text-primary hover:underline"
                                   >
-                                    <BoxIcon className="w-3 h-3 text-gray-500" />
+                                    Ajustar
                                   </button>
                                 </div>
                               )}
                               
-                              {/* Price - Estilo Base44 */}
+                              {/* Price and Toggle */}
                               <div className="mt-2 flex items-center justify-between">
-                                <div className="flex items-baseline gap-2">
-                                  {hasPromo && (
-                                    <span className="text-xs text-gray-400 line-through">
-                                      R$ {product.price.toFixed(2).replace('.', ',')}
-                                    </span>
-                                  )}
-                                  <span className={cn(
-                                    "text-sm font-bold",
-                                    hasPromo ? "text-green-600" : "text-primary"
-                                  )}>
-                                    R$ {displayPrice.toFixed(2).replace('.', ',')}
-                                  </span>
-                                </div>
-                                
-                                {/* Edit Price Button */}
                                 <Popover 
                                   open={editingPriceId === product.id}
                                   onOpenChange={(open) => {
-                                    if (!open) handleCancelEditPrice();
+                                    if (open) {
+                                      setEditingPriceId(product.id);
+                                      setEditingPriceValue(displayPrice.toFixed(2));
+                                    } else {
+                                      setEditingPriceId(null);
+                                    }
                                   }}
                                 >
                                   <PopoverTrigger asChild>
-                                    <button 
-                                      onClick={() => handleStartEditPrice(product)}
-                                      className="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition-colors"
-                                      title="Editar preço"
-                                    >
-                                      <Pencil className="w-3 h-3 text-gray-500" />
+                                    <button className="flex items-center gap-1 cursor-pointer hover:opacity-80">
+                                      {hasPromo && (
+                                        <span className="text-xs text-muted-foreground line-through">
+                                          R$ {product.price.toFixed(2).replace('.', ',')}
+                                        </span>
+                                      )}
+                                      <span className={cn(
+                                        "font-bold text-sm",
+                                        hasPromo ? "text-green-600" : "text-foreground"
+                                      )}>
+                                        R$ {displayPrice.toFixed(2).replace('.', ',')}
+                                      </span>
+                                      <Pencil className="w-3 h-3 text-muted-foreground" />
                                     </button>
                                   </PopoverTrigger>
-                                  <PopoverContent className="w-56 p-3" align="end">
+                                  <PopoverContent className="w-56 p-3" align="start">
                                     <div className="space-y-3">
-                                      <p className="text-sm font-medium">Editar preço</p>
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-sm text-gray-500">R$</span>
-                                        <Input
-                                          value={editingPriceValue}
-                                          onChange={(e) => setEditingPriceValue(e.target.value)}
-                                          placeholder="0,00"
-                                          className="flex-1 h-8"
-                                          autoFocus
-                                          onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                              handleSavePrice(product, category.id);
-                                            } else if (e.key === 'Escape') {
-                                              handleCancelEditPrice();
-                                            }
-                                          }}
-                                        />
+                                      <div>
+                                        <label className="text-xs font-medium text-muted-foreground">Novo preço</label>
+                                        <div className="flex gap-2 mt-1">
+                                          <Input
+                                            type="text"
+                                            value={editingPriceValue}
+                                            onChange={(e) => setEditingPriceValue(e.target.value)}
+                                            className="h-8 text-sm"
+                                            autoFocus
+                                          />
+                                        </div>
                                       </div>
                                       <div className="flex gap-2">
                                         <Button
@@ -1389,8 +1650,8 @@ export default function MenuManagerPage() {
                   ) : (
                     <div className="text-center py-8">
                       <div className="text-5xl mb-3">😔</div>
-                      <p className="text-lg font-medium text-gray-900">Nenhum item</p>
-                      <p className="text-gray-500 text-sm">Adicione itens a esta categoria</p>
+                      <p className="text-lg font-medium text-foreground">Nenhum item</p>
+                      <p className="text-muted-foreground text-sm">Adicione itens a esta categoria</p>
                     </div>
                   )}
                 </div>
