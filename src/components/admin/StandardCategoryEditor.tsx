@@ -1,13 +1,12 @@
-// Standard Category Editor - For hamburgers, açaí, beverages, desserts, etc.
+// Standard Category Editor - Universal model for hamburgers, açaí, beverages, restaurants, etc.
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Trash2, AlertCircle, GripVertical, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, AlertCircle, GripVertical, ChevronDown, ChevronUp, Settings2, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -45,7 +44,7 @@ import { CSS } from "@dnd-kit/utilities";
 const STANDARD_STEPS = [
   { id: 1, label: "Categoria" },
   { id: 2, label: "Tamanhos" },
-  { id: 3, label: "Adicionais" },
+  { id: 3, label: "Grupos de Opções" },
 ];
 
 const DAYS = [
@@ -56,6 +55,55 @@ const DAYS = [
   { key: 'thursday', label: 'Quinta', short: 'Q' },
   { key: 'friday', label: 'Sexta', short: 'S' },
   { key: 'saturday', label: 'Sábado', short: 'S' },
+];
+
+// Predefined group templates for common use cases
+const GROUP_TEMPLATES = [
+  { 
+    name: "Adicionais", 
+    icon: "🧀",
+    description: "Extras pagos (bacon, queijo, etc)",
+    isRequired: false, 
+    minSelections: 0, 
+    maxSelections: 10,
+    selectionType: "multiple" as const
+  },
+  { 
+    name: "Escolha obrigatória", 
+    icon: "⭐",
+    description: "Ex: Base do açaí, ponto da carne",
+    isRequired: true, 
+    minSelections: 1, 
+    maxSelections: 1,
+    selectionType: "single" as const
+  },
+  { 
+    name: "Acompanhamentos", 
+    icon: "🍟",
+    description: "Escolha X acompanhamentos",
+    isRequired: false, 
+    minSelections: 0, 
+    maxSelections: 2,
+    selectionType: "multiple" as const
+  },
+  { 
+    name: "Remover ingredientes", 
+    icon: "❌",
+    description: "Sem cebola, sem tomate (grátis)",
+    isRequired: false, 
+    minSelections: 0, 
+    maxSelections: 10,
+    selectionType: "multiple" as const
+  },
+  { 
+    name: "Personalizado", 
+    icon: "⚙️",
+    description: "Configure do seu jeito",
+    isRequired: false, 
+    minSelections: 0, 
+    maxSelections: 5,
+    selectionType: "multiple" as const
+  },
 ];
 
 interface ScheduleItem {
@@ -72,21 +120,24 @@ interface StandardSize {
   isActive: boolean;
 }
 
-interface AddonPrice {
-  sizeId: string;
-  sizeName: string;
-  enabled: boolean;
-  price: string;
-}
-
-interface StandardAddon {
+interface OptionGroupItem {
   id: string;
   name: string;
+  price: number;
   description?: string;
-  isRequired: boolean;
-  maxQuantity: number;
   isActive: boolean;
-  prices: AddonPrice[];
+}
+
+interface OptionGroup {
+  id: string;
+  name: string;
+  isRequired: boolean;
+  minSelections: number;
+  maxSelections: number;
+  selectionType: "single" | "multiple";
+  isActive: boolean;
+  items: OptionGroupItem[];
+  isOpen: boolean;
 }
 
 interface StandardCategoryEditorProps {
@@ -188,21 +239,18 @@ function SortableSizeItem({
   );
 }
 
-// Sortable Addon Item
-function SortableAddonItem({ 
-  addon, 
+// Sortable Option Item within a group
+function SortableOptionItem({ 
+  item, 
   onUpdate, 
-  onUpdatePrice,
   onRemove, 
   canRemove 
 }: { 
-  addon: StandardAddon; 
-  onUpdate: (id: string, field: keyof StandardAddon, value: any) => void;
-  onUpdatePrice: (addonId: string, sizeId: string, field: "enabled" | "price", value: any) => void;
+  item: OptionGroupItem; 
+  onUpdate: (id: string, field: keyof OptionGroupItem, value: any) => void;
   onRemove: (id: string) => void;
   canRemove: boolean;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
   const {
     attributes,
     listeners,
@@ -210,7 +258,7 @@ function SortableAddonItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: addon.id });
+  } = useSortable({ id: item.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -222,12 +270,117 @@ function SortableAddonItem({
       ref={setNodeRef}
       style={style}
       className={cn(
+        "flex items-center gap-2 p-2 bg-muted/50 border border-border rounded-lg",
+        isDragging && "opacity-50 shadow-lg"
+      )}
+    >
+      <button
+        type="button"
+        className="touch-none text-muted-foreground hover:text-foreground cursor-grab"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="w-3 h-3" />
+      </button>
+
+      <div className="flex-1">
+        <Input
+          value={item.name}
+          onChange={(e) => onUpdate(item.id, "name", e.target.value)}
+          placeholder="Nome da opção"
+          className="h-8 text-sm"
+        />
+      </div>
+
+      <div className="w-24">
+        <div className="relative">
+          <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">R$</span>
+          <Input
+            type="number"
+            step="0.01"
+            min="0"
+            value={item.price || ""}
+            onChange={(e) => onUpdate(item.id, "price", parseFloat(e.target.value) || 0)}
+            placeholder="0,00"
+            className="h-8 pl-7 text-sm"
+          />
+        </div>
+      </div>
+
+      <Switch
+        checked={item.isActive}
+        onCheckedChange={(checked) => onUpdate(item.id, "isActive", checked)}
+        className="data-[state=checked]:bg-primary scale-90"
+      />
+
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        onClick={() => onRemove(item.id)}
+        disabled={!canRemove}
+        className="h-7 w-7 text-muted-foreground hover:text-destructive"
+      >
+        <Trash2 className="w-3 h-3" />
+      </Button>
+    </div>
+  );
+}
+
+// Sortable Option Group
+function SortableOptionGroup({ 
+  group,
+  onUpdate,
+  onUpdateItem,
+  onAddItem,
+  onRemoveItem,
+  onRemove, 
+  canRemove,
+  sensors
+}: { 
+  group: OptionGroup;
+  onUpdate: (id: string, field: keyof OptionGroup, value: any) => void;
+  onUpdateItem: (groupId: string, itemId: string, field: keyof OptionGroupItem, value: any) => void;
+  onAddItem: (groupId: string) => void;
+  onRemoveItem: (groupId: string, itemId: string) => void;
+  onRemove: (id: string) => void;
+  canRemove: boolean;
+  sensors: any;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: group.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const handleItemDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = group.items.findIndex((i) => i.id === active.id);
+      const newIndex = group.items.findIndex((i) => i.id === over.id);
+      onUpdate(group.id, "items", arrayMove(group.items, oldIndex, newIndex));
+    }
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
         "bg-card border border-border rounded-lg overflow-hidden",
         isDragging && "opacity-50 shadow-lg"
       )}
     >
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <div className="flex items-center gap-3 p-3">
+      <Collapsible open={group.isOpen} onOpenChange={(open) => onUpdate(group.id, "isOpen", open)}>
+        <div className="flex items-center gap-3 p-3 bg-muted/30">
           <button
             type="button"
             className="touch-none text-muted-foreground hover:text-foreground cursor-grab"
@@ -237,47 +390,35 @@ function SortableAddonItem({
             <GripVertical className="w-4 h-4" />
           </button>
 
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <Input
-              value={addon.name}
-              onChange={(e) => onUpdate(addon.id, "name", e.target.value)}
-              placeholder="Ex: Bacon Extra, Queijo Cheddar"
-              className="h-9"
+              value={group.name}
+              onChange={(e) => onUpdate(group.id, "name", e.target.value)}
+              placeholder="Nome do grupo"
+              className="h-9 font-medium"
             />
           </div>
 
           <div className="flex items-center gap-2">
-            <Label className="text-xs text-muted-foreground">Obrigatório:</Label>
-            <Switch
-              checked={addon.isRequired}
-              onCheckedChange={(checked) => onUpdate(addon.id, "isRequired", checked)}
-              className="data-[state=checked]:bg-primary"
-            />
+            <div className="flex items-center gap-1 px-2 py-1 bg-background rounded border border-border">
+              <span className="text-xs text-muted-foreground">
+                {group.isRequired ? "Obrigatório" : "Opcional"}
+              </span>
+            </div>
+            <span className="text-xs text-muted-foreground">
+              {group.items.length} {group.items.length === 1 ? "item" : "itens"}
+            </span>
           </div>
 
-          <div className="flex items-center gap-1">
-            <Label className="text-xs text-muted-foreground">Máx:</Label>
-            <Input
-              type="number"
-              min="1"
-              max="99"
-              value={addon.maxQuantity}
-              onChange={(e) => onUpdate(addon.id, "maxQuantity", Math.max(1, parseInt(e.target.value) || 1))}
-              className="h-8 w-14 text-center text-sm"
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={addon.isActive}
-              onCheckedChange={(checked) => onUpdate(addon.id, "isActive", checked)}
-              className="data-[state=checked]:bg-primary"
-            />
-          </div>
+          <Switch
+            checked={group.isActive}
+            onCheckedChange={(checked) => onUpdate(group.id, "isActive", checked)}
+            className="data-[state=checked]:bg-primary"
+          />
 
           <CollapsibleTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8">
-              {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              {group.isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </Button>
           </CollapsibleTrigger>
 
@@ -285,7 +426,7 @@ function SortableAddonItem({
             type="button"
             variant="ghost"
             size="icon"
-            onClick={() => onRemove(addon.id)}
+            onClick={() => onRemove(group.id)}
             disabled={!canRemove}
             className="h-8 w-8 text-muted-foreground hover:text-destructive"
           >
@@ -294,31 +435,85 @@ function SortableAddonItem({
         </div>
 
         <CollapsibleContent>
-          <div className="px-3 pb-3 pt-1 border-t border-border bg-muted/30">
-            <p className="text-xs text-muted-foreground mb-2">Preço por tamanho:</p>
-            <div className="flex flex-wrap gap-2">
-              {addon.prices.map((priceItem) => (
-                <div key={priceItem.sizeId} className="flex items-center gap-2 p-2 bg-background rounded border border-border">
-                  <Checkbox
-                    checked={priceItem.enabled}
-                    onCheckedChange={(checked) => onUpdatePrice(addon.id, priceItem.sizeId, "enabled", !!checked)}
-                    className="h-4 w-4 data-[state=checked]:bg-primary"
-                  />
-                  <span className="text-xs font-medium min-w-16">{priceItem.sizeName || "Tamanho"}</span>
-                  <div className="relative">
-                    <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">R$</span>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={priceItem.price}
-                      onChange={(e) => onUpdatePrice(addon.id, priceItem.sizeId, "price", e.target.value)}
-                      className="h-7 w-20 pl-7 text-xs"
-                      disabled={!priceItem.enabled}
-                    />
+          <div className="p-3 space-y-3 border-t border-border">
+            {/* Group Settings */}
+            <div className="flex flex-wrap gap-4 pb-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  checked={group.isRequired}
+                  onCheckedChange={(checked) => onUpdate(group.id, "isRequired", !!checked)}
+                  className="data-[state=checked]:bg-primary"
+                />
+                <Label className="text-xs">Obrigatório</Label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Label className="text-xs text-muted-foreground">Tipo:</Label>
+                <Select
+                  value={group.selectionType}
+                  onValueChange={(value) => onUpdate(group.id, "selectionType", value)}
+                >
+                  <SelectTrigger className="h-7 w-32 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="single">Escolha única</SelectItem>
+                    <SelectItem value="multiple">Múltipla escolha</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Label className="text-xs text-muted-foreground">Mín:</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={group.minSelections}
+                  onChange={(e) => onUpdate(group.id, "minSelections", Math.max(0, parseInt(e.target.value) || 0))}
+                  className="h-7 w-14 text-xs text-center"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Label className="text-xs text-muted-foreground">Máx:</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={group.maxSelections}
+                  onChange={(e) => onUpdate(group.id, "maxSelections", Math.max(1, parseInt(e.target.value) || 1))}
+                  className="h-7 w-14 text-xs text-center"
+                />
+              </div>
+            </div>
+
+            {/* Items */}
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-muted-foreground">Opções do grupo:</Label>
+              
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleItemDragEnd}>
+                <SortableContext items={group.items.map(i => i.id)} strategy={verticalListSortingStrategy}>
+                  <div className="space-y-1.5">
+                    {group.items.map((item) => (
+                      <SortableOptionItem
+                        key={item.id}
+                        item={item}
+                        onUpdate={(itemId, field, value) => onUpdateItem(group.id, itemId, field, value)}
+                        onRemove={(itemId) => onRemoveItem(group.id, itemId)}
+                        canRemove={group.items.length > 1}
+                      />
+                    ))}
                   </div>
-                </div>
-              ))}
+                </SortableContext>
+              </DndContext>
+
+              <button
+                type="button"
+                onClick={() => onAddItem(group.id)}
+                className="flex items-center gap-1 text-primary hover:text-primary/80 text-xs font-medium mt-2"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Adicionar opção
+              </button>
             </div>
           </div>
         </CollapsibleContent>
@@ -352,9 +547,9 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
     { id: crypto.randomUUID(), name: "", basePrice: 0, isActive: true }
   ]);
 
-  // Addons state
-  const [hasAddons, setHasAddons] = useState<"yes" | "no">("no");
-  const [addons, setAddons] = useState<StandardAddon[]>([]);
+  // Option Groups state (the universal solution!)
+  const [hasOptionGroups, setHasOptionGroups] = useState<"yes" | "no">("no");
+  const [optionGroups, setOptionGroups] = useState<OptionGroup[]>([]);
 
   // Sensors for drag and drop
   const sensors = useSensors(
@@ -362,72 +557,67 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  // Create addon prices based on sizes
-  const createAddonPrices = (): AddonPrice[] => {
-    return sizes.map(size => ({
-      sizeId: size.id,
-      sizeName: size.name || "Tamanho",
-      enabled: true,
-      price: "0"
-    }));
-  };
-
-  // Add addon
-  const addAddon = () => {
-    setAddons(prev => [...prev, {
+  // Add option group from template
+  const addOptionGroup = (template: typeof GROUP_TEMPLATES[0]) => {
+    const newGroup: OptionGroup = {
       id: crypto.randomUUID(),
-      name: "",
-      isRequired: false,
-      maxQuantity: 1,
+      name: template.name === "Personalizado" ? "" : template.name,
+      isRequired: template.isRequired,
+      minSelections: template.minSelections,
+      maxSelections: template.maxSelections,
+      selectionType: template.selectionType,
       isActive: true,
-      prices: createAddonPrices()
-    }]);
+      items: [
+        { id: crypto.randomUUID(), name: "", price: 0, isActive: true }
+      ],
+      isOpen: true
+    };
+    setOptionGroups(prev => [...prev, newGroup]);
   };
 
-  // Remove addon
-  const removeAddon = (id: string) => {
-    if (addons.length > 1) {
-      setAddons(prev => prev.filter(a => a.id !== id));
-    }
+  // Remove option group
+  const removeOptionGroup = (id: string) => {
+    setOptionGroups(prev => prev.filter(g => g.id !== id));
   };
 
-  // Update addon
-  const updateAddon = (id: string, field: keyof StandardAddon, value: any) => {
-    setAddons(prev => prev.map(a => a.id === id ? { ...a, [field]: value } : a));
+  // Update option group
+  const updateOptionGroup = (id: string, field: keyof OptionGroup, value: any) => {
+    setOptionGroups(prev => prev.map(g => g.id === id ? { ...g, [field]: value } : g));
   };
 
-  // Update addon price
-  const updateAddonPrice = (addonId: string, sizeId: string, field: "enabled" | "price", value: any) => {
-    setAddons(prev => prev.map(addon => {
-      if (addon.id !== addonId) return addon;
+  // Add item to group
+  const addItemToGroup = (groupId: string) => {
+    setOptionGroups(prev => prev.map(g => {
+      if (g.id !== groupId) return g;
       return {
-        ...addon,
-        prices: addon.prices.map(p => p.sizeId === sizeId ? { ...p, [field]: value } : p)
+        ...g,
+        items: [...g.items, { id: crypto.randomUUID(), name: "", price: 0, isActive: true }]
       };
     }));
   };
 
-  // Initialize addon when hasAddons changes to yes
-  useEffect(() => {
-    if (hasAddons === "yes" && addons.length === 0) {
-      addAddon();
-    }
-  }, [hasAddons]);
+  // Remove item from group
+  const removeItemFromGroup = (groupId: string, itemId: string) => {
+    setOptionGroups(prev => prev.map(g => {
+      if (g.id !== groupId) return g;
+      if (g.items.length <= 1) return g;
+      return {
+        ...g,
+        items: g.items.filter(i => i.id !== itemId)
+      };
+    }));
+  };
 
-  // Sync addon prices when sizes change
-  useEffect(() => {
-    if (addons.length > 0) {
-      setAddons(prev => prev.map(addon => ({
-        ...addon,
-        prices: sizes.map(size => {
-          const existingPrice = addon.prices.find(p => p.sizeId === size.id);
-          return existingPrice 
-            ? { ...existingPrice, sizeName: size.name || "Tamanho" }
-            : { sizeId: size.id, sizeName: size.name || "Tamanho", enabled: true, price: "0" };
-        })
-      })));
-    }
-  }, [sizes]);
+  // Update item in group
+  const updateItemInGroup = (groupId: string, itemId: string, field: keyof OptionGroupItem, value: any) => {
+    setOptionGroups(prev => prev.map(g => {
+      if (g.id !== groupId) return g;
+      return {
+        ...g,
+        items: g.items.map(i => i.id === itemId ? { ...i, [field]: value } : i)
+      };
+    }));
+  };
 
   // Size functions
   const addSize = () => {
@@ -500,10 +690,10 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
     }
   };
 
-  const handleAddonDragEnd = (event: DragEndEvent) => {
+  const handleGroupDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
-      setAddons((items) => {
+      setOptionGroups((items) => {
         const oldIndex = items.findIndex((i) => i.id === active.id);
         const newIndex = items.findIndex((i) => i.id === over.id);
         return arrayMove(items, oldIndex, newIndex);
@@ -556,42 +746,47 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
         }
       }
 
-      // Save addons if has addons
-      if (hasAddons === "yes" && addons.length > 0) {
-        const validAddons = addons.filter(a => a.name.trim());
-        
-        for (let i = 0; i < validAddons.length; i++) {
-          const addon = validAddons[i];
-          const { data: savedAddon } = await supabase.from("standard_addons").insert({
-            store_id: storeId,
-            category_id: category.id,
-            name: addon.name.trim(),
-            description: addon.description || null,
-            is_required: addon.isRequired,
-            max_quantity: addon.maxQuantity,
-            is_active: addon.isActive,
-            display_order: i,
-          }).select().single();
+      // Save option groups (the universal part!)
+      if (hasOptionGroups === "yes" && optionGroups.length > 0) {
+        for (let i = 0; i < optionGroups.length; i++) {
+          const group = optionGroups[i];
+          if (!group.name.trim()) continue;
 
-          if (savedAddon && hasSizes === "yes") {
-            // Save addon prices per size
-            const { data: savedSizes } = await supabase
-              .from("standard_sizes")
-              .select("id, name")
-              .eq("category_id", category.id);
+          const { data: savedGroup, error: groupError } = await supabase
+            .from("category_option_groups")
+            .insert({
+              store_id: storeId,
+              category_id: category.id,
+              name: group.name.trim(),
+              is_required: group.isRequired,
+              min_selections: group.minSelections,
+              max_selections: group.maxSelections,
+              selection_type: group.selectionType,
+              is_active: group.isActive,
+              display_order: i,
+              is_primary: false,
+              display_mode: "modal",
+              item_layout: "list",
+              show_item_images: false,
+            })
+            .select()
+            .single();
 
-            if (savedSizes) {
-              for (const savedSize of savedSizes) {
-                const priceData = addon.prices.find(p => p.sizeName === savedSize.name);
-                if (priceData?.enabled) {
-                  await supabase.from("standard_addon_prices").insert({
-                    addon_id: savedAddon.id,
-                    size_id: savedSize.id,
-                    price: parseFloat(priceData.price) || 0,
-                    is_available: true,
-                  });
-                }
-              }
+          if (groupError) throw groupError;
+
+          // Save items in the group
+          if (savedGroup) {
+            const validItems = group.items.filter(item => item.name.trim());
+            for (let j = 0; j < validItems.length; j++) {
+              const item = validItems[j];
+              await supabase.from("category_option_items").insert({
+                store_id: storeId,
+                group_id: savedGroup.id,
+                name: item.name.trim(),
+                additional_price: item.price || 0,
+                is_active: item.isActive,
+                display_order: j,
+              });
             }
           }
         }
@@ -627,7 +822,7 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Ex.: Hambúrgueres, Açaí, Bebidas"
+          placeholder="Ex.: Hambúrgueres, Açaí, Bebidas, Pratos"
           className="border-border"
         />
       </div>
@@ -818,7 +1013,7 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
               {editId ? "Editar categoria" : "Nova categoria"}
             </h1>
             <p className="text-xs text-muted-foreground">
-              Gestor de cardápio › Categoria Padrão
+              Gestor de cardápio › Categoria Padrão (Universal)
             </p>
           </div>
         </div>
@@ -875,7 +1070,7 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
               <div className="space-y-4">
                 {/* Has Sizes Toggle */}
                 <div className="flex items-center gap-4">
-                  <Label className="text-sm font-medium text-foreground">Tem tamanhos?</Label>
+                  <Label className="text-sm font-medium text-foreground">Produtos têm tamanhos diferentes?</Label>
                   <div className="flex items-center gap-3">
                     <label className="flex items-center gap-1.5 cursor-pointer">
                       <div 
@@ -905,16 +1100,28 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
                 </div>
 
                 {hasSizes === "no" && (
-                  <p className="text-xs text-muted-foreground bg-muted p-2 rounded">
-                    Os produtos desta categoria não terão variação de tamanho. O preço será definido no cadastro do produto.
-                  </p>
+                  <div className="p-3 bg-muted rounded-lg border border-border">
+                    <p className="text-xs text-muted-foreground">
+                      ✓ Os produtos terão preço único, definido no cadastro de cada item.
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Exemplos: Bebidas, Sobremesas, Pratos únicos
+                    </p>
+                  </div>
                 )}
 
                 {hasSizes === "yes" && (
                   <>
-                    <p className="text-xs text-muted-foreground">
-                      Defina os tamanhos disponíveis para os produtos desta categoria.
-                    </p>
+                    <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+                      <p className="text-xs text-foreground">
+                        💡 Defina os tamanhos disponíveis. Exemplos:
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        • Açaí: 300ml, 500ml, 700ml, 1L<br/>
+                        • Hambúrguer: Simples, Duplo, Triplo<br/>
+                        • Marmita: P, M, G, GG
+                      </p>
+                    </div>
 
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSizeDragEnd}>
                       <SortableContext items={sizes.map(s => s.id)} strategy={verticalListSortingStrategy}>
@@ -947,19 +1154,19 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
 
             {currentStep === 3 && (
               <div className="space-y-4">
-                {/* Has Addons Toggle */}
+                {/* Has Option Groups Toggle */}
                 <div className="flex items-center gap-4">
-                  <Label className="text-sm font-medium text-foreground">Tem adicionais?</Label>
+                  <Label className="text-sm font-medium text-foreground">Tem opções de personalização?</Label>
                   <div className="flex items-center gap-3">
                     <label className="flex items-center gap-1.5 cursor-pointer">
                       <div 
                         className={cn(
                           "w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors",
-                          hasAddons === "yes" ? "border-primary bg-primary" : "border-muted-foreground"
+                          hasOptionGroups === "yes" ? "border-primary bg-primary" : "border-muted-foreground"
                         )}
-                        onClick={() => setHasAddons("yes")}
+                        onClick={() => setHasOptionGroups("yes")}
                       >
-                        {hasAddons === "yes" && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />}
+                        {hasOptionGroups === "yes" && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />}
                       </div>
                       <span className="text-sm">Sim</span>
                     </label>
@@ -967,54 +1174,83 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
                       <div 
                         className={cn(
                           "w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors",
-                          hasAddons === "no" ? "border-primary bg-primary" : "border-muted-foreground"
+                          hasOptionGroups === "no" ? "border-primary bg-primary" : "border-muted-foreground"
                         )}
-                        onClick={() => setHasAddons("no")}
+                        onClick={() => setHasOptionGroups("no")}
                       >
-                        {hasAddons === "no" && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />}
+                        {hasOptionGroups === "no" && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />}
                       </div>
                       <span className="text-sm">Não</span>
                     </label>
                   </div>
                 </div>
 
-                {hasAddons === "no" && (
-                  <p className="text-xs text-muted-foreground bg-muted p-2 rounded">
-                    Os produtos desta categoria não terão adicionais disponíveis.
-                  </p>
+                {hasOptionGroups === "no" && (
+                  <div className="p-3 bg-muted rounded-lg border border-border">
+                    <p className="text-xs text-muted-foreground">
+                      ✓ Os produtos desta categoria não terão opções de personalização.
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      O cliente apenas escolhe o produto e adiciona ao carrinho.
+                    </p>
+                  </div>
                 )}
 
-                {hasAddons === "yes" && (
+                {hasOptionGroups === "yes" && (
                   <>
-                    <p className="text-xs text-muted-foreground">
-                      Defina os adicionais disponíveis para os produtos desta categoria.
-                    </p>
+                    {/* Templates */}
+                    <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+                      <p className="text-xs text-foreground font-medium mb-2">
+                        ✨ Escolha um tipo de grupo para adicionar:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {GROUP_TEMPLATES.map((template, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => addOptionGroup(template)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-card hover:bg-accent border border-border rounded-lg text-xs font-medium transition-colors"
+                          >
+                            <span>{template.icon}</span>
+                            <span>{template.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mt-2">
+                        Cada grupo aparece como uma seção na tela de personalização do produto
+                      </p>
+                    </div>
 
-                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleAddonDragEnd}>
-                      <SortableContext items={addons.map(a => a.id)} strategy={verticalListSortingStrategy}>
-                        <div className="space-y-2">
-                          {addons.map((addon) => (
-                            <SortableAddonItem
-                              key={addon.id}
-                              addon={addon}
-                              onUpdate={updateAddon}
-                              onUpdatePrice={updateAddonPrice}
-                              onRemove={removeAddon}
-                              canRemove={addons.length > 1}
-                            />
-                          ))}
-                        </div>
-                      </SortableContext>
-                    </DndContext>
+                    {/* Option Groups List */}
+                    {optionGroups.length > 0 && (
+                      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleGroupDragEnd}>
+                        <SortableContext items={optionGroups.map(g => g.id)} strategy={verticalListSortingStrategy}>
+                          <div className="space-y-3">
+                            {optionGroups.map((group) => (
+                              <SortableOptionGroup
+                                key={group.id}
+                                group={group}
+                                onUpdate={updateOptionGroup}
+                                onUpdateItem={updateItemInGroup}
+                                onAddItem={addItemToGroup}
+                                onRemoveItem={removeItemFromGroup}
+                                onRemove={removeOptionGroup}
+                                canRemove={true}
+                                sensors={sensors}
+                              />
+                            ))}
+                          </div>
+                        </SortableContext>
+                      </DndContext>
+                    )}
 
-                    <button
-                      type="button"
-                      onClick={addAddon}
-                      className="flex items-center gap-1.5 text-primary hover:text-primary/80 text-sm font-medium"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Adicionar adicional
-                    </button>
+                    {optionGroups.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Layers className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">Nenhum grupo criado ainda</p>
+                        <p className="text-xs">Clique em um dos tipos acima para começar</p>
+                      </div>
+                    )}
                   </>
                 )}
               </div>
