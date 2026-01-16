@@ -1023,7 +1023,7 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
       }
 
       toast.success("Categoria criada com sucesso!");
-      onClose();
+      navigate("/dashboard/menu-manager");
       navigate("/dashboard/menu");
     } catch (error) {
       console.error("Error saving category:", error);
