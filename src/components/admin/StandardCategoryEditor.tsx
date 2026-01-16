@@ -752,6 +752,109 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
+  // Load existing category data (edit mode)
+  useEffect(() => {
+    if (!editId) return;
+
+    const loadExisting = async () => {
+      setLoading(true);
+      try {
+        // In edit mode we skip template selection
+        setSelectedTemplate("personalizado");
+        setCurrentStep(2);
+
+        const { data: categoryData, error: categoryError } = await supabase
+          .from("categories")
+          .select("id, name, description, is_active")
+          .eq("id", editId)
+          .single();
+
+        if (categoryError) throw categoryError;
+        if (!categoryData) return;
+
+        setName(categoryData.name ?? "");
+        setIsPromotion(!!categoryData.description);
+        setPromotionMessage(categoryData.description ?? "");
+        setAvailability(categoryData.is_active ? "always" : "paused");
+
+        const [{ data: sizesData, error: sizesError }, { data: groupsData, error: groupsError }] = await Promise.all([
+          supabase
+            .from("standard_sizes")
+            .select("id, name, base_price, description, is_active")
+            .eq("category_id", editId)
+            .order("display_order"),
+          supabase
+            .from("category_option_groups")
+            .select("id, name, is_required, min_selections, max_selections, selection_type, is_active")
+            .eq("category_id", editId)
+            .order("display_order"),
+        ]);
+
+        if (sizesError) throw sizesError;
+        if (groupsError) throw groupsError;
+
+        const loadedSizes = (sizesData || []).map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          basePrice: Number(s.base_price ?? 0),
+          description: s.description ?? undefined,
+          isActive: !!s.is_active,
+        })) as StandardSize[];
+
+        setHasSizes(loadedSizes.length > 0 ? "yes" : "no");
+        setSizes(loadedSizes.length > 0 ? loadedSizes : []);
+
+        if ((groupsData || []).length > 0) {
+          setHasOptionGroups("yes");
+
+          const groupsWithItems = await Promise.all(
+            (groupsData || []).map(async (g: any) => {
+              const { data: itemsData, error: itemsError } = await supabase
+                .from("category_option_items")
+                .select("id, name, additional_price, is_active")
+                .eq("group_id", g.id)
+                .order("display_order");
+
+              if (itemsError) throw itemsError;
+
+              const items = (itemsData || []).map((i: any) => ({
+                id: i.id,
+                name: i.name,
+                price: Number(i.additional_price ?? 0),
+                isActive: !!i.is_active,
+              })) as OptionGroupItem[];
+
+              return {
+                id: g.id,
+                name: g.name,
+                description: "",
+                isRequired: !!g.is_required,
+                minSelections: Number(g.min_selections ?? 0),
+                maxSelections: Number(g.max_selections ?? 0),
+                selectionType: g.selection_type === "single" ? "single" : "multiple",
+                isActive: !!g.is_active,
+                isOpen: false,
+                items: items.length > 0 ? items : [{ id: crypto.randomUUID(), name: "", price: 0, isActive: true }],
+              } satisfies OptionGroup;
+            })
+          );
+
+          setOptionGroups(groupsWithItems as OptionGroup[]);
+        } else {
+          setHasOptionGroups("no");
+          setOptionGroups([]);
+        }
+      } catch (e) {
+        console.error("Error loading standard category:", e);
+        toast.error("Erro ao carregar categoria");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadExisting();
+  }, [editId]);
+
   // Apply template
   const applyTemplate = (templateId: string) => {
     setSelectedTemplate(templateId);
@@ -940,87 +1043,168 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
 
     setLoading(true);
     try {
-      const slug = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-");
-      
-      const { data: category, error: categoryError } = await supabase
-        .from("categories")
-        .insert({
-          store_id: storeId,
-          name: name.trim(),
-          slug,
-          description: isPromotion ? promotionMessage : null,
-          is_active: availability !== "paused",
-          category_type: "standard",
-        })
-        .select()
-        .single();
+      const slug = name
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "-");
 
-      if (categoryError) throw categoryError;
+      const categoryPayload = {
+        store_id: storeId,
+        name: name.trim(),
+        slug,
+        description: isPromotion ? promotionMessage : null,
+        is_active: availability !== "paused",
+        category_type: "standard" as const,
+      };
 
-      // Save sizes
-      if (hasSizes === "yes" && sizes.length > 0) {
-        const validSizes = sizes.filter(s => s.name.trim());
-        
-        for (let i = 0; i < validSizes.length; i++) {
-          const size = validSizes[i];
-          await supabase.from("standard_sizes").insert({
-            store_id: storeId,
-            category_id: category.id,
-            name: size.name.trim(),
-            base_price: size.basePrice || 0,
-            description: size.description || null,
-            is_active: size.isActive,
-            display_order: i,
-          });
-        }
+      let categoryId = editId ?? null;
+
+      if (editId) {
+        const { error: updateError } = await supabase
+          .from("categories")
+          .update(categoryPayload)
+          .eq("id", editId);
+
+        if (updateError) throw updateError;
+      } else {
+        const { data: category, error: categoryError } = await supabase
+          .from("categories")
+          .insert(categoryPayload)
+          .select("id")
+          .single();
+
+        if (categoryError) throw categoryError;
+        categoryId = category?.id ?? null;
       }
 
-      // Save option groups
-      if (hasOptionGroups === "yes" && optionGroups.length > 0) {
-        for (let i = 0; i < optionGroups.length; i++) {
-          const group = optionGroups[i];
-          if (!group.name.trim()) continue;
+      if (!categoryId) {
+        throw new Error("Falha ao salvar categoria");
+      }
 
-          const { data: savedGroup, error: groupError } = await supabase
+      const inList = (ids: string[]) => `(${ids.map((id) => `"${id}"`).join(",")})`;
+
+      // ===== SIZES (standard_sizes) =====
+      const validSizes = hasSizes === "yes" ? sizes.filter((s) => s.name.trim()) : [];
+
+      if (hasSizes === "yes") {
+        if (validSizes.length > 0) {
+          const upsertPayload = validSizes.map((s, index) => ({
+            id: s.id,
+            store_id: storeId,
+            category_id: categoryId,
+            name: s.name.trim(),
+            base_price: s.basePrice || 0,
+            description: s.description || null,
+            is_active: s.isActive,
+            display_order: index,
+          }));
+
+          const { error: upsertError } = await supabase
+            .from("standard_sizes")
+            .upsert(upsertPayload as any, { onConflict: "id" });
+
+          if (upsertError) throw upsertError;
+
+          const keepIds = validSizes.map((s) => s.id);
+          const { error: deleteRemovedError } = await supabase
+            .from("standard_sizes")
+            .delete()
+            .eq("category_id", categoryId)
+            .not("id", "in", inList(keepIds));
+
+          if (deleteRemovedError) throw deleteRemovedError;
+        } else {
+          const { error } = await supabase.from("standard_sizes").delete().eq("category_id", categoryId);
+          if (error) throw error;
+        }
+      } else {
+        const { error } = await supabase.from("standard_sizes").delete().eq("category_id", categoryId);
+        if (error) throw error;
+      }
+
+      // ===== OPTION GROUPS (category_option_groups + category_option_items) =====
+      const validGroups = hasOptionGroups === "yes" ? optionGroups.filter((g) => g.name.trim()) : [];
+
+      if (hasOptionGroups === "yes") {
+        if (validGroups.length > 0) {
+          const groupPayload = validGroups.map((g, index) => ({
+            id: g.id,
+            store_id: storeId,
+            category_id: categoryId,
+            name: g.name.trim(),
+            is_required: g.isRequired,
+            min_selections: g.minSelections,
+            max_selections: g.maxSelections,
+            selection_type: g.selectionType,
+            is_active: g.isActive,
+            display_order: index,
+            is_primary: false,
+            display_mode: "modal",
+            item_layout: "list",
+            show_item_images: false,
+          }));
+
+          const { error: upsertGroupsError } = await supabase
             .from("category_option_groups")
-            .insert({
-              store_id: storeId,
-              category_id: category.id,
-              name: group.name.trim(),
-              is_required: group.isRequired,
-              min_selections: group.minSelections,
-              max_selections: group.maxSelections,
-              selection_type: group.selectionType,
-              is_active: group.isActive,
-              display_order: i,
-              is_primary: false,
-              display_mode: "modal",
-              item_layout: "list",
-              show_item_images: false,
-            })
-            .select()
-            .single();
+            .upsert(groupPayload as any, { onConflict: "id" });
 
-          if (groupError) throw groupError;
+          if (upsertGroupsError) throw upsertGroupsError;
 
-          if (savedGroup) {
-            const validItems = group.items.filter(item => item.name.trim());
-            for (let j = 0; j < validItems.length; j++) {
-              const item = validItems[j];
-              await supabase.from("category_option_items").insert({
+          const keepGroupIds = validGroups.map((g) => g.id);
+          const { error: deleteRemovedGroupsError } = await supabase
+            .from("category_option_groups")
+            .delete()
+            .eq("category_id", categoryId)
+            .not("id", "in", inList(keepGroupIds));
+
+          if (deleteRemovedGroupsError) throw deleteRemovedGroupsError;
+
+          // Sync items per group
+          for (const g of validGroups) {
+            const validItems = g.items.filter((i) => i.name.trim());
+
+            if (validItems.length > 0) {
+              const itemsPayload = validItems.map((i, index) => ({
+                id: i.id,
                 store_id: storeId,
-                group_id: savedGroup.id,
-                name: item.name.trim(),
-                additional_price: item.price || 0,
-                is_active: item.isActive,
-                display_order: j,
-              });
+                group_id: g.id,
+                name: i.name.trim(),
+                additional_price: i.price || 0,
+                is_active: i.isActive,
+                display_order: index,
+              }));
+
+              const { error: upsertItemsError } = await supabase
+                .from("category_option_items")
+                .upsert(itemsPayload as any, { onConflict: "id" });
+
+              if (upsertItemsError) throw upsertItemsError;
+
+              const keepItemIds = validItems.map((i) => i.id);
+              const { error: deleteRemovedItemsError } = await supabase
+                .from("category_option_items")
+                .delete()
+                .eq("group_id", g.id)
+                .not("id", "in", inList(keepItemIds));
+
+              if (deleteRemovedItemsError) throw deleteRemovedItemsError;
+            } else {
+              const { error } = await supabase.from("category_option_items").delete().eq("group_id", g.id);
+              if (error) throw error;
             }
           }
+        } else {
+          const { error } = await supabase.from("category_option_groups").delete().eq("category_id", categoryId);
+          if (error) throw error;
         }
+      } else {
+        const { error } = await supabase.from("category_option_groups").delete().eq("category_id", categoryId);
+        if (error) throw error;
       }
 
-      toast.success("Categoria criada com sucesso!");
+      toast.success(editId ? "Categoria atualizada com sucesso!" : "Categoria criada com sucesso!");
       onClose();
     } catch (error) {
       console.error("Error saving category:", error);
@@ -1043,10 +1227,10 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
           </button>
           <div>
             <h1 className="text-sm font-semibold text-foreground">
-              Nova categoria
+              {editId ? "Editar categoria" : "Nova categoria"}
             </h1>
             <p className="text-xs text-muted-foreground">
-              {currentTemplate ? `Modelo: ${currentTemplate.name}` : "Escolha um modelo de negócio"}
+              Gestor de cardápio › Categoria padrão
             </p>
           </div>
         </div>

@@ -77,7 +77,8 @@ export default function CategoryEditorPage() {
   const [storeId, setStoreId] = useState<string | null>(null);
   
   // Model selection state - null means not selected yet (only for new categories)
-  const [modelo, setModelo] = useState<"pizza" | "padrao" | null>(editId ? "pizza" : null);
+  // For edit mode we infer from the category record.
+  const [modelo, setModelo] = useState<"pizza" | "padrao" | null>(null);
   
   // Form state
   const [currentStep, setCurrentStep] = useState(1);
@@ -318,9 +319,16 @@ export default function CategoryEditorPage() {
       setIsPromotion(!!categoryData.description);
       setPromotionMessage(categoryData.description || "");
       setAvailability(categoryData.is_active ? "always" : "paused");
-      // Always pizza mode
 
-      if (categoryData.category_type === "pizza") {
+      const categoryType = categoryData.category_type ?? "pizza";
+      setModelo(categoryType === "standard" ? "padrao" : "pizza");
+
+      // Standard categories are edited inside StandardCategoryEditor
+      if (categoryType === "standard") {
+        return;
+      }
+
+      if (categoryType === "pizza") {
         const { data: sizesData } = await supabase
           .from("pizza_sizes")
           .select("*")
