@@ -828,68 +828,66 @@ export default function MenuManagerPage() {
   }
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div>
-        <h1 className="text-base font-semibold">Gestor de Cardápio</h1>
-        <p className="text-[11px] text-muted-foreground">
-          Gerencie categorias e produtos
-        </p>
-      </div>
-
-
-      {/* Search and Actions Bar */}
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 flex-1 max-w-md">
-          <Search className="w-5 h-5 text-muted-foreground" />
-          <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="categories">Categorias</SelectItem>
-              <SelectItem value="items">Itens</SelectItem>
-            </SelectContent>
-          </Select>
-          <Input
-            placeholder="Pesquisar"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1"
-          />
+    <div className="space-y-3">
+      {/* Compact Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-sm font-semibold text-foreground">Cardápio</h1>
+          <p className="text-[10px] text-muted-foreground/70">
+            {categories.length} categorias
+          </p>
         </div>
         
-        <div className="flex items-center gap-3 ml-auto">
+        <div className="flex items-center gap-2">
+          {/* Compact Search */}
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
+            <Input
+              placeholder="Buscar..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="h-8 w-40 pl-8 text-xs bg-muted/30 border-0 focus-visible:ring-1"
+            />
+          </div>
+          
+          {/* Quick Actions */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                Ações
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                 <ChevronDown className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => {
-                // Expand all categories and load their products
-                const allIds = new Set(categories.map(c => c.id));
-                setExpandedCategories(allIds);
-                // Load products for all categories
-                categories.forEach(cat => {
-                  if (!categoryProducts[cat.id]) {
-                    loadCategoryProducts(cat.id);
-                  }
-                });
-              }}>Expandir todas</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => {
-                // Collapse all categories
-                setExpandedCategories(new Set());
-              }}>Recolher todas</DropdownMenuItem>
-              <DropdownMenuItem>Reordenar categorias</DropdownMenuItem>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem 
+                onClick={() => {
+                  const allIds = new Set(categories.map(c => c.id));
+                  setExpandedCategories(allIds);
+                  categories.forEach(cat => {
+                    if (!categoryProducts[cat.id]) {
+                      loadCategoryProducts(cat.id, cat.category_type);
+                    }
+                  });
+                }}
+                className="text-xs"
+              >
+                Expandir todas
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setExpandedCategories(new Set())}
+                className="text-xs"
+              >
+                Recolher todas
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           
-          <Button onClick={() => openCategoryPage()} className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
-            <Plus className="w-4 h-4" />
-            Nova categoria
+          <Button 
+            onClick={() => openCategoryPage()} 
+            size="sm"
+            className="h-8 gap-1.5 text-xs"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Categoria
           </Button>
         </div>
       </div>
@@ -904,98 +902,95 @@ export default function MenuManagerPage() {
           items={filteredCategories.map(c => c.id)}
           strategy={verticalListSortingStrategy}
         >
-          <div className="space-y-4">
+          <div className="space-y-2">
             {filteredCategories.map((category) => (
               <SortableCategoryItem
                 key={category.id}
                 id={category.id}
                 isActive={category.is_active}
               >
-                {/* Orange Header - only show if has promotion description */}
+                {/* Promo Badge - Subtle */}
                 {category.description && (
-                  <div className="bg-amber-400 text-center py-1.5">
-                    <span className="text-sm font-medium text-white">PROMOÇÃO</span>
+                  <div className="bg-amber-400/10 border-b border-amber-200/50 text-center py-0.5">
+                    <span className="text-[9px] font-medium text-amber-600 uppercase tracking-wider">Promoção</span>
                   </div>
                 )}
                 
-                {/* Category Content */}
-                <div className="bg-card p-4">
-                  <div className="flex items-center gap-4">
+                {/* Compact Category Row */}
+                <div className="bg-card px-3 py-2.5">
+                  <div className="flex items-center gap-3">
                     {/* Drag Handle */}
                     <DragHandleButton id={category.id} />
                 
-                {/* Category Info */}
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    {category.icon && <span className="text-lg">{category.icon}</span>}
-                    <h3 className="font-semibold">{category.name}</h3>
-                    {!category.is_active && (
-                      <Badge variant="secondary" className="text-xs">Inativo</Badge>
-                    )}
-                  </div>
-                    <Badge variant="outline" className="mt-1 text-xs bg-amber-100 text-amber-700 border-amber-300">
-                      {category.category_type === 'pizza' ? 'Pizza' : 'Itens principais'}
-                    </Badge>
-                  </div>
-                
-                {/* Actions */}
-                <div className="flex items-center gap-2">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="gap-2">
-                        Ações categoria
-                        <ChevronDown className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
-                        <Eye className="w-4 h-4 mr-2" />
-                        Exibição
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => openCategoryPage(category)}>
-                        <Pencil className="w-4 h-4 mr-2" />
-                        Editar
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDuplicateCategory(category)}>
-                        <Copy className="w-4 h-4 mr-2" />
-                        Duplicar
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleDeleteCategory(category)}
-                        className="text-destructive focus:text-destructive"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Excluir
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleCategory(category.id, category.category_type)}
-                  >
-                    {expandedCategories.has(category.id) ? (
-                      <ChevronUp className="w-5 h-5" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-              
-              {/* Expanded Content */}
-              {expandedCategories.has(category.id) && (
-                <div className="mt-4">
-                  {loadingProducts.has(category.id) ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-                      {[...Array(4)].map((_, i) => (
-                        <Skeleton key={i} className="aspect-[4/3] rounded-xl" />
-                      ))}
+                    {/* Category Info - Compact */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        {category.icon && <span className="text-sm">{category.icon}</span>}
+                        <h3 className="font-medium text-sm text-foreground truncate">{category.name}</h3>
+                        {!category.is_active && (
+                          <span className="text-[9px] text-muted-foreground/70 uppercase">inativo</span>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-muted-foreground/60">
+                        {category.category_type === 'pizza' ? 'Pizza' : category.category_type === 'standard' ? 'Padrão' : 'Produtos'}
+                      </span>
                     </div>
-                  ) : category.category_type === 'pizza' ? (
-                    // Pizza Content (Sizes + Flavors)
-                    <div className="space-y-6">
+                  
+                    {/* Compact Actions */}
+                    <div className="flex items-center gap-1">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                            <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-36">
+                          <DropdownMenuItem onClick={() => openCategoryPage(category)} className="text-xs gap-2">
+                            <Pencil className="w-3 h-3" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDuplicateCategory(category)} className="text-xs gap-2">
+                            <Copy className="w-3 h-3" />
+                            Duplicar
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteCategory(category)}
+                            className="text-xs gap-2 text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={() => toggleCategory(category.id, category.category_type)}
+                      >
+                        {expandedCategories.has(category.id) ? (
+                          <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    </div>
+                </div>
+                
+                {/* Expanded Content */}
+                {expandedCategories.has(category.id) && (
+                  <div className="px-3 pb-3 pt-1">
+                    {loadingProducts.has(category.id) ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+                        {[...Array(4)].map((_, i) => (
+                          <Skeleton key={i} className="aspect-[4/3] rounded-xl" />
+                        ))}
+                      </div>
+                    ) : category.category_type === 'pizza' ? (
+                      // Pizza Content (Sizes + Flavors)
+                      <div className="space-y-6">
                       {/* Pizza Sizes Section */}
                       <div>
                         <div className="flex items-center justify-between mb-3">
@@ -1223,73 +1218,65 @@ export default function MenuManagerPage() {
                     </div>
                   ) : category.category_type === 'standard' ? (
                     // Standard Category Content - Clean organized layout
-                    <div className="space-y-6 p-4 bg-muted/30 rounded-lg">
+                    <div className="space-y-4 p-3 bg-muted/20 rounded-lg border border-border/30">
                       {/* Section Header */}
-                      <div className="flex items-center justify-between pb-3 border-b border-border">
-                        <h4 className="font-semibold text-foreground text-lg">Configuração da Categoria</h4>
+                      <div className="flex items-center justify-between pb-3 border-b border-border/50">
+                        <h4 className="font-medium text-foreground text-sm">Estrutura da Categoria</h4>
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
                           onClick={() => navigate(`/dashboard/category/edit?edit=${category.id}`)}
-                          className="gap-2"
+                          className="gap-1.5 h-7 text-xs text-muted-foreground hover:text-foreground"
                         >
-                          <Pencil className="w-4 h-4" />
-                          Editar Configuração
+                          <Pencil className="w-3 h-3" />
+                          Editar
                         </Button>
                       </div>
 
-                      {/* Sizes Section - Renamed to "Variações de Tamanho" */}
+                      {/* Sizes Section */}
                       {categoryStandardSizes[category.id]?.length > 0 && (
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <BoxIcon className="w-4 h-4 text-primary" />
-                              <h5 className="font-medium text-foreground">Variações de Tamanho</h5>
-                            </div>
-                            <Badge variant="secondary" className="text-xs">
-                              {categoryStandardSizes[category.id].length} opções
-                            </Badge>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Tamanhos</span>
+                            <span className="text-[10px] text-muted-foreground/60">
+                              {categoryStandardSizes[category.id].length}
+                            </span>
                           </div>
                           
-                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+                          <div className="flex flex-wrap gap-1.5">
                             {categoryStandardSizes[category.id].map((size) => (
                               <div 
                                 key={size.id}
                                 className={cn(
-                                  "bg-card rounded-lg border border-border p-3 transition-all hover:shadow-sm hover:border-primary/30",
-                                  !size.is_active && "opacity-50"
+                                  "inline-flex items-center gap-2 bg-card rounded-md border border-border/50 px-2.5 py-1.5 text-xs transition-all hover:border-border",
+                                  !size.is_active && "opacity-40"
                                 )}
                               >
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className="font-medium text-foreground text-sm truncate">{size.name}</span>
-                                  <Switch
-                                    checked={size.is_active}
-                                    onCheckedChange={async (checked) => {
-                                      try {
-                                        await supabase
-                                          .from("standard_sizes")
-                                          .update({ is_active: checked })
-                                          .eq("id", size.id);
-                                        
-                                        setCategoryStandardSizes(prev => ({
-                                          ...prev,
-                                          [category.id]: prev[category.id].map(s =>
-                                            s.id === size.id ? { ...s, is_active: checked } : s
-                                          )
-                                        }));
-                                      } catch (error) {
-                                        toast.error("Erro ao atualizar status");
-                                      }
-                                    }}
-                                    className="data-[state=checked]:bg-green-500 scale-90"
-                                  />
-                                </div>
-                                <p className="text-sm text-primary font-bold mt-1">
+                                <span className="font-medium text-foreground">{size.name}</span>
+                                <span className="text-muted-foreground/70">
                                   R$ {size.base_price.toFixed(2).replace('.', ',')}
-                                </p>
-                                {size.description && (
-                                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{size.description}</p>
-                                )}
+                                </span>
+                                <Switch
+                                  checked={size.is_active}
+                                  onCheckedChange={async (checked) => {
+                                    try {
+                                      await supabase
+                                        .from("standard_sizes")
+                                        .update({ is_active: checked })
+                                        .eq("id", size.id);
+                                      
+                                      setCategoryStandardSizes(prev => ({
+                                        ...prev,
+                                        [category.id]: prev[category.id].map(s =>
+                                          s.id === size.id ? { ...s, is_active: checked } : s
+                                        )
+                                      }));
+                                    } catch (error) {
+                                      toast.error("Erro ao atualizar status");
+                                    }
+                                  }}
+                                  className="data-[state=checked]:bg-green-500 scale-75"
+                                />
                               </div>
                             ))}
                           </div>
@@ -1298,120 +1285,105 @@ export default function MenuManagerPage() {
 
                       {/* Option Groups Section */}
                       {categoryOptionGroups[category.id]?.length > 0 && (
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Settings2 className="w-4 h-4 text-primary" />
-                              <h5 className="font-medium text-foreground">Personalizações</h5>
-                            </div>
-                            <Badge variant="secondary" className="text-xs">
-                              {categoryOptionGroups[category.id].length} grupos
-                            </Badge>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Personalizações</span>
+                            <span className="text-[10px] text-muted-foreground/60">
+                              {categoryOptionGroups[category.id].length}
+                            </span>
                           </div>
                           
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                          <div className="flex flex-wrap gap-1.5">
                             {categoryOptionGroups[category.id].map((group) => (
                               <div 
                                 key={group.id}
-                                className="bg-card rounded-lg border border-border p-3 hover:shadow-sm transition-all"
+                                className="inline-flex items-center gap-1.5 bg-card rounded-md border border-border/50 px-2.5 py-1.5 text-xs"
                               >
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className="font-medium text-foreground text-sm">{group.name}</span>
-                                  {group.is_required && (
-                                    <Badge className="text-[10px] bg-amber-100 text-amber-700 hover:bg-amber-100">Obrigatório</Badge>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
-                                  <span>
-                                    {group.min_selections || 0} - {group.max_selections || '∞'} seleções
-                                  </span>
-                                  <span className="text-primary font-medium">
-                                    {group.items_count || 0} opções
-                                  </span>
-                                </div>
+                                <span className="font-medium text-foreground">{group.name}</span>
+                                {group.is_required && (
+                                  <span className="text-[9px] text-amber-600 font-medium">*</span>
+                                )}
+                                <span className="text-muted-foreground/60">
+                                  ({group.items_count || 0})
+                                </span>
                               </div>
                             ))}
                           </div>
                         </div>
                       )}
                       
-                      {/* Standard Items Section - Main products */}
-                      <div className="space-y-3">
+                      {/* Standard Items Section - Compact cards */}
+                      <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <UtensilsCrossed className="w-4 h-4 text-primary" />
-                            <h5 className="font-medium text-foreground">Itens do Cardápio</h5>
+                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Itens</span>
+                            <span className="text-[10px] text-muted-foreground/60">
+                              {categoryStandardItems[category.id]?.length || 0}
+                            </span>
                           </div>
-                          <Badge variant="secondary" className="text-xs">
-                            {categoryStandardItems[category.id]?.length || 0} itens
-                          </Badge>
+                          <button
+                            onClick={() => openAddItemTypeModal(category.id, category.name, false, true)}
+                            className="text-[10px] text-primary hover:underline font-medium"
+                          >
+                            + Novo
+                          </button>
                         </div>
                         
                         {categoryStandardItems[category.id]?.length > 0 ? (
-                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
                             {categoryStandardItems[category.id].map((item) => (
                               <div 
                                 key={item.id}
                                 className={cn(
-                                  "group bg-card rounded-xl overflow-hidden border border-border transition-all duration-200 hover:shadow-lg hover:border-primary/30",
-                                  !item.is_active && "opacity-50"
+                                  "group bg-card rounded-lg overflow-hidden border border-border/50 transition-all hover:border-border hover:shadow-sm",
+                                  !item.is_active && "opacity-40"
                                 )}
                               >
-                                {/* Item Image */}
-                                <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                                {/* Compact Image */}
+                                <div className="relative aspect-[3/2] overflow-hidden bg-muted">
                                   {item.image_url ? (
                                     <img 
                                       src={item.image_url} 
                                       alt={item.name}
-                                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                      className="w-full h-full object-cover"
                                     />
                                   ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
-                                      <span className="text-4xl opacity-40">🍽️</span>
+                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+                                      <span className="text-xl opacity-30">🍽️</span>
                                     </div>
                                   )}
                                   
-                                  {/* Badges */}
                                   {item.is_premium && (
-                                    <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-xs font-bold bg-gradient-to-r from-amber-400 to-amber-500 text-white shadow-sm">
-                                      ⭐ Premium
+                                    <div className="absolute top-1 left-1 px-1 py-0.5 rounded text-[9px] font-semibold bg-amber-400 text-white">
+                                      ⭐
                                     </div>
                                   )}
                                   
-                                  {!item.is_active && (
-                                    <div className="absolute top-2 right-2 px-2 py-0.5 rounded text-xs font-bold bg-muted text-muted-foreground shadow-sm">
-                                      Inativo
-                                    </div>
-                                  )}
-                                  
-                                  {/* Hover Actions */}
-                                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                  {/* Hover Edit */}
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <button 
-                                      onClick={() => {
-                                        // TODO: Open edit modal
-                                      }}
-                                      className="w-9 h-9 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition-colors shadow"
-                                      title="Editar item"
+                                      className="w-7 h-7 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition-colors"
+                                      title="Editar"
                                     >
-                                      <Pencil className="w-4 h-4 text-foreground" />
+                                      <Pencil className="w-3 h-3 text-foreground" />
                                     </button>
                                   </div>
                                 </div>
                                 
-                                {/* Item Info */}
-                                <div className="p-3">
-                                  <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-2 min-h-[2.5rem]">
+                                {/* Compact Info */}
+                                <div className="p-2">
+                                  <h3 className="font-medium text-foreground text-xs leading-tight line-clamp-1">
                                     {item.name}
                                   </h3>
                                   {item.description && (
-                                    <p className="text-muted-foreground text-xs line-clamp-2 mt-1">
+                                    <p className="text-muted-foreground/70 text-[10px] line-clamp-1 mt-0.5">
                                       {item.description}
                                     </p>
                                   )}
-                                  <div className="mt-2 flex items-center justify-between">
-                                    <Badge variant="outline" className="text-[10px]">
-                                      {item.item_type === 'premium' ? '⭐ Premium' : 'Tradicional'}
-                                    </Badge>
+                                  <div className="mt-1.5 flex items-center justify-between">
+                                    <span className="text-[10px] text-muted-foreground/60">
+                                      {item.item_type === 'premium' ? 'Premium' : 'Base'}
+                                    </span>
                                     <Switch
                                       checked={item.is_active}
                                       onCheckedChange={async (checked) => {
@@ -1431,7 +1403,7 @@ export default function MenuManagerPage() {
                                           toast.error("Erro ao atualizar status");
                                         }
                                       }}
-                                      className="data-[state=checked]:bg-green-500 scale-90"
+                                      className="data-[state=checked]:bg-green-500 scale-[0.65]"
                                     />
                                   </div>
                                 </div>
@@ -1439,17 +1411,14 @@ export default function MenuManagerPage() {
                             ))}
                           </div>
                         ) : (
-                          <div className="text-center py-8 bg-card rounded-xl border border-dashed border-border">
-                            <div className="text-5xl mb-3">🍽️</div>
-                            <p className="text-lg font-medium text-foreground">Nenhum item cadastrado</p>
-                            <p className="text-muted-foreground text-sm mb-4">Adicione itens ao cardápio desta categoria</p>
-                            <Button
+                          <div className="text-center py-4 bg-card/50 rounded-lg border border-dashed border-border/50">
+                            <p className="text-muted-foreground text-xs">Nenhum item cadastrado</p>
+                            <button
                               onClick={() => openAddItemTypeModal(category.id, category.name, false, true)}
-                              className="gap-2"
+                              className="mt-1.5 text-xs text-primary hover:underline font-medium"
                             >
-                              <Plus className="w-4 h-4" />
-                              Adicionar Primeiro Item
-                            </Button>
+                              + Adicionar item
+                            </button>
                           </div>
                         )}
                       </div>
@@ -1704,45 +1673,35 @@ export default function MenuManagerPage() {
                       <p className="text-muted-foreground text-sm">Adicione itens a esta categoria</p>
                     </div>
                   )}
+                  
+                  {/* Add Item Button - Compact */}
+                  <div className="mt-3 pt-2 border-t border-border/30 flex items-center gap-3">
+                    <button 
+                      onClick={() => openAddItemTypeModal(
+                        category.id, 
+                        category.name, 
+                        category.category_type === 'pizza',
+                        category.category_type === 'standard'
+                      )}
+                      className="flex items-center gap-1.5 text-primary hover:text-primary/80 font-medium text-xs transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      {category.category_type === 'pizza' ? 'Adicionar Sabor' : 'Adicionar Item'}
+                    </button>
+                    {category.category_type === 'pizza' && (
+                      <button 
+                        onClick={() => navigate(`/dashboard/pizza-flavors?categoryId=${category.id}`)}
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        Ver sabores
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
-              
-              {/* Add Item Button */}
-              <div className="mt-4 flex items-center gap-4">
-                <button 
-                  onClick={() => openAddItemTypeModal(
-                    category.id, 
-                    category.name, 
-                    category.category_type === 'pizza',
-                    category.category_type === 'standard'
-                  )}
-                  className="flex items-center gap-2 text-primary hover:text-primary/80 font-medium text-sm transition-colors"
-                >
-                  <Plus className="w-5 h-5" />
-                  {category.category_type === 'pizza' ? 'Adicionar Sabor' : 'Adicionar Item'}
-                </button>
-                {category.category_type === 'pizza' && (
-                  <button 
-                    onClick={() => navigate(`/dashboard/pizza-flavors?categoryId=${category.id}`)}
-                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground font-medium text-sm transition-colors"
-                  >
-                    Ver todos os sabores
-                  </button>
-                )}
-                {category.category_type === 'standard' && (
-                  <button 
-                    onClick={() => navigate(`/dashboard/category/edit?edit=${category.id}`)}
-                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground font-medium text-sm transition-colors"
-                  >
-                    <Settings2 className="w-4 h-4" />
-                    Configurar Categoria
-                  </button>
-                )}
-              </div>
-            </div>
-          </SortableCategoryItem>
-            ))}
-          </div>
+            </SortableCategoryItem>
+          ))}
+        </div>
         </SortableContext>
       </DndContext>
 
