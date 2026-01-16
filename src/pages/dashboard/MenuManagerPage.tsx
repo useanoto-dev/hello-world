@@ -93,6 +93,7 @@ import { NewCategoryModal, CategoryFormData } from "@/components/admin/NewCatego
 import { MenuItemWizard, ItemFormData } from "@/components/admin/MenuItemWizard";
 import { SortableCategoryItem, DragHandleButton } from "@/components/admin/SortableCategoryItem";
 import { ProductOptionGroupsManager } from "@/components/admin/ProductOptionGroupsManager";
+import { StandardItemWizard } from "@/components/admin/StandardItemWizard";
 
 interface Category {
   id: string;
@@ -218,6 +219,10 @@ export default function MenuManagerPage() {
     productName: string;
     categoryId: string;
   } | null>(null);
+  
+  // Standard item wizard state
+  const [showStandardItemWizard, setShowStandardItemWizard] = useState(false);
+  const [standardItemCategoryId, setStandardItemCategoryId] = useState<string | null>(null);
   
 
   useEffect(() => {
@@ -445,12 +450,16 @@ export default function MenuManagerPage() {
     }
   };
   
-  const openAddItemTypeModal = (categoryId: string, categoryName: string, isPizza?: boolean) => {
+  const openAddItemTypeModal = (categoryId: string, categoryName: string, isPizza?: boolean, isStandard?: boolean) => {
     if (isPizza) {
       // For pizza categories, go directly to pizza flavor wizard
       navigate(`/dashboard/pizza-flavor/new?categoryId=${categoryId}`);
+    } else if (isStandard) {
+      // For standard categories (açaí, hambúrguer), open the standard item wizard
+      setStandardItemCategoryId(categoryId);
+      setShowStandardItemWizard(true);
     } else {
-      // For standard categories, go directly to item wizard
+      // For regular categories, go to item wizard
       navigate(`/dashboard/item/new?categoryId=${categoryId}`);
     }
   };
@@ -1213,29 +1222,46 @@ export default function MenuManagerPage() {
                       </div>
                     </div>
                   ) : category.category_type === 'standard' ? (
-                    // Standard Category Content (Sizes + Items + Option Groups)
-                    <div className="space-y-6">
-                      {/* Standard Sizes Section */}
-                      <div>
-                        <div className="flex items-center justify-between mb-3">
-                          <h4 className="font-semibold text-foreground">Tamanhos</h4>
-                          <span className="text-xs text-muted-foreground">
-                            {categoryStandardSizes[category.id]?.length || 0} tamanhos
-                          </span>
-                        </div>
-                        
-                        {categoryStandardSizes[category.id]?.length > 0 ? (
-                          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+                    // Standard Category Content - Clean organized layout
+                    <div className="space-y-6 p-4 bg-muted/30 rounded-lg">
+                      {/* Section Header */}
+                      <div className="flex items-center justify-between pb-3 border-b border-border">
+                        <h4 className="font-semibold text-foreground text-lg">Configuração da Categoria</h4>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate(`/dashboard/category/edit?edit=${category.id}`)}
+                          className="gap-2"
+                        >
+                          <Pencil className="w-4 h-4" />
+                          Editar Configuração
+                        </Button>
+                      </div>
+
+                      {/* Sizes Section - Renamed to "Variações de Tamanho" */}
+                      {categoryStandardSizes[category.id]?.length > 0 && (
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <BoxIcon className="w-4 h-4 text-primary" />
+                              <h5 className="font-medium text-foreground">Variações de Tamanho</h5>
+                            </div>
+                            <Badge variant="secondary" className="text-xs">
+                              {categoryStandardSizes[category.id].length} opções
+                            </Badge>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
                             {categoryStandardSizes[category.id].map((size) => (
                               <div 
                                 key={size.id}
                                 className={cn(
-                                  "bg-card rounded-lg border border-border p-3 transition-all hover:shadow-md",
-                                  !size.is_active && "opacity-60"
+                                  "bg-card rounded-lg border border-border p-3 transition-all hover:shadow-sm hover:border-primary/30",
+                                  !size.is_active && "opacity-50"
                                 )}
                               >
-                                <div className="flex items-center justify-between">
-                                  <span className="font-medium text-foreground">{size.name}</span>
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="font-medium text-foreground text-sm truncate">{size.name}</span>
                                   <Switch
                                     checked={size.is_active}
                                     onCheckedChange={async (checked) => {
@@ -1255,53 +1281,51 @@ export default function MenuManagerPage() {
                                         toast.error("Erro ao atualizar status");
                                       }
                                     }}
-                                    className="data-[state=checked]:bg-green-500"
+                                    className="data-[state=checked]:bg-green-500 scale-90"
                                   />
                                 </div>
-                                <p className="text-sm text-primary font-semibold mt-1">
+                                <p className="text-sm text-primary font-bold mt-1">
                                   R$ {size.base_price.toFixed(2).replace('.', ',')}
                                 </p>
                                 {size.description && (
-                                  <p className="text-xs text-muted-foreground mt-1">{size.description}</p>
+                                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{size.description}</p>
                                 )}
                               </div>
                             ))}
                           </div>
-                        ) : (
-                          <div className="text-center py-4 bg-muted/50 rounded-lg">
-                            <p className="text-muted-foreground text-sm">Nenhum tamanho configurado</p>
-                          </div>
-                        )}
-                      </div>
+                        </div>
+                      )}
 
                       {/* Option Groups Section */}
                       {categoryOptionGroups[category.id]?.length > 0 && (
-                        <div>
-                          <div className="flex items-center justify-between mb-3">
-                            <h4 className="font-semibold text-foreground">Grupos de Opções</h4>
-                            <span className="text-xs text-muted-foreground">
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Settings2 className="w-4 h-4 text-primary" />
+                              <h5 className="font-medium text-foreground">Personalizações</h5>
+                            </div>
+                            <Badge variant="secondary" className="text-xs">
                               {categoryOptionGroups[category.id].length} grupos
-                            </span>
+                            </Badge>
                           </div>
                           
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                             {categoryOptionGroups[category.id].map((group) => (
                               <div 
                                 key={group.id}
-                                className="bg-card rounded-lg border border-border p-3"
+                                className="bg-card rounded-lg border border-border p-3 hover:shadow-sm transition-all"
                               >
-                                <div className="flex items-center justify-between">
-                                  <span className="font-medium text-foreground">{group.name}</span>
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="font-medium text-foreground text-sm">{group.name}</span>
                                   {group.is_required && (
-                                    <Badge variant="secondary" className="text-xs">Obrigatório</Badge>
+                                    <Badge className="text-[10px] bg-amber-100 text-amber-700 hover:bg-amber-100">Obrigatório</Badge>
                                   )}
                                 </div>
-                                <div className="flex items-center gap-2 mt-1.5">
-                                  <span className="text-xs text-muted-foreground">
-                                    {group.min_selections || 0} - {group.max_selections || 'N'} seleções
+                                <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
+                                  <span>
+                                    {group.min_selections || 0} - {group.max_selections || '∞'} seleções
                                   </span>
-                                  <span className="text-xs text-muted-foreground">•</span>
-                                  <span className="text-xs text-muted-foreground">
+                                  <span className="text-primary font-medium">
                                     {group.items_count || 0} opções
                                   </span>
                                 </div>
@@ -1311,25 +1335,29 @@ export default function MenuManagerPage() {
                         </div>
                       )}
                       
-                      {/* Standard Items Section */}
-                      <div>
-                        <div className="flex items-center justify-between mb-3">
-                          <h4 className="font-semibold text-foreground">Itens do Cardápio</h4>
-                          <span className="text-xs text-muted-foreground">
+                      {/* Standard Items Section - Main products */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <UtensilsCrossed className="w-4 h-4 text-primary" />
+                            <h5 className="font-medium text-foreground">Itens do Cardápio</h5>
+                          </div>
+                          <Badge variant="secondary" className="text-xs">
                             {categoryStandardItems[category.id]?.length || 0} itens
-                          </span>
+                          </Badge>
                         </div>
                         
                         {categoryStandardItems[category.id]?.length > 0 ? (
-                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                             {categoryStandardItems[category.id].map((item) => (
                               <div 
                                 key={item.id}
                                 className={cn(
-                                  "group bg-card rounded-xl overflow-hidden border border-border transition-all duration-200 ease-out hover:shadow-lg hover:border-primary/30",
-                                  !item.is_active && "opacity-60"
+                                  "group bg-card rounded-xl overflow-hidden border border-border transition-all duration-200 hover:shadow-lg hover:border-primary/30",
+                                  !item.is_active && "opacity-50"
                                 )}
                               >
+                                {/* Item Image */}
                                 <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                                   {item.image_url ? (
                                     <img 
@@ -1338,14 +1366,15 @@ export default function MenuManagerPage() {
                                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                     />
                                   ) : (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                      <span className="text-4xl opacity-50">🍨</span>
+                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
+                                      <span className="text-4xl opacity-40">🍽️</span>
                                     </div>
                                   )}
                                   
+                                  {/* Badges */}
                                   {item.is_premium && (
-                                    <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-xs font-bold bg-amber-500 text-white shadow-sm">
-                                      Premium
+                                    <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-xs font-bold bg-gradient-to-r from-amber-400 to-amber-500 text-white shadow-sm">
+                                      ⭐ Premium
                                     </div>
                                   )}
                                   
@@ -1354,20 +1383,34 @@ export default function MenuManagerPage() {
                                       Inativo
                                     </div>
                                   )}
+                                  
+                                  {/* Hover Actions */}
+                                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                    <button 
+                                      onClick={() => {
+                                        // TODO: Open edit modal
+                                      }}
+                                      className="w-9 h-9 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition-colors shadow"
+                                      title="Editar item"
+                                    >
+                                      <Pencil className="w-4 h-4 text-foreground" />
+                                    </button>
+                                  </div>
                                 </div>
                                 
+                                {/* Item Info */}
                                 <div className="p-3">
-                                  <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-2">
+                                  <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-2 min-h-[2.5rem]">
                                     {item.name}
                                   </h3>
                                   {item.description && (
-                                    <p className="text-muted-foreground text-xs line-clamp-1 mt-1">
+                                    <p className="text-muted-foreground text-xs line-clamp-2 mt-1">
                                       {item.description}
                                     </p>
                                   )}
                                   <div className="mt-2 flex items-center justify-between">
-                                    <Badge variant="outline" className="text-xs">
-                                      {item.item_type === 'premium' ? 'Premium' : 'Tradicional'}
+                                    <Badge variant="outline" className="text-[10px]">
+                                      {item.item_type === 'premium' ? '⭐ Premium' : 'Tradicional'}
                                     </Badge>
                                     <Switch
                                       checked={item.is_active}
@@ -1388,7 +1431,7 @@ export default function MenuManagerPage() {
                                           toast.error("Erro ao atualizar status");
                                         }
                                       }}
-                                      className="data-[state=checked]:bg-green-500"
+                                      className="data-[state=checked]:bg-green-500 scale-90"
                                     />
                                   </div>
                                 </div>
@@ -1396,10 +1439,17 @@ export default function MenuManagerPage() {
                             ))}
                           </div>
                         ) : (
-                          <div className="text-center py-8 bg-muted/50 rounded-lg">
-                            <div className="text-5xl mb-3">🍨</div>
+                          <div className="text-center py-8 bg-card rounded-xl border border-dashed border-border">
+                            <div className="text-5xl mb-3">🍽️</div>
                             <p className="text-lg font-medium text-foreground">Nenhum item cadastrado</p>
-                            <p className="text-muted-foreground text-sm">Adicione itens ao cardápio desta categoria</p>
+                            <p className="text-muted-foreground text-sm mb-4">Adicione itens ao cardápio desta categoria</p>
+                            <Button
+                              onClick={() => openAddItemTypeModal(category.id, category.name, false, true)}
+                              className="gap-2"
+                            >
+                              <Plus className="w-4 h-4" />
+                              Adicionar Primeiro Item
+                            </Button>
                           </div>
                         )}
                       </div>
@@ -1660,8 +1710,13 @@ export default function MenuManagerPage() {
               {/* Add Item Button */}
               <div className="mt-4 flex items-center gap-4">
                 <button 
-                  onClick={() => openAddItemTypeModal(category.id, category.name, category.category_type === 'pizza')}
-                  className="flex items-center gap-2 text-amber-600 hover:text-amber-700 font-medium text-sm"
+                  onClick={() => openAddItemTypeModal(
+                    category.id, 
+                    category.name, 
+                    category.category_type === 'pizza',
+                    category.category_type === 'standard'
+                  )}
+                  className="flex items-center gap-2 text-primary hover:text-primary/80 font-medium text-sm transition-colors"
                 >
                   <Plus className="w-5 h-5" />
                   {category.category_type === 'pizza' ? 'Adicionar Sabor' : 'Adicionar Item'}
@@ -1669,9 +1724,18 @@ export default function MenuManagerPage() {
                 {category.category_type === 'pizza' && (
                   <button 
                     onClick={() => navigate(`/dashboard/pizza-flavors?categoryId=${category.id}`)}
-                    className="flex items-center gap-2 text-primary hover:text-primary/80 font-medium text-sm"
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground font-medium text-sm transition-colors"
                   >
                     Ver todos os sabores
+                  </button>
+                )}
+                {category.category_type === 'standard' && (
+                  <button 
+                    onClick={() => navigate(`/dashboard/category/edit?edit=${category.id}`)}
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground font-medium text-sm transition-colors"
+                  >
+                    <Settings2 className="w-4 h-4" />
+                    Configurar Categoria
                   </button>
                 )}
               </div>
@@ -1784,6 +1848,20 @@ export default function MenuManagerPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Standard Item Wizard */}
+      {storeId && standardItemCategoryId && (
+        <StandardItemWizard
+          open={showStandardItemWizard}
+          onOpenChange={setShowStandardItemWizard}
+          categoryId={standardItemCategoryId}
+          storeId={storeId}
+          onSave={() => {
+            // Reload standard items for this category
+            loadCategoryProducts(standardItemCategoryId, 'standard');
+          }}
+        />
+      )}
 
     </div>
   );
