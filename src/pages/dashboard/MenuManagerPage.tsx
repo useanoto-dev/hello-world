@@ -977,6 +977,7 @@ export default function MenuManagerPage() {
                         )}
                       </Button>
                     </div>
+                  </div>
                 </div>
                 
                 {/* Expanded Content */}
