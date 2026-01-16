@@ -1,6 +1,5 @@
 // Standard Category Editor - Universal model for any business type
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Trash2, AlertCircle, GripVertical, ChevronDown, ChevronUp, Layers, IceCream, Sandwich, UtensilsCrossed, Coffee, Sparkles, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -724,7 +723,6 @@ function SortableOptionGroup({
 // ============= MAIN COMPONENT =============
 
 export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCategoryEditorProps) {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   
@@ -1023,8 +1021,7 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
       }
 
       toast.success("Categoria criada com sucesso!");
-      navigate("/dashboard/menu-manager");
-      navigate("/dashboard/menu");
+      onClose();
     } catch (error) {
       console.error("Error saving category:", error);
       toast.error("Erro ao salvar categoria");
