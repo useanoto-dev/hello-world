@@ -464,6 +464,7 @@ export default function MenuManagerPage() {
         stock_quantity: itemData.hasStockControl ? itemData.stockQuantity : 0,
         min_stock_alert: itemData.hasStockControl ? itemData.minStockAlert : 5,
         unit: itemData.unit,
+        display_mode: itemData.displayMode || 'direct',
       }).select().single();
 
       if (error) throw error;

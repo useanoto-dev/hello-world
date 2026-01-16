@@ -85,6 +85,8 @@ export interface ItemFormData {
   stockQuantity: number;
   minStockAlert: number;
   unit: string;
+  // Display mode: how the product appears in the menu
+  displayMode: 'direct' | 'customization';
 }
 
 const DAYS = [
@@ -217,6 +219,7 @@ export function MenuItemWizard({
     stockQuantity: 0,
     minStockAlert: 5,
     unit: 'un',
+    displayMode: 'direct',
   });
 
   // Navigate to step - only allows going to completed steps or current
@@ -264,6 +267,7 @@ export function MenuItemWizard({
         stockQuantity: 0,
         minStockAlert: 5,
         unit: 'un',
+        displayMode: 'direct',
       });
       setCurrentStep(1);
       setHighestStepReached(1);
@@ -429,6 +433,44 @@ export function MenuItemWizard({
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        {/* Display Mode - How item appears in menu */}
+        <div className="space-y-3 border rounded-lg p-4 bg-muted/30">
+          <div>
+            <Label className="text-sm font-medium">Como exibir no cardápio?</Label>
+            <p className="text-xs text-muted-foreground mt-1">
+              Escolha como o item será apresentado para o cliente
+            </p>
+          </div>
+          <RadioGroup
+            value={formData.displayMode}
+            onValueChange={(value) => setFormData(prev => ({ ...prev, displayMode: value as 'direct' | 'customization' }))}
+            className="space-y-3"
+          >
+            <div className="flex items-start gap-3 p-3 rounded-lg border bg-background hover:border-primary/50 cursor-pointer">
+              <RadioGroupItem value="direct" id="display-direct" className="mt-1" />
+              <div>
+                <Label htmlFor="display-direct" className="font-medium cursor-pointer">
+                  Direto no cardápio
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Ao clicar, o item é adicionado diretamente ao carrinho sem personalização
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 rounded-lg border bg-background hover:border-primary/50 cursor-pointer">
+              <RadioGroupItem value="customization" id="display-customization" className="mt-1" />
+              <div>
+                <Label htmlFor="display-customization" className="font-medium cursor-pointer">
+                  Tela de personalização
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Ao clicar, abre uma tela para escolher sabores, adicionais, ingredientes etc.
+                </p>
+              </div>
+            </div>
+          </RadioGroup>
         </div>
 
         {/* Item Name */}
