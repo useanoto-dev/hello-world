@@ -1,7 +1,8 @@
-// Category Editor Page - Pizza Only - Compact Layout with Flow Sync
+// Category Editor Page - Pizza & Standard - Compact Layout with Flow Sync
 import { useState, useEffect, KeyboardEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { StandardCategoryEditor } from "@/components/admin/StandardCategoryEditor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1339,6 +1340,17 @@ export default function CategoryEditorPage() {
           </div>
         </div>
       </div>
+    );
+  }
+
+  // Standard mode - use separate component
+  if (modelo === "padrao" && storeId) {
+    return (
+      <StandardCategoryEditor
+        editId={editId}
+        storeId={storeId}
+        onClose={handleClose}
+      />
     );
   }
 
