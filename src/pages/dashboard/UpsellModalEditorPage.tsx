@@ -52,18 +52,19 @@ const MODAL_TEMPLATES = [
   },
   { 
     id: "edge", 
-    label: "Bordas", 
+    label: "Bordas (Integrado)", 
     icon: "🍕", 
     color: "bg-yellow-500",
     bgLight: "bg-yellow-50 border-yellow-200 hover:bg-yellow-100",
     bgSelected: "bg-yellow-100 border-yellow-400",
-    description: "Oferece bordas recheadas para pizzas",
-    defaultTitle: "Quer deixar sua pizza ainda melhor? 🍕",
-    defaultDescription: "Escolha uma borda recheada deliciosa!",
-    defaultButtonText: "Escolher Borda",
+    description: "Puxa bordas cadastradas com preços por tamanho",
+    defaultTitle: "Escolha a Borda",
+    defaultDescription: "Turbine sua pizza com uma borda recheada!",
+    defaultButtonText: "Confirmar",
     defaultButtonColor: "#f97316",
     defaultSecondaryText: "Sem Borda",
     defaultIcon: "🧀",
+    contentType: "pizza_edges",
   },
   { 
     id: "additional", 
@@ -286,6 +287,10 @@ export default function UpsellModalEditorPage() {
 
     setSaving(true);
     try {
+      // Determine content_type based on template
+      const template = MODAL_TEMPLATES.find(t => t.id === selectedTemplate);
+      const contentType = (template as any)?.contentType || "products";
+
       const data = {
         store_id: restaurantId,
         name: formData.name.trim(),
@@ -303,6 +308,7 @@ export default function UpsellModalEditorPage() {
         button_color: formData.button_color,
         secondary_button_text: formData.secondary_button_text.trim(),
         icon: formData.icon,
+        content_type: contentType,
       };
 
       if (editId) {
