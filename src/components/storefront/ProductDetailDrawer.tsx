@@ -87,7 +87,7 @@ export default function ProductDetailDrawer({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: "100%" }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="fixed inset-0 z-50 bg-background"
+        className="fixed inset-0 z-50 bg-white"
       >
         {/* Desktop Header - Sticky com fundo branco */}
         <header className="hidden lg:flex items-center justify-between px-6 py-4 border-b border-border bg-white sticky top-0 z-20">
