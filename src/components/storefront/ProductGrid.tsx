@@ -1,9 +1,11 @@
-// Product Grid - Estilo Cards com Badges Coloridas
+// Product Grid - Estilo Cards com Badges Coloridas e Favoritos
 import { formatCurrency } from "@/lib/formatters";
 import { motion } from "framer-motion";
-import { Flame, Settings2, Star, Tag, AlertTriangle } from "lucide-react";
-import { useState, useRef } from "react";
+import { Settings2, Tag, AlertTriangle } from "lucide-react";
+import { useState, useRef, useMemo, useCallback } from "react";
 import { OptimizedImage } from "@/components/ui/optimized-image";
+import { FavoriteButton } from "./FavoriteButton";
+import { useFavorites } from "@/hooks/useFavorites";
 
 interface Product {
   id: string;
@@ -24,6 +26,9 @@ interface ProductGridProps {
   products: Product[];
   onProductClick: (product: Product) => void;
   updatedProductIds?: Set<string>;
+  storeId?: string;
+  showFavorites?: boolean;
+  filterFavoritesOnly?: boolean;
 }
 
 // Get badge for product - prioritize promo badge for items with active promotions
@@ -46,38 +51,56 @@ const getBadgeForProduct = (product: Product, index: number): { label: string; c
   return null;
 };
 
-export default function ProductGrid({ products, onProductClick, updatedProductIds }: ProductGridProps) {
+export default function ProductGrid({ 
+  products, 
+  onProductClick, 
+  updatedProductIds,
+  storeId,
+  showFavorites = true,
+  filterFavoritesOnly = false,
+}: ProductGridProps) {
   const [pressedId, setPressedId] = useState<string | null>(null);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { isFavorite, toggleFavorite } = useFavorites(storeId);
 
-  if (products.length === 0) {
-    return (
-      <div className="p-8 text-center">
-        <div className="text-5xl mb-3">😔</div>
-        <p className="text-lg font-medium text-gray-900">Nada encontrado</p>
-        <p className="text-gray-500 text-sm">Tente outra categoria</p>
-      </div>
-    );
-  }
+  // Filter products if showing favorites only
+  const displayProducts = useMemo(() => {
+    if (!filterFavoritesOnly) return products;
+    return products.filter(p => isFavorite(p.id));
+  }, [products, filterFavoritesOnly, isFavorite]);
 
-  const handleTouchStart = (id: string) => {
+  const handleTouchStart = useCallback((id: string) => {
     longPressTimer.current = setTimeout(() => {
       setPressedId(id);
     }, 300);
-  };
+  }, []);
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = useCallback(() => {
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
     }
     setPressedId(null);
-  };
+  }, []);
+
+  if (displayProducts.length === 0) {
+    return (
+      <div className="p-8 text-center">
+        <div className="text-5xl mb-3">{filterFavoritesOnly ? "💔" : "😔"}</div>
+        <p className="text-lg font-medium text-gray-900">
+          {filterFavoritesOnly ? "Nenhum favorito ainda" : "Nada encontrado"}
+        </p>
+        <p className="text-gray-500 text-sm">
+          {filterFavoritesOnly ? "Toque no ❤️ para adicionar favoritos" : "Tente outra categoria"}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="px-3 sm:px-4 pb-6">
       {/* Grid de produtos - 2 colunas mobile, 3 desktop */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-        {products.map((product, index) => {
+        {displayProducts.map((product, index) => {
           const hasPromo = product.promotional_price !== null && product.promotional_price < product.price;
           const displayPrice = hasPromo ? product.promotional_price! : product.price;
           const isPressed = pressedId === product.id;
@@ -138,6 +161,20 @@ export default function ProductGrid({ products, onProductClick, updatedProductId
                     priority={index < 6}
                   />
 
+                  {/* Favorite Button - Top Right */}
+                  {showFavorites && !isVirtual && (
+                    <div 
+                      className="absolute top-2 right-2 z-10"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <FavoriteButton
+                        isFavorite={isFavorite(product.id)}
+                        onToggle={() => toggleFavorite(product.id)}
+                        size="sm"
+                      />
+                    </div>
+                  )}
+
                   {/* Badge - Top Left */}
                   {badge && (
                     <div className={`absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold ${badge.color} shadow-sm`}>
@@ -147,8 +184,16 @@ export default function ProductGrid({ products, onProductClick, updatedProductId
                   )}
 
                   {/* Virtual Product Badge */}
-                  {isVirtual && (
+                  {isVirtual && !showFavorites && (
                     <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-primary text-primary-foreground shadow">
+                      <Settings2 className="w-3 h-3" />
+                      Montar
+                    </div>
+                  )}
+                  
+                  {/* Virtual Product Badge - Bottom Left when favorites shown */}
+                  {isVirtual && showFavorites && (
+                    <div className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-primary text-primary-foreground shadow">
                       <Settings2 className="w-3 h-3" />
                       Montar
                     </div>

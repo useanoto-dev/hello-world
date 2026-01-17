@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/formatters";
 import { 
   ArrowLeft, MapPin, CreditCard, ShoppingBag, Truck, Store, 
-  UtensilsCrossed, Check, TicketPercent, X, Loader2, CheckCircle, AlertCircle, Clock
+  UtensilsCrossed, TicketPercent, X, Loader2, CheckCircle, AlertCircle, Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -45,7 +45,7 @@ const serviceLabels = {
 export default function CheckoutSummary() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { incompleteOrder, clearCart, clearIncompleteOrder, updateIncompleteOrder } = useCart();
+  const { incompleteOrder, clearCart, clearIncompleteOrder, updateIncompleteOrder, validateCartStock } = useCart();
   const { isOpen: isStoreOpen, nextOpeningTime } = useStoreStatus();
   const [observations, setObservations] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -255,6 +255,12 @@ export default function CheckoutSummary() {
     if (!isMinOrderMet) {
       toast.error(`Pedido mínimo de ${formatCurrency(minOrderValue)}`);
       return;
+    }
+
+    // Validate stock before submitting
+    const stockValidation = await validateCartStock();
+    if (!stockValidation.valid) {
+      return; // Toast already shown by validateCartStock
     }
 
     setIsSubmitting(true);
@@ -934,13 +940,11 @@ export default function CheckoutSummary() {
             <span className="text-primary">{formatCurrency(total)}</span>
           </div>
           
-          {/* Minimum Order Warning */}
-          {!isMinOrderMet && minOrderValue > 0 && (
-            <div className="flex items-center gap-2 p-3 mt-3 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive text-sm">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              <span>Pedido mínimo de {formatCurrency(minOrderValue)}. Faltam {formatCurrency(minOrderValue - subtotal)}.</span>
-            </div>
-          )}
+          {/* Minimum Order Warning - Using MinOrderCompactBanner */}
+          <MinOrderCompactBanner 
+            minOrderValue={minOrderValue}
+            currentTotal={subtotal}
+          />
         </motion.section>
       </div>
 
