@@ -779,7 +779,7 @@ export default function DashboardLayout() {
           </AlertDialog>
 
           {/* Menu - Scrollable */}
-          <nav className="flex-1 p-1.5 space-y-0.5 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-[#FEDE01]">
+          <nav className="flex-1 p-1.5 space-y-0.5 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-[#FFBE00]">
             {menuItems.map(item => (
               <NavItem key={item.path} item={item} />
             ))}
@@ -790,7 +790,7 @@ export default function DashboardLayout() {
             className={cn(
               "p-1.5 space-y-0.5 flex-shrink-0 overflow-hidden",
               sidebarCollapsed && "flex flex-col items-center",
-              "border-t border-[#e5c801]"
+              "border-t border-[#e5a800]"
             )}
           >
             {/* Theme Toggle */}
@@ -814,7 +814,7 @@ export default function DashboardLayout() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(
-                      "flex items-center gap-2 text-xs text-gray-900 rounded-lg hover:bg-[#e5c801]",
+                      "flex items-center gap-2 text-xs text-gray-900 rounded-lg hover:bg-[#e5a800]",
                       sidebarCollapsed ? "p-1.5 justify-center" : "px-2.5 py-1.5"
                     )}
                   >
@@ -844,7 +844,7 @@ export default function DashboardLayout() {
                 <button
                   onClick={handleLogout}
                     className={cn(
-                      "flex items-center gap-2 text-xs text-red-600 w-full rounded-lg hover:bg-[#e5c801]",
+                      "flex items-center gap-2 text-xs text-red-600 w-full rounded-lg hover:bg-[#e5a800]",
                       sidebarCollapsed ? "p-1.5 justify-center" : "px-2.5 py-1.5"
                     )}
                 >
