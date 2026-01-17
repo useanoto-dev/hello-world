@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { OrderSuccessAnimation } from "@/components/checkout/OrderSuccessAnimation";
 import { LoyaltyRedemption } from "@/components/checkout/LoyaltyRedemption";
+import { MinOrderCompactBanner } from "@/components/checkout/MinOrderBanner";
 
 interface AppliedReward {
   rewardId: string;
