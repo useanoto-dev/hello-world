@@ -439,9 +439,9 @@ export function PizzaFlavorSelectionDrawer({
             <div className="px-4 py-4 lg:max-w-2xl lg:mx-auto lg:px-8 lg:py-8">
               
               {/* Desktop Product Hero - Horizontal layout */}
-              <div className="hidden lg:flex gap-5 mb-6">
-                {/* Product Image */}
-                <div className="w-40 h-28 rounded-xl overflow-hidden flex-shrink-0">
+              <div className="hidden lg:flex gap-6 mb-6 items-start">
+                {/* Product Image - Square with rounded corners */}
+                <div className="w-44 h-44 rounded-2xl overflow-hidden flex-shrink-0">
                   {sizeImageUrl ? (
                     <img 
                       src={sizeImageUrl} 
@@ -449,23 +449,23 @@ export function PizzaFlavorSelectionDrawer({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-200 rounded-xl">
-                      <span className="text-4xl">🍕</span>
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-200">
+                      <span className="text-5xl">🍕</span>
                     </div>
                   )}
                 </div>
                 
                 {/* Product Info */}
-                <div className="flex-1 min-w-0 py-1">
-                  <h1 className="text-lg font-bold text-foreground leading-tight uppercase">
+                <div className="flex-1 min-w-0 pt-2">
+                  <h1 className="text-xl font-bold text-foreground leading-tight uppercase">
                     Pizza {sizeName}
                   </h1>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-base font-bold text-red-500">
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-lg font-bold text-foreground">
                       {formatCurrency(basePrice)}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1.5">
+                  <p className="text-sm text-muted-foreground mt-2">
                     Escolha até {maxFlavors} {maxFlavors === 1 ? 'sabor' : 'sabores'} para sua pizza
                   </p>
                 </div>
