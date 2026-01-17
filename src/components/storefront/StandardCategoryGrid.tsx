@@ -205,7 +205,7 @@ export function StandardCategoryGrid({
     if (sizes && sizes.length > 0) {
       return (
         <div className="px-3 sm:px-4 lg:px-6 pb-6">
-        <div className={displayMode === "list" ? "grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5" : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5"}>
+        <div className={displayMode === "list" ? "flex flex-col lg:grid lg:grid-cols-2 lg:gap-x-4" : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5"}>
             {sizes.map((size, index) => {
               const badge = getBadgeForIndex(index);
               const quantity = getQuantity(size.id);
@@ -227,30 +227,31 @@ export function StandardCategoryGrid({
                     }, size, size.base_price, allowQuantitySelector ? quantity : 1)}
                     className="cursor-pointer"
                   >
-                    <div className="flex gap-4 py-4 border-b border-border hover:bg-muted/30 transition-colors">
+                    {/* Mobile: só linha divisória / Desktop: card com borda fina */}
+                    <div className="flex items-start gap-3 py-3 border-b border-border/60 lg:border lg:rounded-md lg:p-4 lg:my-2 hover:bg-muted/20 transition-colors">
                       {/* Info - Left side */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-2">
+                        <h3 className="font-bold text-foreground text-xs lg:text-sm uppercase leading-tight line-clamp-2">
                           {size.name}
                         </h3>
                         {size.description && (
-                          <p className="text-muted-foreground text-xs leading-relaxed mt-1 line-clamp-2">
+                          <p className="text-muted-foreground text-[11px] lg:text-xs leading-relaxed mt-0.5 lg:mt-1 line-clamp-2">
                             {size.description}
                           </p>
                         )}
-                        <p className="text-sm font-semibold text-foreground mt-2">
+                        <p className="text-xs lg:text-sm font-semibold text-foreground mt-1 lg:mt-2">
                           {formatCurrency(size.base_price)}
                         </p>
                       </div>
 
                       {/* Image - Right side */}
-                      <div className="relative w-24 h-24 lg:w-28 lg:h-28 rounded-lg overflow-hidden bg-muted shrink-0">
+                      <div className="relative w-20 h-20 lg:w-24 lg:h-24 rounded-md overflow-hidden bg-muted shrink-0">
                         <OptimizedImage
                           src={size.image_url}
                           alt={size.name}
                           aspectRatio="auto"
                           className="w-full h-full object-cover"
-                          fallbackIcon={<span className="text-2xl opacity-50">🍽️</span>}
+                          fallbackIcon={<span className="text-xl lg:text-2xl opacity-50">🍽️</span>}
                         />
                       </div>
                     </div>
@@ -386,7 +387,7 @@ export function StandardCategoryGrid({
       )}
 
       {/* Items grid/list */}
-      <div className={displayMode === "list" ? "grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5" : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5"}>
+      <div className={displayMode === "list" ? "flex flex-col lg:grid lg:grid-cols-2 lg:gap-x-4" : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5"}>
         {items.map((item, index) => {
           const selectedSize = sizes?.find(s => s.id === effectiveSize);
           const itemPrice = priceMap.get(item.id)?.get(effectiveSize || '');
@@ -404,33 +405,34 @@ export function StandardCategoryGrid({
                 onClick={() => handleItemClick(item)}
                 className="cursor-pointer"
               >
-                <div className="flex gap-4 py-4 border-b border-border hover:bg-muted/30 transition-colors">
+                {/* Mobile: só linha divisória / Desktop: card com borda fina */}
+                <div className="flex items-start gap-3 py-3 border-b border-border/60 lg:border lg:rounded-md lg:p-4 lg:my-2 hover:bg-muted/20 transition-colors">
                   {/* Info - Left side */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-2">
+                    <h3 className="font-bold text-foreground text-xs lg:text-sm uppercase leading-tight line-clamp-2">
                       {item.name}
                       {item.is_premium && (
-                        <Crown className="w-3.5 h-3.5 inline-block ml-1.5 text-amber-500" />
+                        <Crown className="w-3 h-3 lg:w-3.5 lg:h-3.5 inline-block ml-1 lg:ml-1.5 text-amber-500" />
                       )}
                     </h3>
                     {item.description && (
-                      <p className="text-muted-foreground text-xs leading-relaxed mt-1 line-clamp-2">
+                      <p className="text-muted-foreground text-[11px] lg:text-xs leading-relaxed mt-0.5 lg:mt-1 line-clamp-2">
                         {item.description}
                       </p>
                     )}
-                    <p className="text-sm font-semibold text-foreground mt-2">
+                    <p className="text-xs lg:text-sm font-semibold text-foreground mt-1 lg:mt-2">
                       {formatCurrency(displayPrice)}
                     </p>
                   </div>
 
                   {/* Image - Right side */}
-                  <div className="relative w-24 h-24 lg:w-28 lg:h-28 rounded-lg overflow-hidden bg-muted shrink-0">
+                  <div className="relative w-20 h-20 lg:w-24 lg:h-24 rounded-md overflow-hidden bg-muted shrink-0">
                     <OptimizedImage
                       src={item.image_url}
                       alt={item.name}
                       aspectRatio="auto"
                       className="w-full h-full object-cover"
-                      fallbackIcon={<span className="text-2xl opacity-50">🍽️</span>}
+                      fallbackIcon={<span className="text-xl lg:text-2xl opacity-50">🍽️</span>}
                     />
                   </div>
                 </div>
