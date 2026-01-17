@@ -83,7 +83,8 @@ const allMenuItems: MenuItem[] = [
     showAlways: true,
     allowedRoles: ['admin'],
     subItems: [
-      { icon: Workflow, label: "Fluxos", path: "/dashboard/flows" }
+      { icon: Workflow, label: "Fluxos", path: "/dashboard/flows" },
+      { icon: Image, label: "Modais", path: "/dashboard/menu-images" }
     ]
   },
   { icon: Warehouse, label: "Estoque", path: "/dashboard/inventory", showAlways: true, allowedRoles: ['admin'] },
