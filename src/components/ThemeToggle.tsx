@@ -24,13 +24,16 @@ export function ThemeToggle({ variant = "default", collapsed = false }: ThemeTog
       <button
         onClick={toggleTheme}
         className={cn(
-          "group relative flex items-center gap-2 rounded-md",
-          "text-gray-900",
-          collapsed ? "p-1.5 justify-center" : "px-2.5 py-1.5 w-full"
+          "group relative flex items-center gap-3 rounded-lg transition-all duration-200",
+          "text-gray-800 hover:bg-black/5",
+          collapsed ? "p-2 justify-center" : "px-3 py-2.5 w-full"
         )}
         aria-label={isDark ? "Ativar modo claro" : "Ativar modo escuro"}
       >
-        <div className="relative w-4 h-4 flex items-center justify-center">
+        <div className={cn(
+          "flex items-center justify-center rounded-lg bg-white/70 text-gray-700",
+          collapsed ? "w-9 h-9" : "w-8 h-8"
+        )}>
           <AnimatePresence mode="wait" initial={false}>
             {isDark ? (
               <motion.div
@@ -39,9 +42,8 @@ export function ThemeToggle({ variant = "default", collapsed = false }: ThemeTog
                 animate={{ rotate: 0, scale: 1, opacity: 1 }}
                 exit={{ rotate: 90, scale: 0, opacity: 0 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
-                className="absolute"
               >
-                <Sun className="w-4 h-4 text-gray-900" />
+                <Sun className="w-4 h-4" />
               </motion.div>
             ) : (
               <motion.div
@@ -50,9 +52,8 @@ export function ThemeToggle({ variant = "default", collapsed = false }: ThemeTog
                 animate={{ rotate: 0, scale: 1, opacity: 1 }}
                 exit={{ rotate: -90, scale: 0, opacity: 0 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
-                className="absolute"
               >
-                <Moon className="w-4 h-4 text-gray-900" />
+                <Moon className="w-4 h-4" />
               </motion.div>
             )}
           </AnimatePresence>
@@ -64,7 +65,7 @@ export function ThemeToggle({ variant = "default", collapsed = false }: ThemeTog
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -4 }}
               transition={{ duration: 0.15 }}
-              className="text-xs"
+              className="text-[13px] font-medium"
             >
               {isDark ? "Modo claro" : "Modo escuro"}
             </motion.span>
