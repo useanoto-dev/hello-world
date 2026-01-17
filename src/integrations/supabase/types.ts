@@ -2804,7 +2804,9 @@ export type Database = {
           max_products: number | null
           modal_type: string
           name: string
+          primary_redirect_category_id: string | null
           secondary_button_text: string | null
+          secondary_redirect_category_id: string | null
           show_quick_add: boolean
           store_id: string
           target_category_id: string | null
@@ -2824,7 +2826,9 @@ export type Database = {
           max_products?: number | null
           modal_type?: string
           name: string
+          primary_redirect_category_id?: string | null
           secondary_button_text?: string | null
+          secondary_redirect_category_id?: string | null
           show_quick_add?: boolean
           store_id: string
           target_category_id?: string | null
@@ -2844,7 +2848,9 @@ export type Database = {
           max_products?: number | null
           modal_type?: string
           name?: string
+          primary_redirect_category_id?: string | null
           secondary_button_text?: string | null
+          secondary_redirect_category_id?: string | null
           show_quick_add?: boolean
           store_id?: string
           target_category_id?: string | null
@@ -2853,6 +2859,20 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "upsell_modals_primary_redirect_category_id_fkey"
+            columns: ["primary_redirect_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "upsell_modals_secondary_redirect_category_id_fkey"
+            columns: ["secondary_redirect_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "upsell_modals_store_id_fkey"
             columns: ["store_id"]

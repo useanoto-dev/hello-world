@@ -150,6 +150,8 @@ export default function UpsellModalEditorPage() {
     title: "",
     description: "",
     target_category_id: "",
+    primary_redirect_category_id: "",
+    secondary_redirect_category_id: "",
     is_active: true,
     show_quick_add: true,
     max_products: 4,
@@ -200,6 +202,8 @@ export default function UpsellModalEditorPage() {
         title: data.title,
         description: data.description || "",
         target_category_id: data.target_category_id || "",
+        primary_redirect_category_id: data.primary_redirect_category_id || "",
+        secondary_redirect_category_id: data.secondary_redirect_category_id || "",
         is_active: data.is_active,
         show_quick_add: data.show_quick_add,
         max_products: data.max_products,
@@ -288,6 +292,8 @@ export default function UpsellModalEditorPage() {
         modal_type: selectedTemplate,
         trigger_category_id: selectedCategories[0] || null,
         target_category_id: formData.target_category_id || null,
+        primary_redirect_category_id: formData.primary_redirect_category_id || null,
+        secondary_redirect_category_id: formData.secondary_redirect_category_id || null,
         title: formData.title.trim(),
         description: formData.description.trim() || null,
         is_active: formData.is_active,
@@ -564,6 +570,54 @@ export default function UpsellModalEditorPage() {
               onChange={(e) => setFormData({ ...formData, secondary_button_text: e.target.value })}
               className="h-8 text-sm"
             />
+          </div>
+
+          {/* Primary Button Redirect */}
+          <div className="space-y-1">
+            <Label className="text-xs font-medium">Ao clicar no botão principal, ir para:</Label>
+            <Select
+              value={formData.primary_redirect_category_id || "none"}
+              onValueChange={(v) => setFormData({ ...formData, primary_redirect_category_id: v === "none" ? "" : v })}
+            >
+              <SelectTrigger className="h-8 text-sm">
+                <SelectValue placeholder="Selecione uma categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">📋 Manter no modal</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    <span className="flex items-center gap-2">
+                      <span>{cat.icon || "📦"}</span>
+                      {cat.name}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Secondary Button Redirect */}
+          <div className="space-y-1">
+            <Label className="text-xs font-medium">Ao clicar no botão secundário, ir para:</Label>
+            <Select
+              value={formData.secondary_redirect_category_id || "close"}
+              onValueChange={(v) => setFormData({ ...formData, secondary_redirect_category_id: v === "close" ? "" : v })}
+            >
+              <SelectTrigger className="h-8 text-sm">
+                <SelectValue placeholder="Fechar modal" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="close">✕ Fechar modal</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    <span className="flex items-center gap-2">
+                      <span>{cat.icon || "📦"}</span>
+                      {cat.name}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
