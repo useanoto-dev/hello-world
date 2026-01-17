@@ -1434,12 +1434,18 @@ export default function StorefrontPage() {
       )}
 
       {/* Simple Product Detail Drawer (for products without customization) */}
-      {simpleProduct && (
+      {simpleProduct && store && (
         <ProductDetailDrawer
           product={simpleProduct}
           categoryName={simpleProductCategoryName}
+          storeId={store.id}
           isOpen={showProductDetailDrawer}
           onClose={() => {
+            setShowProductDetailDrawer(false);
+            setSimpleProduct(null);
+          }}
+          onNavigateToCategory={(categoryId) => {
+            setActiveCategory(categoryId);
             setShowProductDetailDrawer(false);
             setSimpleProduct(null);
           }}
