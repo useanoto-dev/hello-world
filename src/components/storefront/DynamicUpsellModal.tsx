@@ -189,14 +189,14 @@ export default function DynamicUpsellModal({
 
   return (
     <AnimatePresence>
-      {/* Backdrop overlay - sits on top of everything */}
+      {/* Backdrop overlay - blocks interaction with content behind */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
         className="fixed inset-0 z-[100] bg-black/50"
-        onClick={onClose}
+        // No onClick - user must use the close button
       />
       
       {/* Bottom sheet - slides up from bottom */}
