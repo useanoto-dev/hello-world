@@ -28,7 +28,7 @@ import { LoyaltyWidget } from "@/components/storefront/LoyaltyWidget";
 import { PizzaSizeGrid } from "@/components/storefront/PizzaSizeGrid";
 import { PizzaFlavorSelectionDrawer } from "@/components/storefront/PizzaFlavorSelectionDrawer";
 import { PizzaDoughSelectionDrawer } from "@/components/storefront/PizzaDoughSelectionDrawer";
-
+import { useFavorites } from "@/hooks/useFavorites";
 import { parseSchedule, isStoreOpenNow, getNextOpeningTime } from "@/lib/scheduleUtils";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
@@ -391,9 +391,9 @@ export default function StorefrontPage() {
   const [priceFilter, setPriceFilter] = useState<PriceFilter>("all");
   const [sortOption, setSortOption] = useState<SortOption>("default");
   const [showPromoOnly, setShowPromoOnly] = useState(false);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
   const [enableMorphAnimation, setEnableMorphAnimation] = useState(true);
-  
   
   // Initialize active tab from localStorage
   const [activeTab, setActiveTab] = useState<NavigationTab>(() => {
@@ -483,6 +483,9 @@ export default function StorefrontPage() {
   });
 
   const queryClient = useQueryClient();
+  
+  // Favorites hook - needs to be after store is loaded
+  const { favoritesCount } = useFavorites(store?.id);
 
   // Track products with updated prices for visual effect
   const [updatedProductIds, setUpdatedProductIds] = useState<Set<string>>(new Set());
@@ -1237,7 +1240,7 @@ export default function StorefrontPage() {
                     
                     <ProductSearch onSearch={handleSearch} />
                     
-                    {promoCount > 0 && (
+                    {(promoCount > 0 || favoritesCount > 0) && (
                       <ProductFilters
                         priceFilter={priceFilter}
                         onPriceChange={setPriceFilter}
@@ -1246,6 +1249,9 @@ export default function StorefrontPage() {
                         showPromoOnly={showPromoOnly}
                         onPromoChange={setShowPromoOnly}
                         promoCount={promoCount}
+                        showFavoritesOnly={showFavoritesOnly}
+                        onFavoritesChange={setShowFavoritesOnly}
+                        favoritesCount={favoritesCount}
                       />
                     )}
                     
@@ -1273,6 +1279,9 @@ export default function StorefrontPage() {
                         products={filteredProducts}
                         onProductClick={handleProductClick}
                         updatedProductIds={updatedProductIds}
+                        storeId={store.id}
+                        showFavorites={true}
+                        filterFavoritesOnly={showFavoritesOnly}
                       />
                     )}
                   </motion.div>
