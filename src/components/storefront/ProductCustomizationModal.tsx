@@ -399,44 +399,44 @@ export default function ProductCustomizationModal({
           </div>
         </header>
 
-        {/* Mobile Hero Image Section - Only visible on mobile */}
-        <div className="relative lg:hidden">
-          <div className="relative h-64 sm:h-72 bg-gray-900">
-            {product.image_url ? (
-              <img 
-                src={product.image_url} 
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                <span className="text-6xl">🍔</span>
+        {/* Content - includes mobile hero image so it scrolls together */}
+        <main className="flex-1 overflow-y-auto pb-24 lg:pb-28">
+          {/* Mobile Hero Image Section - Only visible on mobile, scrolls with content */}
+          <div className="relative lg:hidden">
+            <div className="relative h-64 sm:h-72 bg-gray-900">
+              {product.image_url ? (
+                <img 
+                  src={product.image_url} 
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                  <span className="text-6xl">🍔</span>
+                </div>
+              )}
+              
+              <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white via-white/80 to-transparent" />
+              
+              <button 
+                onClick={onClose}
+                className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5 text-gray-700" />
+              </button>
+              
+              <button 
+                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
+              >
+                <Share2 className="w-5 h-5 text-gray-700" />
+              </button>
+              
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
+                <ChevronDown className="w-6 h-6 text-muted-foreground animate-bounce" />
               </div>
-            )}
-            
-            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background via-background/80 to-transparent" />
-            
-            <button 
-              onClick={onClose}
-              className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-700" />
-            </button>
-            
-            <button 
-              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
-            >
-              <Share2 className="w-5 h-5 text-gray-700" />
-            </button>
-            
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
-              <ChevronDown className="w-6 h-6 text-muted-foreground animate-bounce" />
             </div>
           </div>
-        </div>
 
-        {/* Content */}
-        <main className="flex-1 overflow-y-auto pb-24 lg:pb-28">
           <div className="px-4 py-4 lg:max-w-2xl lg:mx-auto lg:px-8 lg:py-8">
             
             {/* Desktop Product Hero - Horizontal layout */}
