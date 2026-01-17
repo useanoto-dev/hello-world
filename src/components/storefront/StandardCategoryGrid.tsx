@@ -85,8 +85,9 @@ export function StandardCategoryGrid({
     enabled: !!categoryId,
   });
 
-  const displayMode = propDisplayMode ?? categorySettings?.display_mode ?? "cards";
-  const allowQuantitySelector = propAllowQuantity ?? categorySettings?.allow_quantity_selector ?? true;
+  // Use prop if explicitly provided (including false), otherwise use category settings
+  const displayMode = propDisplayMode !== undefined ? propDisplayMode : (categorySettings?.display_mode ?? "cards");
+  const allowQuantitySelector = propAllowQuantity !== undefined ? propAllowQuantity : (categorySettings?.allow_quantity_selector !== false);
 
   // Fetch sizes for this category
   const { data: sizes, isLoading: sizesLoading } = useQuery({
