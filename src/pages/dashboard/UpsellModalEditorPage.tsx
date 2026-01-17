@@ -686,7 +686,7 @@ export default function UpsellModalEditorPage() {
               {editId ? "Editar Modal" : "Novo Modal"}
             </h1>
             <p className="text-xs text-muted-foreground">
-              Modais › {editId ? "Editar" : "Criar novo"}
+              Escolha o modelo
             </p>
           </div>
         </div>
