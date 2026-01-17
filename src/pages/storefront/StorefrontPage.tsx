@@ -1403,6 +1403,11 @@ export default function StorefrontPage() {
           storeId={store.id}
           triggerCategoryId={upsellTriggerCategoryId}
           onClose={handleUpsellClose}
+          onNavigateToCategory={(categoryId) => {
+            setActiveCategory(categoryId);
+            // Scroll to top when navigating to category
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
         />
       )}
       {/* Pizza Flavor Selection Drawer */}
@@ -1452,6 +1457,10 @@ export default function StorefrontPage() {
           onClose={() => {
             setShowProductDetailDrawer(false);
             setSimpleProduct(null);
+          }}
+          onNavigateToCategory={(categoryId) => {
+            setActiveCategory(categoryId);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
         />
       )}

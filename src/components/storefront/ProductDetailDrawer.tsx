@@ -26,6 +26,7 @@ interface Props {
   storeId: string;
   isOpen: boolean;
   onClose: () => void;
+  onNavigateToCategory?: (categoryId: string) => void;
 }
 
 export default function ProductDetailDrawer({
@@ -34,6 +35,7 @@ export default function ProductDetailDrawer({
   storeId,
   isOpen,
   onClose,
+  onNavigateToCategory,
 }: Props) {
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState("");
@@ -335,6 +337,7 @@ export default function ProductDetailDrawer({
             storeId={storeId}
             triggerCategoryId={product.category_id}
             onClose={handleUpsellClose}
+            onNavigateToCategory={onNavigateToCategory}
           />
         )}
       </motion.div>
