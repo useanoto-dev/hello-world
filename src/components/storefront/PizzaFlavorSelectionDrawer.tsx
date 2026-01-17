@@ -3,8 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/formatters";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Check, Star } from "lucide-react";
+import { ArrowLeft, Check, Star, ChevronDown, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { SrPizzaButton } from "./SrPizzaButton";
@@ -56,8 +57,9 @@ interface PizzaFlavorSelectionDrawerProps {
   maxFlavors: number;
   storeId: string;
   basePrice: number;
+  sizeImageUrl?: string | null;
   flowSteps?: Record<string, FlowStepConfig>;
-  onComplete: (flavors: SelectedFlavor[], totalPrice: number, edge?: EdgeWithPrice | null, drink?: Drink | null) => void;
+  onComplete: (flavors: SelectedFlavor[], totalPrice: number, edge?: EdgeWithPrice | null, drink?: Drink | null, notes?: string) => void;
 }
 
 async function fetchFlavorsWithPrices(categoryId: string, sizeId: string) {
@@ -162,6 +164,7 @@ export function PizzaFlavorSelectionDrawer({
   maxFlavors,
   storeId,
   basePrice,
+  sizeImageUrl,
   flowSteps,
   onComplete,
 }: PizzaFlavorSelectionDrawerProps) {
@@ -169,6 +172,7 @@ export function PizzaFlavorSelectionDrawer({
   const [currentStep, setCurrentStep] = useState<FlowStep>('flavors');
   const [selectedEdge, setSelectedEdge] = useState<EdgeWithPrice | null>(null);
   const [calculatedPrice, setCalculatedPrice] = useState(0);
+  const [notes, setNotes] = useState("");
 
   const { data: flavors = [], isLoading } = useQuery({
     queryKey: ["pizza-flavors", categoryId, sizeId],
@@ -206,6 +210,7 @@ export function PizzaFlavorSelectionDrawer({
       setCurrentStep('flavors');
       setSelectedEdge(null);
       setCalculatedPrice(0);
+      setNotes("");
     }
   }, [open]);
 
@@ -270,74 +275,76 @@ export function PizzaFlavorSelectionDrawer({
     setCalculatedPrice(totalPrice);
     if (isStepEnabled('edge') && edges.length > 0) setCurrentStep('edge');
     else if (isStepEnabled('drink') && drinks.length > 0) setCurrentStep('drink');
-    else onComplete(selectedFlavors, totalPrice, null, null);
+    else onComplete(selectedFlavors, totalPrice, null, null, notes.trim() || undefined);
   };
 
   const handleEdgeContinue = () => {
     const nextStep = getNextStep('edge');
-    if (nextStep === 'complete') onComplete(selectedFlavors, calculatedPrice, selectedEdge, null);
+    if (nextStep === 'complete') onComplete(selectedFlavors, calculatedPrice, selectedEdge, null, notes.trim() || undefined);
     else setCurrentStep(nextStep);
   };
 
   const handleDrinkSelect = (drink: Drink) => {
-    onComplete(selectedFlavors, calculatedPrice, selectedEdge, drink);
+    onComplete(selectedFlavors, calculatedPrice, selectedEdge, drink, notes.trim() || undefined);
   };
 
   const handleDrinkSkip = () => {
-    onComplete(selectedFlavors, calculatedPrice, selectedEdge, null);
+    onComplete(selectedFlavors, calculatedPrice, selectedEdge, null, notes.trim() || undefined);
   };
 
-  // Card for traditional flavors - COMPACT
+  // Card for traditional flavors
   const TraditionalCard = ({ flavor }: { flavor: FlavorWithPrice }) => {
     const isSelected = selectedFlavors.some(f => f.id === flavor.id);
     return (
       <button
         onClick={() => handleSelectFlavor(flavor)}
         className={cn(
-          "text-left px-3 py-2 rounded-lg border transition-all duration-150 w-full",
+          "text-left px-3 py-2.5 rounded-xl border transition-all duration-150 w-full",
           isSelected 
-            ? "bg-amber-50 border-amber-300" 
+            ? "bg-amber-50 border-amber-300 shadow-sm" 
             : "bg-white border-gray-100 hover:border-gray-200"
         )}
       >
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <p className="font-medium text-sm text-gray-900 leading-tight">{flavor.name}</p>
+            <p className="font-medium text-sm text-foreground leading-tight">{flavor.name}</p>
             {flavor.description && (
-              <p className="text-xs text-gray-500 leading-snug mt-0.5 line-clamp-2">
+              <p className="text-xs text-muted-foreground leading-snug mt-0.5 line-clamp-2">
                 {flavor.description}
               </p>
             )}
           </div>
           {isSelected && (
-            <Check className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" strokeWidth={2.5} />
+            <div className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Check className="w-3 h-3 text-white" strokeWidth={3} />
+            </div>
           )}
         </div>
       </button>
     );
   };
 
-  // Card for special/premium flavors - COMPACT
+  // Card for special/premium flavors
   const SpecialCard = ({ flavor }: { flavor: FlavorWithPrice }) => {
     const isSelected = selectedFlavors.some(f => f.id === flavor.id);
     return (
       <button
         onClick={() => handleSelectFlavor(flavor)}
         className={cn(
-          "text-left px-3 py-2 rounded-lg border transition-all duration-150 w-full",
+          "text-left px-3 py-2.5 rounded-xl border transition-all duration-150 w-full",
           isSelected 
-            ? "bg-amber-100 border-amber-400" 
+            ? "bg-amber-100 border-amber-400 shadow-sm" 
             : "bg-amber-50/60 border-amber-100 hover:border-amber-200"
         )}
       >
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <p className="font-medium text-sm text-gray-900 leading-tight">{flavor.name}</p>
+              <p className="font-medium text-sm text-foreground leading-tight">{flavor.name}</p>
               <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 flex-shrink-0" />
             </div>
             {flavor.description && (
-              <p className="text-xs text-gray-500 leading-snug mt-0.5 line-clamp-2">
+              <p className="text-xs text-muted-foreground leading-snug mt-0.5 line-clamp-2">
                 {flavor.description}
               </p>
             )}
@@ -346,7 +353,9 @@ export function PizzaFlavorSelectionDrawer({
             </p>
           </div>
           {isSelected && (
-            <Check className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" strokeWidth={2.5} />
+            <div className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Check className="w-3 h-3 text-white" strokeWidth={3} />
+            </div>
           )}
         </div>
       </button>
@@ -359,53 +368,116 @@ export function PizzaFlavorSelectionDrawer({
     <AnimatePresence mode="wait">
       {open && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 bg-gray-50 flex flex-col"
+          initial={{ opacity: 0, y: "100%" }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: "100%" }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          className="fixed inset-0 z-50 bg-background flex flex-col"
         >
-          {/* Header */}
-          <header className="flex-shrink-0 bg-white border-b border-gray-100">
-            <div className="max-w-5xl mx-auto px-4 h-12 flex items-center gap-2">
-              <button onClick={onClose} className="p-1 -ml-1 rounded-lg hover:bg-gray-100 transition-colors">
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
+          {/* Hero Image Section */}
+          <div className="relative flex-shrink-0">
+            <div className="relative h-56 sm:h-72 bg-gray-900">
+              {sizeImageUrl ? (
+                <img 
+                  src={sizeImageUrl} 
+                  alt={sizeName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-200">
+                  <span className="text-8xl">🍕</span>
+                </div>
+              )}
+              
+              {/* Gradient overlay at bottom */}
+              <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background via-background/80 to-transparent" />
+              
+              {/* Back button */}
+              <button 
+                onClick={onClose}
+                className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5 text-gray-700" />
               </button>
-              <span className="font-semibold text-base text-gray-900">{sizeName}</span>
+              
+              {/* Share button */}
+              <button 
+                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
+              >
+                <Share2 className="w-5 h-5 text-gray-700" />
+              </button>
+              
+              {/* Pull indicator */}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
+                <ChevronDown className="w-6 h-6 text-muted-foreground animate-bounce" />
+              </div>
             </div>
-          </header>
+          </div>
 
           {/* Content */}
-          <main className="flex-1 overflow-y-auto pb-16">
-            <div className="max-w-5xl mx-auto px-4 py-3 space-y-4">
-              {/* Sr Pizza */}
-              <SrPizzaButton flavors={flavors} onFlavorSelect={handleSrPizzaSelect} />
-
-              {/* Info Banner */}
-              <div className="bg-amber-50 border border-amber-100 rounded-xl py-2.5 px-4 text-center">
-                <p className="text-sm font-medium text-gray-700">
-                  Escolha até {maxFlavors} sabores.
+          <main className="flex-1 overflow-y-auto pb-32">
+            <div className="px-4 py-4">
+              {/* Product Info */}
+              <div className="mb-5">
+                <h1 className="text-2xl font-bold text-foreground leading-tight">
+                  Pizza {sizeName}
+                </h1>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xl font-bold text-amber-500">
+                    {formatCurrency(basePrice)}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Escolha até {maxFlavors} {maxFlavors === 1 ? 'sabor' : 'sabores'} para sua pizza
                 </p>
               </div>
 
+              {/* Sr Pizza */}
+              <SrPizzaButton flavors={flavors} onFlavorSelect={handleSrPizzaSelect} />
+
+              {/* Selected Flavors Badge */}
+              {selectedFlavors.length > 0 && (
+                <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl py-3 px-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-foreground">
+                      Sabores selecionados
+                    </span>
+                    <span className="text-sm font-bold text-amber-600">
+                      {selectedFlavors.length}/{maxFlavors}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {selectedFlavors.map((f) => (
+                      <span 
+                        key={f.id}
+                        className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full font-medium"
+                      >
+                        {f.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5">
-                  {Array.from({ length: 9 }).map((_, i) => (
-                    <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="h-14 bg-muted rounded-xl animate-pulse" />
                   ))}
                 </div>
               ) : flavors.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="text-3xl mb-1">🍕</p>
-                  <p className="text-[11px] text-gray-400">Nenhum sabor disponível</p>
+                  <p className="text-5xl mb-2">🍕</p>
+                  <p className="text-sm text-muted-foreground">Nenhum sabor disponível</p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="mt-6 space-y-5">
                   {salgadasTradicionais.length > 0 && (
                     <section>
-                      <h3 className="text-sm font-bold text-gray-800 mb-2 flex items-center gap-1.5">
+                      <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-1.5">
                         <span>🍕</span> Pizzas Salgadas Tradicionais
                       </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                         {salgadasTradicionais.map(f => <TraditionalCard key={f.id} flavor={f} />)}
                       </div>
                     </section>
@@ -413,10 +485,10 @@ export function PizzaFlavorSelectionDrawer({
 
                   {salgadasEspeciais.length > 0 && (
                     <section>
-                      <h3 className="text-sm font-bold text-gray-800 mb-2 flex items-center gap-1.5">
+                      <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-1.5">
                         <span>⭐</span> Pizzas Salgadas Especiais
                       </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                         {salgadasEspeciais.map(f => <SpecialCard key={f.id} flavor={f} />)}
                       </div>
                     </section>
@@ -424,10 +496,10 @@ export function PizzaFlavorSelectionDrawer({
 
                   {docesTradicionais.length > 0 && (
                     <section>
-                      <h3 className="text-sm font-bold text-gray-800 mb-2 flex items-center gap-1.5">
+                      <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-1.5">
                         <span>🍰</span> Pizzas Doces Tradicionais
                       </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                         {docesTradicionais.map(f => <TraditionalCard key={f.id} flavor={f} />)}
                       </div>
                     </section>
@@ -435,40 +507,63 @@ export function PizzaFlavorSelectionDrawer({
 
                   {docesEspeciais.length > 0 && (
                     <section>
-                      <h3 className="text-sm font-bold text-gray-800 mb-2 flex items-center gap-1.5">
+                      <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-1.5">
                         <span>⭐</span> Pizzas Doces Especiais
                       </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                         {docesEspeciais.map(f => <SpecialCard key={f.id} flavor={f} />)}
                       </div>
                     </section>
                   )}
                 </div>
               )}
+
+              {/* Observations */}
+              <div className="mt-6">
+                <label className="text-sm font-semibold text-foreground">
+                  Observações
+                </label>
+                <Textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Ex: Sem cebola, bem assada, etc."
+                  className="mt-2 min-h-[80px] resize-none border-border bg-muted/30"
+                />
+              </div>
             </div>
           </main>
 
-          {/* Footer */}
-          <AnimatePresence>
-            {selectedFlavors.length > 0 && (
-              <motion.footer
-                initial={{ y: 60, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 60, opacity: 0 }}
-                transition={{ type: "spring", damping: 25, stiffness: 400 }}
-                className="fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 p-3 z-10"
-              >
-                <div className="max-w-5xl mx-auto">
-                  <Button
-                    onClick={handleContinue}
-                    className="w-full h-10 text-[13px] font-semibold bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-sm"
-                  >
-                    Adicionar ao Carrinho ({selectedFlavors.length}/{maxFlavors} sabores)
-                  </Button>
-                </div>
-              </motion.footer>
-            )}
-          </AnimatePresence>
+          {/* Footer - Fixed bottom */}
+          <motion.footer
+            initial={{ y: 60, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2, type: "spring", damping: 25, stiffness: 400 }}
+            className="fixed bottom-0 inset-x-0 bg-background border-t border-border p-4 z-10"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <span className="text-sm text-muted-foreground">Total</span>
+                {selectedFlavors.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {selectedFlavors.length} {selectedFlavors.length === 1 ? 'sabor' : 'sabores'}
+                  </p>
+                )}
+              </div>
+              <span className="text-xl font-bold text-foreground">
+                {formatCurrency(totalPrice)}
+              </span>
+            </div>
+            <Button
+              onClick={handleContinue}
+              disabled={selectedFlavors.length === 0}
+              className="w-full h-12 text-base font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {selectedFlavors.length === 0 
+                ? `Selecione pelo menos 1 sabor`
+                : `Continuar`
+              }
+            </Button>
+          </motion.footer>
         </motion.div>
       )}
 
@@ -487,41 +582,41 @@ export function PizzaFlavorSelectionDrawer({
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.96 }}
-              className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-xs z-[60] bg-white rounded-2xl flex flex-col max-h-[70vh] shadow-xl"
+              className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-sm z-[60] bg-background rounded-2xl flex flex-col max-h-[70vh] shadow-xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="p-3 border-b border-gray-100">
-                <h3 className="text-[13px] font-semibold text-center text-gray-900">Escolha a Borda</h3>
+              <div className="p-4 border-b border-border">
+                <h3 className="text-base font-semibold text-center text-foreground">Escolha a Borda</h3>
               </div>
-              <div className="flex-1 overflow-y-auto p-2.5 space-y-1">
+              <div className="flex-1 overflow-y-auto p-3 space-y-2">
                 <button
                   onClick={() => setSelectedEdge(null)}
                   className={cn(
-                    "w-full flex items-center justify-between px-3 py-2 rounded-lg border text-[12px] transition-all",
-                    selectedEdge === null ? "bg-red-50 border-red-200" : "bg-white border-gray-100 hover:border-gray-200"
+                    "w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-all",
+                    selectedEdge === null ? "bg-amber-50 border-amber-300" : "bg-background border-border hover:border-muted-foreground/30"
                   )}
                 >
-                  <span className="font-medium text-gray-700">Sem Borda</span>
-                  <span className="text-[10px] text-gray-400">Grátis</span>
+                  <span className="font-medium text-foreground">Sem Borda</span>
+                  <span className="text-sm text-muted-foreground">Grátis</span>
                 </button>
                 {edges.map((edge) => (
                   <button
                     key={edge.id}
                     onClick={() => setSelectedEdge(edge)}
                     className={cn(
-                      "w-full flex items-center justify-between px-3 py-2 rounded-lg border text-[12px] transition-all",
-                      selectedEdge?.id === edge.id ? "bg-red-50 border-red-200" : "bg-white border-gray-100 hover:border-gray-200"
+                      "w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-all",
+                      selectedEdge?.id === edge.id ? "bg-amber-50 border-amber-300" : "bg-background border-border hover:border-muted-foreground/30"
                     )}
                   >
-                    <span className="font-medium text-gray-700">{edge.name}</span>
-                    <span className="text-[10px] font-medium text-red-500">
+                    <span className="font-medium text-foreground">{edge.name}</span>
+                    <span className="text-sm font-medium text-amber-600">
                       {edge.price > 0 ? `+${formatCurrency(edge.price)}` : 'Grátis'}
                     </span>
                   </button>
                 ))}
               </div>
-              <div className="p-2.5 border-t border-gray-100">
-                <Button onClick={handleEdgeContinue} className="w-full h-9 text-[12px] font-semibold bg-red-500 hover:bg-red-600 rounded-xl">
+              <div className="p-3 border-t border-border">
+                <Button onClick={handleEdgeContinue} className="w-full h-11 text-sm font-semibold bg-amber-500 hover:bg-amber-600 rounded-xl">
                   Continuar
                 </Button>
               </div>
@@ -546,40 +641,40 @@ export function PizzaFlavorSelectionDrawer({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ type: "spring", damping: 25, stiffness: 400 }}
-              className="relative w-full max-w-[280px] bg-white rounded-xl shadow-lg overflow-hidden"
+              className="relative w-full max-w-sm bg-background rounded-2xl shadow-xl overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="p-3 text-center">
-                <p className="text-xl mb-1">🥤</p>
-                <h3 className="text-[12px] font-semibold text-gray-900">Que tal uma bebida?</h3>
-                <p className="text-[9px] text-gray-400">Complete seu pedido!</p>
+              <div className="p-4 text-center">
+                <p className="text-3xl mb-1">🥤</p>
+                <h3 className="text-base font-semibold text-foreground">Que tal uma bebida?</h3>
+                <p className="text-sm text-muted-foreground">Complete seu pedido!</p>
               </div>
-              <div className="px-3 pb-2 max-h-[200px] overflow-y-auto">
+              <div className="px-4 pb-3 max-h-[250px] overflow-y-auto">
                 {drinks.length === 0 ? (
-                  <p className="text-center text-[10px] text-gray-400 py-4">Nenhuma bebida disponível</p>
+                  <p className="text-center text-sm text-muted-foreground py-6">Nenhuma bebida disponível</p>
                 ) : (
-                  <div className="grid grid-cols-3 gap-1.5">
+                  <div className="grid grid-cols-3 gap-2">
                     {drinks.map((drink) => {
                       const price = drink.promotional_price ?? drink.price;
                       return (
                         <button
                           key={drink.id}
                           onClick={() => handleDrinkSelect(drink)}
-                          className="flex flex-col rounded-lg overflow-hidden border border-gray-100 hover:border-red-200 transition-all bg-white"
+                          className="flex flex-col rounded-xl overflow-hidden border border-border hover:border-amber-300 transition-all bg-background"
                         >
-                          <div className="h-10 bg-gray-50 relative flex items-center justify-center">
+                          <div className="h-16 bg-muted relative flex items-center justify-center">
                             {drink.image_url ? (
                               <img src={drink.image_url} alt={drink.name} className="w-full h-full object-cover" />
                             ) : (
-                              <span className="text-sm">🥤</span>
+                              <span className="text-2xl">🥤</span>
                             )}
                             {drink.promotional_price && drink.promotional_price < drink.price && (
-                              <span className="absolute top-0 left-0 px-0.5 bg-red-500 text-white text-[6px] font-bold rounded-br">%</span>
+                              <span className="absolute top-0 left-0 px-1 bg-red-500 text-white text-[8px] font-bold rounded-br">%</span>
                             )}
                           </div>
-                          <div className="p-1 text-center">
-                            <p className="text-[8px] font-medium text-gray-700 line-clamp-1">{drink.name}</p>
-                            <p className="text-[8px] font-bold text-red-500">{formatCurrency(price)}</p>
+                          <div className="p-2 text-center">
+                            <p className="text-xs font-medium text-foreground line-clamp-1">{drink.name}</p>
+                            <p className="text-xs font-bold text-amber-600">{formatCurrency(price)}</p>
                           </div>
                         </button>
                       );
@@ -587,13 +682,13 @@ export function PizzaFlavorSelectionDrawer({
                   </div>
                 )}
               </div>
-              <div className="p-2.5 border-t border-gray-50 space-y-1.5">
-                <Button onClick={handleDrinkSkip} variant="outline" className="w-full h-7 text-[10px] font-medium border-gray-200 rounded-lg">
+              <div className="p-4 border-t border-border space-y-2">
+                <Button onClick={handleDrinkSkip} variant="outline" className="w-full h-10 text-sm font-medium rounded-xl">
                   Sem bebida
                 </Button>
                 <button
                   onClick={() => isStepEnabled('edge') && edges.length > 0 ? setCurrentStep('edge') : setCurrentStep('flavors')}
-                  className="w-full text-center text-[9px] text-gray-400 hover:text-gray-600"
+                  className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   ← Voltar
                 </button>

@@ -442,6 +442,7 @@ export default function StorefrontPage() {
     maxFlavors: number;
     categoryId: string;
     basePrice: number;
+    imageUrl: string | null;
   } | null>(null);
   const [selectedPizzaFlavors, setSelectedPizzaFlavors] = useState<{
     flavors: { id: string; name: string; price: number; surcharge: number; flavor_type: string }[];
@@ -882,7 +883,7 @@ export default function StorefrontPage() {
   }, []);
 
   // Pizza size selection handler
-  const handlePizzaSizeSelect = useCallback((sizeId: string, sizeName: string, maxFlavors: number, basePrice: number) => {
+  const handlePizzaSizeSelect = useCallback((sizeId: string, sizeName: string, maxFlavors: number, basePrice: number, imageUrl: string | null) => {
     if (!isStoreOpen) {
       toast.error("Estabelecimento fechado", {
         description: "Não é possível fazer pedidos no momento.",
@@ -897,6 +898,7 @@ export default function StorefrontPage() {
         maxFlavors,
         categoryId: activeCategoryData.id,
         basePrice,
+        imageUrl,
       });
       setShowPizzaFlavorDrawer(true);
     }
@@ -962,7 +964,8 @@ export default function StorefrontPage() {
     flavors: { id: string; name: string; price: number; surcharge: number; flavor_type: string }[], 
     totalPrice: number,
     edge?: { id: string; name: string; price: number } | null,
-    drink?: { id: string; name: string; price: number; promotional_price: number | null; image_url: string | null } | null
+    drink?: { id: string; name: string; price: number; promotional_price: number | null; image_url: string | null } | null,
+    notes?: string
   ) => {
     if (!selectedPizzaSize || !activeCategoryData) return;
 
@@ -975,6 +978,9 @@ export default function StorefrontPage() {
     const descriptionParts = [flavorNames];
     if (edge) {
       descriptionParts.push(`Borda: ${edge.name}`);
+    }
+    if (notes) {
+      descriptionParts.push(`Obs: ${notes}`);
     }
     
     // Add pizza to cart
@@ -1404,6 +1410,7 @@ export default function StorefrontPage() {
           maxFlavors={selectedPizzaSize.maxFlavors}
           storeId={store.id}
           basePrice={selectedPizzaSize.basePrice}
+          sizeImageUrl={selectedPizzaSize.imageUrl}
           flowSteps={content?.flowStepsData?.[selectedPizzaSize.categoryId]}
           onComplete={handlePizzaFlavorComplete}
         />
