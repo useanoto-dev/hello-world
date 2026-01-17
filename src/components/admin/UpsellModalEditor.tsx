@@ -212,17 +212,6 @@ export function UpsellModalEditor({
             )}
           </div>
 
-          {/* Name */}
-          <div className="space-y-1.5">
-            <Label htmlFor="name" className="text-xs">Nome do Modal</Label>
-            <Input
-              id="name"
-              placeholder="Ex: Bebidas após Pizza"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            />
-          </div>
-
           {/* Trigger Category */}
           <div className="space-y-1.5">
             <Label className="text-xs">Aparece após comprar de</Label>
@@ -341,20 +330,6 @@ export function UpsellModalEditor({
               </>
             )}
 
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-xs">Modal ativo</Label>
-                <p className="text-[10px] text-muted-foreground">
-                  Desative para pausar sem excluir
-                </p>
-              </div>
-              <Switch
-                checked={formData.is_active}
-                onCheckedChange={(checked) => 
-                  setFormData({ ...formData, is_active: checked })
-                }
-              />
-            </div>
           </div>
 
           {/* Info */}
