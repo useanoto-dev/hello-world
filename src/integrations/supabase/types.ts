@@ -2791,6 +2791,76 @@ export type Database = {
           },
         ]
       }
+      upsell_modals: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean
+          max_products: number | null
+          name: string
+          show_quick_add: boolean
+          store_id: string
+          target_category_id: string | null
+          title: string
+          trigger_category_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          max_products?: number | null
+          name: string
+          show_quick_add?: boolean
+          store_id: string
+          target_category_id?: string | null
+          title?: string
+          trigger_category_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          max_products?: number | null
+          name?: string
+          show_quick_add?: boolean
+          store_id?: string
+          target_category_id?: string | null
+          title?: string
+          trigger_category_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "upsell_modals_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "upsell_modals_target_category_id_fkey"
+            columns: ["target_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "upsell_modals_trigger_category_id_fkey"
+            columns: ["trigger_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null
