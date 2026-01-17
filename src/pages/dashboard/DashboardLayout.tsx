@@ -442,23 +442,23 @@ export default function DashboardLayout() {
           <button
             onClick={() => toggleMenuExpand(item.path)}
             className={cn(
-              "w-full flex items-center gap-3 px-2 py-2 text-[13px] font-medium outline-none transition-all duration-200 rounded-xl",
+              "w-full flex items-center gap-2 px-1.5 py-1 text-[11px] font-medium outline-none transition-all duration-200 rounded-lg",
               (isActive || isSubItemActive) 
-                ? "bg-gray-900 text-white shadow-lg shadow-gray-900/20" 
+                ? "bg-gray-900 text-white shadow-md" 
                 : "text-gray-800 hover:bg-white/40"
             )}
           >
             <div className={cn(
-              "w-9 h-9 rounded-xl flex items-center justify-center transition-all",
+              "w-6 h-6 rounded-lg flex items-center justify-center transition-all flex-shrink-0",
               (isActive || isSubItemActive) 
                 ? "bg-white/20" 
                 : "bg-white/60"
             )}>
-              <item.icon className="w-[18px] h-[18px]" />
+              <item.icon className="w-3.5 h-3.5" />
             </div>
             <span className="truncate flex-1 text-left">{item.label}</span>
             <ChevronDown className={cn(
-              "w-4 h-4 opacity-60 transition-transform duration-200",
+              "w-3 h-3 opacity-60 transition-transform duration-200",
               isExpanded && "rotate-180"
             )} />
           </button>
@@ -472,18 +472,18 @@ export default function DashboardLayout() {
                 transition={{ duration: 0.2, ease: "easeOut" }}
                 className="overflow-hidden"
               >
-                <div className="mt-1.5 ml-3 space-y-1 pl-4 border-l-2 border-gray-800/20">
+                <div className="mt-0.5 ml-2 space-y-0.5 pl-3 border-l border-gray-800/20">
                   <Link
                     to={item.path}
                     className={cn(
-                      "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium transition-all",
+                      "flex items-center gap-2 px-2 py-1 rounded-md text-[10px] font-medium transition-all",
                       isActive 
-                        ? "bg-gray-900 text-white shadow-md" 
+                        ? "bg-gray-900 text-white shadow-sm" 
                         : "text-gray-700 hover:bg-white/50"
                     )}
                     onMouseEnter={() => prefetchRoute(item.path)}
                   >
-                    <Package className="w-4 h-4" />
+                    <Package className="w-3 h-3" />
                     <span>Produtos</span>
                   </Link>
                   
@@ -494,14 +494,14 @@ export default function DashboardLayout() {
                         key={subItem.path}
                         to={subItem.path}
                         className={cn(
-                          "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium transition-all",
+                          "flex items-center gap-2 px-2 py-1 rounded-md text-[10px] font-medium transition-all",
                           isSubActive 
-                            ? "bg-gray-900 text-white shadow-md" 
+                            ? "bg-gray-900 text-white shadow-sm" 
                             : "text-gray-700 hover:bg-white/50"
                         )}
                         onMouseEnter={() => prefetchRoute(subItem.path)}
                       >
-                        <subItem.icon className="w-4 h-4" />
+                        <subItem.icon className="w-3 h-3" />
                         <span>{subItem.label}</span>
                       </Link>
                     );
@@ -518,27 +518,27 @@ export default function DashboardLayout() {
       <Link
         to={item.path}
         className={cn(
-          "relative flex items-center gap-3 text-[13px] font-medium outline-none transition-all duration-200 rounded-xl",
-          sidebarCollapsed ? "p-2 justify-center" : "px-2 py-2",
+          "relative flex items-center gap-2 text-[11px] font-medium outline-none transition-all duration-200 rounded-lg",
+          sidebarCollapsed ? "p-1.5 justify-center" : "px-1.5 py-1",
           isActive 
-            ? "bg-gray-900 text-white shadow-lg shadow-gray-900/20" 
+            ? "bg-gray-900 text-white shadow-md" 
             : "text-gray-800 hover:bg-white/40"
         )}
         onMouseEnter={() => prefetchRoute(item.path)}
         onTouchStart={() => prefetchRoute(item.path)}
       >
         <div className={cn(
-          "relative flex items-center justify-center transition-all rounded-xl",
-          sidebarCollapsed ? "w-9 h-9" : "w-9 h-9",
+          "relative flex items-center justify-center transition-all rounded-lg flex-shrink-0",
+          sidebarCollapsed ? "w-7 h-7" : "w-6 h-6",
           isActive ? "bg-white/20" : "bg-white/60"
         )}>
-          <item.icon className="w-[18px] h-[18px]" />
+          <item.icon className={cn(sidebarCollapsed ? "w-4 h-4" : "w-3.5 h-3.5")} />
           {/* Badge for pending orders */}
           {item.path === "/dashboard/orders" && pendingOrdersCount > 0 && (
             <motion.span
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="absolute -top-1 -right-1 min-w-[16px] h-[16px] flex items-center justify-center bg-red-500 text-white text-[9px] font-bold rounded-full px-1 shadow-md border-2 border-amber-400"
+              className="absolute -top-1 -right-1 min-w-[14px] h-[14px] flex items-center justify-center bg-red-500 text-white text-[8px] font-bold rounded-full px-0.5 shadow-sm border border-amber-400"
             >
               {pendingOrdersCount > 99 ? "99+" : pendingOrdersCount}
             </motion.span>
@@ -559,11 +559,11 @@ export default function DashboardLayout() {
           <TooltipContent 
             side="right" 
             sideOffset={8}
-            className="text-xs font-medium bg-gray-900 text-white border-0 shadow-xl"
+            className="text-[10px] font-medium bg-gray-900 text-white border-0 shadow-xl"
           >
             {item.label}
             {hasSubItems && item.subItems && (
-              <div className="mt-1.5 pt-1.5 border-t border-white/20 space-y-1">
+              <div className="mt-1 pt-1 border-t border-white/20 space-y-0.5">
                 {item.subItems.map(sub => (
                   <Link 
                     key={sub.path} 
@@ -642,15 +642,15 @@ export default function DashboardLayout() {
             </motion.div>
           </button>
 
-          {/* Logo Section */}
+          {/* Logo Section - Compact */}
           <div 
             className={cn(
               "flex items-center flex-shrink-0 overflow-hidden relative",
               "transition-all duration-300",
-              sidebarCollapsed ? "h-16 justify-center px-3" : "h-16 px-4"
+              sidebarCollapsed ? "h-12 justify-center px-2" : "h-12 px-3"
             )}
           >
-            <Link to="/dashboard" className="flex items-center gap-3 min-w-0">
+            <Link to="/dashboard" className="flex items-center gap-2 min-w-0">
               <motion.div
                 layout
                 transition={{ duration: 0.2 }}
@@ -660,11 +660,11 @@ export default function DashboardLayout() {
                   <img 
                     src={store.logo_url} 
                     alt={store.name} 
-                    className="w-10 h-10 rounded-xl object-cover shadow-lg ring-2 ring-white/30"
+                    className="w-8 h-8 rounded-lg object-cover shadow-md ring-1 ring-white/30"
                   />
                 ) : (
-                  <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center shadow-lg ring-2 ring-white/30">
-                    <span className="text-amber-400 font-bold text-lg">
+                  <div className="w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center shadow-md ring-1 ring-white/30">
+                    <span className="text-amber-400 font-bold text-sm">
                       {store?.name?.charAt(0) || "A"}
                     </span>
                   </div>
@@ -679,10 +679,10 @@ export default function DashboardLayout() {
                     transition={{ duration: 0.2 }}
                     className="flex flex-col min-w-0"
                   >
-                    <span className="font-bold text-sm text-gray-900 truncate">
+                    <span className="font-bold text-[11px] text-gray-900 truncate">
                       {store?.name || "Anotô?"}
                     </span>
-                    <span className="text-[10px] text-gray-700/70 font-medium">
+                    <span className="text-[9px] text-gray-700/70 font-medium">
                       Sistema de Delivery
                     </span>
                   </motion.div>
@@ -691,10 +691,10 @@ export default function DashboardLayout() {
             </Link>
           </div>
 
-          {/* Store Status Toggle */}
+          {/* Store Status Toggle - Compact */}
           <div className={cn(
-            "mx-3 mb-3",
-            sidebarCollapsed && "mx-2"
+            "mx-2 mb-2",
+            sidebarCollapsed && "mx-1.5"
           )}>
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
@@ -708,11 +708,11 @@ export default function DashboardLayout() {
                     }
                   }}
                   className={cn(
-                    "w-full flex items-center gap-2.5 rounded-xl transition-all duration-200",
-                    sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2.5",
+                    "w-full flex items-center gap-2 rounded-lg transition-all duration-200",
+                    sidebarCollapsed ? "justify-center p-2" : "px-2.5 py-1.5",
                     store?.is_open_override 
-                      ? "bg-emerald-500 shadow-lg shadow-emerald-500/30"
-                      : "bg-gray-900/90 shadow-lg"
+                      ? "bg-emerald-500 shadow-md shadow-emerald-500/20"
+                      : "bg-gray-900/90 shadow-md"
                   )}
                 >
                   <motion.div
@@ -725,7 +725,7 @@ export default function DashboardLayout() {
                       ease: "easeInOut"
                     }}
                     className={cn(
-                      "w-2 h-2 rounded-full flex-shrink-0",
+                      "w-1.5 h-1.5 rounded-full flex-shrink-0",
                       store?.is_open_override 
                         ? "bg-white" 
                         : "bg-red-400"
@@ -737,16 +737,16 @@ export default function DashboardLayout() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="text-[12px] font-semibold text-white"
+                        className="text-[10px] font-semibold text-white"
                       >
-                        {store?.is_open_override ? "Loja Aberta" : "Loja Fechada"}
+                        {store?.is_open_override ? "Aberta" : "Fechada"}
                       </motion.span>
                     )}
                   </AnimatePresence>
                 </button>
               </TooltipTrigger>
               {sidebarCollapsed && (
-                <TooltipContent side="right" sideOffset={8} className="text-xs font-medium bg-gray-900 text-white border-0">
+                <TooltipContent side="right" sideOffset={8} className="text-[10px] font-medium bg-gray-900 text-white border-0">
                   {store?.is_open_override ? "Loja Aberta" : "Loja Fechada"}
                 </TooltipContent>
               )}
@@ -773,31 +773,31 @@ export default function DashboardLayout() {
             </AlertDialogContent>
           </AlertDialog>
 
-          {/* Menu Navigation */}
+          {/* Menu Navigation - Compact */}
           <nav className={cn(
-            "flex-1 py-2 space-y-1 overflow-y-auto overflow-x-hidden",
+            "flex-1 py-1 space-y-0.5 overflow-y-auto overflow-x-hidden",
             "[&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-gray-900/10 [&::-webkit-scrollbar-thumb]:rounded-full",
-            sidebarCollapsed ? "px-2" : "px-3"
+            sidebarCollapsed ? "px-1.5" : "px-2"
           )}>
             {menuItems.map(item => (
               <NavItem key={item.path} item={item} />
             ))}
           </nav>
 
-          {/* Footer - Elegant Compact */}
+          {/* Footer - Ultra Compact */}
           <div 
             className={cn(
               "flex-shrink-0 overflow-hidden",
-              sidebarCollapsed ? "px-2 py-3" : "px-3 py-3"
+              sidebarCollapsed ? "px-1.5 py-2" : "px-2 py-2"
             )}
           >
             {/* Divider */}
-            <div className="h-px bg-gray-900/10 mb-3" />
+            <div className="h-px bg-gray-900/10 mb-2" />
             
             {/* Compact Footer Actions */}
             <div className={cn(
               "flex items-center",
-              sidebarCollapsed ? "flex-col gap-2" : "justify-between"
+              sidebarCollapsed ? "flex-col gap-1.5" : "justify-between"
             )}>
               {/* Theme Toggle */}
               <Tooltip delayDuration={0}>
@@ -807,7 +807,7 @@ export default function DashboardLayout() {
                   </div>
                 </TooltipTrigger>
                 {sidebarCollapsed && (
-                  <TooltipContent side="right" sideOffset={8} className="text-xs font-medium bg-gray-900 text-white border-0">
+                  <TooltipContent side="right" sideOffset={8} className="text-[10px] font-medium bg-gray-900 text-white border-0">
                     Tema
                   </TooltipContent>
                 )}
@@ -821,13 +821,13 @@ export default function DashboardLayout() {
                       href={`/cardapio/${store.slug}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-[11px] font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                      className="flex items-center gap-1 text-[10px] font-medium text-gray-700 hover:text-gray-900 transition-colors"
                     >
-                      <ExternalLink className="w-3.5 h-3.5" />
+                      <ExternalLink className="w-3 h-3" />
                       <span>Cardápio</span>
                     </a>
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="text-xs font-medium bg-gray-900 text-white border-0">
+                  <TooltipContent side="top" className="text-[10px] font-medium bg-gray-900 text-white border-0">
                     Abrir cardápio
                   </TooltipContent>
                 </Tooltip>
@@ -841,12 +841,12 @@ export default function DashboardLayout() {
                       href={`/cardapio/${store.slug}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center w-9 h-9 rounded-xl text-gray-700 hover:text-gray-900 hover:bg-white/40 transition-all"
+                      className="flex items-center justify-center w-7 h-7 rounded-lg text-gray-700 hover:text-gray-900 hover:bg-white/40 transition-all"
                     >
-                      <ExternalLink className="w-4 h-4" />
+                      <ExternalLink className="w-3.5 h-3.5" />
                     </a>
                   </TooltipTrigger>
-                  <TooltipContent side="right" sideOffset={8} className="text-xs font-medium bg-gray-900 text-white border-0">
+                  <TooltipContent side="right" sideOffset={8} className="text-[10px] font-medium bg-gray-900 text-white border-0">
                     Ver cardápio
                   </TooltipContent>
                 </Tooltip>
@@ -860,18 +860,18 @@ export default function DashboardLayout() {
                     className={cn(
                       "flex items-center transition-all",
                       sidebarCollapsed 
-                        ? "justify-center w-9 h-9 rounded-xl text-red-600 hover:bg-red-500/20" 
-                        : "gap-1.5 text-[11px] font-medium text-red-600 hover:text-red-700"
+                        ? "justify-center w-7 h-7 rounded-lg text-red-600 hover:bg-red-500/20" 
+                        : "gap-1 text-[10px] font-medium text-red-600 hover:text-red-700"
                     )}
                   >
-                    <LogOut className={sidebarCollapsed ? "w-4 h-4" : "w-3.5 h-3.5"} />
+                    <LogOut className={sidebarCollapsed ? "w-3.5 h-3.5" : "w-3 h-3"} />
                     {!sidebarCollapsed && <span>Sair</span>}
                   </button>
                 </TooltipTrigger>
                 <TooltipContent 
                   side={sidebarCollapsed ? "right" : "top"} 
                   sideOffset={8}
-                  className="text-xs font-medium bg-gray-900 text-white border-0"
+                  className="text-[10px] font-medium bg-gray-900 text-white border-0"
                 >
                   Sair
                 </TooltipContent>
