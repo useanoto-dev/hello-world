@@ -400,7 +400,7 @@ export default function ProductCustomizationModal({
         </header>
 
         {/* Mobile Hero Image Section - Only visible on mobile */}
-        <div className="relative flex-shrink-0 lg:hidden">
+        <div className="relative lg:hidden">
           <div className="relative h-64 sm:h-72 bg-gray-900">
             {product.image_url ? (
               <img 
