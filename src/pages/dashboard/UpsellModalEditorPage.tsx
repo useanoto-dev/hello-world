@@ -329,41 +329,39 @@ export default function UpsellModalEditorPage() {
 
   // Step 1: Template selection
   const renderTemplateStep = () => (
-    <div className="max-w-2xl mx-auto">
-      <div className="text-center mb-6">
-        <h2 className="text-lg font-semibold text-foreground mb-1">
-          Qual tipo de modal?
+    <div className="max-w-xl mx-auto">
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold text-foreground mb-1">
+          Tipo de modal
         </h2>
         <p className="text-sm text-muted-foreground">
-          Selecione um modelo pré-configurado ou crie um personalizado
+          Escolha um modelo para começar
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-2">
         {MODAL_TEMPLATES.map((template) => (
           <button
             key={template.id}
             type="button"
             onClick={() => handleTemplateSelect(template.id)}
             className={cn(
-              "p-5 rounded-xl border-2 transition-all text-left",
+              "w-full p-4 rounded-lg border transition-all text-left flex items-center gap-4",
               selectedTemplate === template.id
-                ? "border-primary bg-primary/5 shadow-md"
-                : "border-border hover:border-muted-foreground/30 hover:bg-muted/30"
+                ? "border-primary bg-primary/5"
+                : "border-border hover:border-primary/40 hover:bg-muted/20"
             )}
           >
-            <div className="flex items-center gap-3 mb-2">
-              <div className={cn(
-                "w-10 h-10 rounded-xl flex items-center justify-center text-white text-xl",
-                template.color
-              )}>
-                {template.icon}
-              </div>
-              <span className="font-semibold text-base">{template.label}</span>
+            <span className="text-2xl">{template.icon}</span>
+            <div className="flex-1 min-w-0">
+              <span className="font-medium text-sm text-foreground">{template.label}</span>
+              <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                {template.description}
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {template.description}
-            </p>
+            {selectedTemplate === template.id && (
+              <Check className="w-4 h-4 text-primary flex-shrink-0" />
+            )}
           </button>
         ))}
       </div>
