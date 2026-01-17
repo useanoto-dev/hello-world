@@ -25,7 +25,7 @@ export function ThemeToggle({ variant = "default", collapsed = false }: ThemeTog
         onClick={toggleTheme}
         className={cn(
           "group relative flex items-center gap-2 rounded-md",
-          "text-gray-900",
+          "text-white",
           collapsed ? "p-1.5 justify-center" : "px-2.5 py-1.5 w-full"
         )}
         aria-label={isDark ? "Ativar modo claro" : "Ativar modo escuro"}
@@ -41,7 +41,7 @@ export function ThemeToggle({ variant = "default", collapsed = false }: ThemeTog
                 transition={{ duration: 0.25, ease: "easeOut" }}
                 className="absolute"
               >
-                <Sun className="w-4 h-4 text-gray-900" />
+                <Sun className="w-4 h-4 text-white" />
               </motion.div>
             ) : (
               <motion.div
@@ -52,7 +52,7 @@ export function ThemeToggle({ variant = "default", collapsed = false }: ThemeTog
                 transition={{ duration: 0.25, ease: "easeOut" }}
                 className="absolute"
               >
-                <Moon className="w-4 h-4 text-gray-900" />
+                <Moon className="w-4 h-4 text-white" />
               </motion.div>
             )}
           </AnimatePresence>
