@@ -339,28 +339,28 @@ export default function UpsellModalEditorPage() {
         </p>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {MODAL_TEMPLATES.map((template) => (
           <button
             key={template.id}
             type="button"
             onClick={() => handleTemplateSelect(template.id)}
             className={cn(
-              "w-full p-4 rounded-lg border transition-all text-left flex items-center gap-4",
+              "w-full px-3 py-2.5 rounded-md border transition-all text-left flex items-center gap-3",
               selectedTemplate === template.id
-                ? "border-primary bg-primary/5"
-                : "border-border hover:border-primary/40 hover:bg-muted/20"
+                ? "border-primary/60 bg-primary/5"
+                : "border-gray-100 bg-gray-50/50 hover:border-gray-200 hover:bg-gray-50"
             )}
           >
-            <span className="text-2xl">{template.icon}</span>
+            <span className="text-lg">{template.icon}</span>
             <div className="flex-1 min-w-0">
-              <span className="font-medium text-sm text-foreground">{template.label}</span>
-              <p className="text-xs text-muted-foreground mt-0.5 truncate">
+              <span className="font-medium text-xs text-foreground">{template.label}</span>
+              <p className="text-[11px] text-muted-foreground truncate">
                 {template.description}
               </p>
             </div>
             {selectedTemplate === template.id && (
-              <Check className="w-4 h-4 text-primary flex-shrink-0" />
+              <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
             )}
           </button>
         ))}
