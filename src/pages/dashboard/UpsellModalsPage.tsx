@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Plus, Sparkles, Trash2, Edit2, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveRestaurant } from "@/hooks/useActiveRestaurant";
 import { toast } from "sonner";
-import { UpsellModalWizard } from "@/components/admin/UpsellModalWizard";
 
 interface Category {
   id: string;
@@ -42,12 +42,11 @@ const MODAL_TYPE_CONFIG: Record<string, { label: string; icon: string; color: st
 };
 
 export default function UpsellModalsPage() {
+  const navigate = useNavigate();
   const { restaurantId } = useActiveRestaurant();
   const [modals, setModals] = useState<UpsellModal[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showEditor, setShowEditor] = useState(false);
-  const [editingModal, setEditingModal] = useState<UpsellModal | null>(null);
 
   useEffect(() => {
     if (restaurantId) {
@@ -134,19 +133,11 @@ export default function UpsellModalsPage() {
   };
 
   const handleEdit = (modal: UpsellModal) => {
-    setEditingModal(modal);
-    setShowEditor(true);
+    navigate(`/dashboard/upsell-modal/edit?edit=${modal.id}`);
   };
 
   const handleCreate = () => {
-    setEditingModal(null);
-    setShowEditor(true);
-  };
-
-  const handleEditorClose = () => {
-    setShowEditor(false);
-    setEditingModal(null);
-    loadData();
+    navigate("/dashboard/upsell-modal/new");
   };
 
   const getTypeConfig = (type: string) => MODAL_TYPE_CONFIG[type] || MODAL_TYPE_CONFIG.custom;
@@ -280,16 +271,6 @@ export default function UpsellModalsPage() {
             );
           })}
         </div>
-      )}
-
-      {showEditor && (
-        <UpsellModalWizard
-          open={showEditor}
-          onClose={handleEditorClose}
-          modal={editingModal}
-          categories={categories}
-          storeId={restaurantId || ""}
-        />
       )}
     </div>
   );
