@@ -29,6 +29,7 @@ import { PizzaSizeGrid } from "@/components/storefront/PizzaSizeGrid";
 import { PizzaFlavorSelectionDrawer } from "@/components/storefront/PizzaFlavorSelectionDrawer";
 import { PizzaDoughSelectionDrawer } from "@/components/storefront/PizzaDoughSelectionDrawer";
 import { StandardCategoryGrid } from "@/components/storefront/StandardCategoryGrid";
+import ProductDetailDrawer from "@/components/storefront/ProductDetailDrawer";
 import { useFavorites } from "@/hooks/useFavorites";
 import { parseSchedule, isStoreOpenNow, getNextOpeningTime } from "@/lib/scheduleUtils";
 import { toast } from "sonner";
@@ -457,6 +458,11 @@ export default function StorefrontPage() {
     price: number;
   } | null>(null);
   
+  // Simple product detail drawer state (for products without customization)
+  const [showProductDetailDrawer, setShowProductDetailDrawer] = useState(false);
+  const [simpleProduct, setSimpleProduct] = useState<Product | null>(null);
+  const [simpleProductCategoryName, setSimpleProductCategoryName] = useState("");
+  
   const { addToCart, totalItems } = useCart();
   const { setStoreData, isOpen: isStoreOpen } = useStoreStatus();
 
@@ -775,17 +781,11 @@ export default function StorefrontPage() {
     const isInventoryProduct = product.id.startsWith('inv-');
     
     if (isInventoryProduct) {
-      // Add inventory product directly to cart
+      // Open product detail drawer for inventory products
       const category = categories.find(c => c.id === product.category_id);
-      addToCart({
-        id: product.id,
-        name: product.name,
-        price: product.promotional_price || product.price,
-        quantity: 1,
-        category: category?.name || "Estoque",
-        description: product.description || undefined,
-        image_url: product.image_url || undefined,
-      });
+      setSimpleProduct(product);
+      setSimpleProductCategoryName(category?.name || "Estoque");
+      setShowProductDetailDrawer(true);
       return;
     }
 
@@ -813,16 +813,10 @@ export default function StorefrontPage() {
         setPreselectedOptionId(null);
         setShowCustomizationModal(true);
       } else {
-        // No customization - add directly to cart
-        addToCart({
-          id: product.id,
-          name: product.name,
-          price: product.promotional_price || product.price,
-          quantity: 1,
-          category: category?.name || "Produto",
-          description: product.description || undefined,
-          image_url: product.image_url || undefined,
-        });
+        // No customization - open product detail drawer
+        setSimpleProduct(product);
+        setSimpleProductCategoryName(category?.name || "Produto");
+        setShowProductDetailDrawer(true);
       }
       return;
     }
@@ -853,28 +847,16 @@ export default function StorefrontPage() {
         setPreselectedOptionId(product.isVirtualProduct ? product.primaryOptionId || null : null);
         setShowCustomizationModal(true);
       } else {
-        // No customization - add directly to cart
-        addToCart({
-          id: product.id,
-          name: product.name,
-          price: product.promotional_price || product.price,
-          quantity: 1,
-          category: category.name,
-          description: product.description || undefined,
-          image_url: product.image_url || undefined,
-        });
+        // No customization - open product detail drawer
+        setSimpleProduct(product);
+        setSimpleProductCategoryName(category.name);
+        setShowProductDetailDrawer(true);
       }
     } else {
-      // No category found, add directly to cart
-      addToCart({
-        id: product.id,
-        name: product.name,
-        price: product.promotional_price || product.price,
-        quantity: 1,
-        category: "Produto",
-        description: product.description || undefined,
-        image_url: product.image_url || undefined,
-      });
+      // No category found - open product detail drawer
+      setSimpleProduct(product);
+      setSimpleProductCategoryName("Produto");
+      setShowProductDetailDrawer(true);
     }
   }, [categories, addToCart, isStoreOpen, categoryHasOptions]);
 
@@ -1306,7 +1288,7 @@ export default function StorefrontPage() {
                             setPreselectedOptionId(null);
                             setShowCustomizationModal(true);
                           } else {
-                            // No customization - add directly to cart
+                            // No customization - open product detail drawer
                             if (!isStoreOpen) {
                               toast.error("Estabelecimento fechado", {
                                 description: "Não é possível adicionar itens ao carrinho no momento.",
@@ -1314,16 +1296,19 @@ export default function StorefrontPage() {
                               return;
                             }
                             const category = categories.find(c => c.id === effectiveCategory);
-                            addToCart({
-                              id: `${item.id}-${size.id}-${Date.now()}`,
+                            const productForDrawer: Product = {
+                              id: `${item.id}-${size.id}`,
                               name: `${size.name}${item.name !== size.name ? ` - ${item.name}` : ''}`,
+                              description: item.description,
                               price: price,
-                              quantity: quantity || 1,
-                              category: category?.name || "Produto",
-                              description: item.description || undefined,
+                              promotional_price: null,
                               image_url: item.image_url || size.image_url || undefined,
-                            });
-                            toast.success("Adicionado ao carrinho!");
+                              category_id: effectiveCategory,
+                              is_featured: false,
+                            };
+                            setSimpleProduct(productForDrawer);
+                            setSimpleProductCategoryName(category?.name || "Produto");
+                            setShowProductDetailDrawer(true);
                           }
                         }}
                       />
@@ -1438,6 +1423,19 @@ export default function StorefrontPage() {
           sizeId={selectedPizzaSize.id}
           sizeName={selectedPizzaSize.name}
           onComplete={handlePizzaDoughComplete}
+        />
+      )}
+
+      {/* Simple Product Detail Drawer (for products without customization) */}
+      {simpleProduct && (
+        <ProductDetailDrawer
+          product={simpleProduct}
+          categoryName={simpleProductCategoryName}
+          isOpen={showProductDetailDrawer}
+          onClose={() => {
+            setShowProductDetailDrawer(false);
+            setSimpleProduct(null);
+          }}
         />
       )}
 
