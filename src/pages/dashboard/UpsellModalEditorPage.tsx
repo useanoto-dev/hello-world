@@ -742,7 +742,7 @@ export default function UpsellModalEditorPage() {
 
       {/* Footer */}
       <div className="fixed bottom-0 left-0 right-0 px-4 py-4 md:left-64">
-        <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
+        <div className="max-w-xl mx-auto flex items-center justify-center gap-3">
           <Button
             variant="outline"
             onClick={currentStep === 1 ? handleClose : handleBack}
