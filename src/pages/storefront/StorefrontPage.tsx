@@ -23,7 +23,7 @@ import CardapioSkeleton from "@/components/storefront/skeletons/CardapioSkeleton
 import PedidosSkeleton from "@/components/storefront/skeletons/PedidosSkeleton";
 import SobreSkeleton from "@/components/storefront/skeletons/SobreSkeleton";
 import InstallPrompt from "@/components/storefront/InstallPrompt";
-import UpsellModal from "@/components/storefront/UpsellModal";
+// UpsellModal removed - now using DynamicUpsellModal in ProductDetailDrawer
 import { LoyaltyWidget } from "@/components/storefront/LoyaltyWidget";
 import { PizzaSizeGrid } from "@/components/storefront/PizzaSizeGrid";
 import { PizzaFlavorSelectionDrawer } from "@/components/storefront/PizzaFlavorSelectionDrawer";
@@ -429,9 +429,9 @@ export default function StorefrontPage() {
   const [preselectedOptionId, setPreselectedOptionId] = useState<string | null>(null);
   const [showCustomizationModal, setShowCustomizationModal] = useState(false);
   
-  // Upsell modal state
-  const [showUpsellModal, setShowUpsellModal] = useState(false);
-  const [upsellExcludeCategory, setUpsellExcludeCategory] = useState<string | null>(null);
+  // Upsell modal state - disabled (now handled in ProductDetailDrawer)
+  // const [showUpsellModal, setShowUpsellModal] = useState(false);
+  // const [upsellExcludeCategory, setUpsellExcludeCategory] = useState<string | null>(null);
   
   // Pizza flavor selection state
   const [showPizzaFlavorDrawer, setShowPizzaFlavorDrawer] = useState(false);
@@ -868,16 +868,15 @@ export default function StorefrontPage() {
     setPreselectedOptionId(null);
   }, []);
 
+  // Upsell handlers - disabled (now handled in ProductDetailDrawer)
   const handleShowUpsell = useCallback((categoryId: string) => {
+    // Do nothing - upsell is now shown in ProductDetailDrawer
     setShowCustomizationModal(false);
     setSelectedProduct(null);
     setSelectedCategory(null);
-    setUpsellExcludeCategory(categoryId);
-    setShowUpsellModal(true);
   }, []);
 
   const handleUpsellContinueShopping = useCallback((categoryId: string) => {
-    setShowUpsellModal(false);
     setActiveCategory(categoryId);
     setActiveTab("cardapio");
   }, []);
@@ -1387,14 +1386,7 @@ export default function StorefrontPage() {
         />
       )}
 
-      {showUpsellModal && store && (
-        <UpsellModal
-          storeId={store.id}
-          excludeCategoryId={upsellExcludeCategory || undefined}
-          onClose={() => setShowUpsellModal(false)}
-          onContinueShopping={handleUpsellContinueShopping}
-        />
-      )}
+      {/* Old UpsellModal removed - now using DynamicUpsellModal in ProductDetailDrawer */}
 
       {/* Pizza Flavor Selection Drawer */}
       {selectedPizzaSize && store && (
