@@ -372,10 +372,10 @@ export function PizzaFlavorSelectionDrawer({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="fixed inset-0 z-50 bg-background flex flex-col"
+          className="fixed inset-0 z-50 bg-background lg:bg-[#f5f5f5] flex flex-col"
         >
           {/* Desktop Header - Only visible on lg+ */}
-          <header className="hidden lg:flex items-center justify-between px-6 py-4 border-b border-border bg-background sticky top-0 z-20">
+          <header className="hidden lg:flex items-center justify-between px-6 py-4 border-b border-border bg-white sticky top-0 z-20">
             <div className="flex items-center gap-3">
               <button 
                 onClick={onClose}
@@ -411,7 +411,7 @@ export function PizzaFlavorSelectionDrawer({
           </div>
 
           {/* Scrollable Content */}
-          <main className="flex-1 overflow-y-auto pb-32 lg:pb-36">
+          <main className="flex-1 overflow-y-auto pb-32 lg:pb-36 lg:bg-[#f5f5f5]">
             {/* Mobile Hero Image Section */}
             <div className="relative lg:hidden">
               <div className="relative h-56 sm:h-72 bg-gray-900">
@@ -436,12 +436,12 @@ export function PizzaFlavorSelectionDrawer({
             </div>
 
             {/* Content */}
-            <div className="px-4 py-4 lg:max-w-2xl lg:mx-auto lg:px-6 lg:py-6">
+            <div className="px-4 py-4 lg:max-w-2xl lg:mx-auto lg:px-8 lg:py-8">
               
               {/* Desktop Product Hero - Horizontal layout */}
-              <div className="hidden lg:flex gap-6 mb-6 p-4 bg-muted/30 rounded-2xl">
+              <div className="hidden lg:flex gap-5 mb-6 p-5 bg-white rounded-2xl shadow-sm">
                 {/* Product Image */}
-                <div className="w-40 h-28 rounded-xl overflow-hidden bg-gray-900 flex-shrink-0">
+                <div className="w-36 h-24 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
                   {sizeImageUrl ? (
                     <img 
                       src={sizeImageUrl} 
@@ -450,22 +450,22 @@ export function PizzaFlavorSelectionDrawer({
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-200">
-                      <span className="text-4xl">🍕</span>
+                      <span className="text-3xl">🍕</span>
                     </div>
                   )}
                 </div>
                 
                 {/* Product Info */}
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-xl font-bold text-foreground leading-tight uppercase">
+                  <h1 className="text-lg font-bold text-foreground leading-tight uppercase">
                     Pizza {sizeName}
                   </h1>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-lg font-bold text-amber-500">
+                    <span className="text-base font-bold text-red-500">
                       {formatCurrency(basePrice)}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-2">
+                  <p className="text-sm text-muted-foreground mt-1.5">
                     Escolha até {maxFlavors} {maxFlavors === 1 ? 'sabor' : 'sabores'} para sua pizza
                   </p>
                 </div>
@@ -502,13 +502,13 @@ export function PizzaFlavorSelectionDrawer({
                   <p className="text-sm text-muted-foreground">Nenhum sabor disponível</p>
                 </div>
               ) : (
-                <div className="mt-6 space-y-5">
+                <div className="mt-5 space-y-4">
                   {salgadasTradicionais.length > 0 && (
                     <section>
-                      <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-1.5">
+                      <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
                         <span>🍕</span> Pizzas Salgadas Tradicionais
                       </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
                         {salgadasTradicionais.map(f => <TraditionalCard key={f.id} flavor={f} />)}
                       </div>
                     </section>
@@ -516,10 +516,10 @@ export function PizzaFlavorSelectionDrawer({
 
                   {salgadasEspeciais.length > 0 && (
                     <section>
-                      <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-1.5">
+                      <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
                         <span>⭐</span> Pizzas Salgadas Especiais
                       </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
                         {salgadasEspeciais.map(f => <SpecialCard key={f.id} flavor={f} />)}
                       </div>
                     </section>
@@ -527,10 +527,10 @@ export function PizzaFlavorSelectionDrawer({
 
                   {docesTradicionais.length > 0 && (
                     <section>
-                      <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-1.5">
+                      <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
                         <span>🍰</span> Pizzas Doces Tradicionais
                       </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
                         {docesTradicionais.map(f => <TraditionalCard key={f.id} flavor={f} />)}
                       </div>
                     </section>
@@ -538,10 +538,10 @@ export function PizzaFlavorSelectionDrawer({
 
                   {docesEspeciais.length > 0 && (
                     <section>
-                      <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-1.5">
+                      <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
                         <span>⭐</span> Pizzas Doces Especiais
                       </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
                         {docesEspeciais.map(f => <SpecialCard key={f.id} flavor={f} />)}
                       </div>
                     </section>
@@ -569,9 +569,9 @@ export function PizzaFlavorSelectionDrawer({
             initial={{ y: 60, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2, type: "spring", damping: 25, stiffness: 400 }}
-            className="fixed bottom-0 inset-x-0 bg-background border-t border-border p-4 z-10"
+            className="fixed bottom-0 inset-x-0 bg-white border-t border-border p-4 z-10"
           >
-            <div className="lg:max-w-2xl lg:mx-auto">
+            <div className="lg:max-w-2xl lg:mx-auto lg:px-4">
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <span className="text-sm text-muted-foreground">Total</span>

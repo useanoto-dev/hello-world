@@ -376,10 +376,10 @@ export default function ProductCustomizationModal({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: "100%" }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="fixed inset-0 z-50 bg-background flex flex-col"
+        className="fixed inset-0 z-50 bg-background lg:bg-[#f5f5f5] flex flex-col"
       >
         {/* Desktop Header - Only visible on lg+ */}
-        <header className="hidden lg:flex items-center justify-between px-6 py-4 border-b border-border bg-background sticky top-0 z-20">
+        <header className="hidden lg:flex items-center justify-between px-6 py-4 border-b border-border bg-white sticky top-0 z-20">
           <div className="flex items-center gap-3">
             <button 
               onClick={onClose}
@@ -436,13 +436,13 @@ export default function ProductCustomizationModal({
         </div>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto pb-24 lg:pb-28">
-          <div className="px-4 py-4 lg:max-w-2xl lg:mx-auto lg:px-6 lg:py-6">
+        <main className="flex-1 overflow-y-auto pb-24 lg:pb-28 lg:bg-[#f5f5f5]">
+          <div className="px-4 py-4 lg:max-w-2xl lg:mx-auto lg:px-8 lg:py-8">
             
             {/* Desktop Product Hero - Horizontal layout */}
-            <div className="hidden lg:flex gap-6 mb-6 p-4 bg-muted/30 rounded-2xl">
+            <div className="hidden lg:flex gap-5 mb-6 p-5 bg-white rounded-2xl shadow-sm">
               {/* Product Image */}
-              <div className="w-40 h-28 rounded-xl overflow-hidden bg-gray-900 flex-shrink-0">
+              <div className="w-36 h-24 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
                 {product.image_url ? (
                   <img 
                     src={product.image_url} 
@@ -451,14 +451,14 @@ export default function ProductCustomizationModal({
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                    <span className="text-4xl">🍔</span>
+                    <span className="text-3xl">🍔</span>
                   </div>
                 )}
               </div>
               
               {/* Product Info */}
               <div className="flex-1 min-w-0">
-                <h1 className="text-xl font-bold text-foreground leading-tight uppercase">
+                <h1 className="text-lg font-bold text-foreground leading-tight uppercase">
                   {product.name}
                 </h1>
                 <div className="flex items-center gap-2 mt-1">
@@ -468,14 +468,14 @@ export default function ProductCustomizationModal({
                     </span>
                   )}
                   <span className={cn(
-                    "text-lg font-bold",
-                    hasPromotion ? "text-green-600" : "text-foreground"
+                    "text-base font-bold",
+                    hasPromotion ? "text-green-600" : "text-red-500"
                   )}>
                     {formatCurrency(basePrice)}
                   </span>
                 </div>
                 {product.description && (
-                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed line-clamp-2">
+                  <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed line-clamp-2">
                     {product.description}
                   </p>
                 )}
@@ -712,9 +712,9 @@ export default function ProductCustomizationModal({
           initial={{ y: 60, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, type: "spring", damping: 25, stiffness: 400 }}
-          className="fixed bottom-0 inset-x-0 bg-background border-t border-border p-4 z-10"
+          className="fixed bottom-0 inset-x-0 bg-white border-t border-border p-4 z-10"
         >
-          <div className="lg:max-w-2xl lg:mx-auto">
+          <div className="lg:max-w-2xl lg:mx-auto lg:px-4">
             <Button
               onClick={handleAddToCart}
               disabled={!canProceed && groups.some(g => g.is_required)}
