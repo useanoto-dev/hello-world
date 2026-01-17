@@ -68,7 +68,7 @@ export function DashboardBottomNav({
 
   return (
     <nav 
-      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#FEDE01] border-t border-[#e5c801] rounded-t-3xl"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-b from-amber-400 to-amber-500 border-t border-amber-600/20 rounded-t-3xl"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
       {/* Store Status Indicator */}

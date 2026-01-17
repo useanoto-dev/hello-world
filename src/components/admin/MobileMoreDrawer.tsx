@@ -105,7 +105,7 @@ export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreD
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 28, stiffness: 350 }}
-        className="fixed bottom-0 left-0 right-0 z-50 bg-[#FEDE01] rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col"
+        className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-b from-amber-400 to-amber-500 rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {/* Handle bar */}
@@ -114,11 +114,11 @@ export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreD
         </div>
         
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pb-4 border-b border-[#e5c801]">
+        <div className="flex items-center justify-between px-5 pb-4 border-b border-amber-600/20">
           <div className="flex items-center gap-3">
             {isStaffLoggedIn ? (
-              <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center shadow-sm">
-                <span className="text-[#FEDE01] font-bold text-lg uppercase">
+              <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center shadow-lg ring-2 ring-white/30">
+                <span className="text-amber-400 font-bold text-lg uppercase">
                   {name?.charAt(0) || "F"}
                 </span>
               </div>
@@ -126,11 +126,11 @@ export function MobileMoreDrawer({ open, onClose, store, onLogout }: MobileMoreD
               <img 
                 src={store.logo_url} 
                 alt={store.name} 
-                className="w-10 h-10 rounded-xl object-cover"
+                className="w-10 h-10 rounded-xl object-cover shadow-lg ring-2 ring-white/30"
               />
             ) : (
-              <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center shadow-sm">
-                <span className="text-[#FEDE01] font-bold text-lg">
+              <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center shadow-lg ring-2 ring-white/30">
+                <span className="text-amber-400 font-bold text-lg">
                   {store?.name?.charAt(0) || "A"}
                 </span>
               </div>
