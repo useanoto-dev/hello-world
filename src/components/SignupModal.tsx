@@ -196,34 +196,108 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }: Signup
     return `${digits.slice(0, 5)}-${digits.slice(5, 8)}`;
   };
 
-  // Fetch address from CEP API
+  // Valid Brazilian state codes for validation
+  const VALID_STATE_CODES = STATES.map(s => s.uf);
+
+  // Maximum field lengths for sanitization
+  const MAX_CITY_LENGTH = 100;
+
+  /**
+   * Validates and sanitizes a string value from the API
+   */
+  const sanitizeApiString = (value: unknown, maxLength: number): string => {
+    if (typeof value !== 'string') return '';
+    return value.trim().slice(0, maxLength);
+  };
+
+  /**
+   * Validates the structure of the ViaCEP API response
+   */
+  const isValidViaCepResponse = (data: unknown): data is { 
+    erro?: boolean;
+    localidade?: string;
+    uf?: string;
+  } => {
+    if (!data || typeof data !== 'object') return false;
+    const response = data as Record<string, unknown>;
+    
+    if (response.erro === true) return true;
+    
+    const stringFields = ['localidade', 'uf'];
+    for (const field of stringFields) {
+      if (field in response && typeof response[field] !== 'string') {
+        return false;
+      }
+    }
+    
+    return true;
+  };
+
+  // Fetch address from CEP API with proper validation
   const fetchAddressFromCep = useCallback(async (cepValue: string) => {
     const cleanCep = cepValue.replace(/\D/g, "");
-    if (cleanCep.length !== 8) return;
+    
+    // Validate CEP format before making request - exactly 8 digits
+    if (!/^\d{8}$/.test(cleanCep)) return;
 
     setCepLoading(true);
     setCepValid(false);
 
+    // Create AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
     try {
-      const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
-      const data = await response.json();
+      const response = await fetch(
+        `https://viacep.com.br/ws/${cleanCep}/json/`,
+        { signal: controller.signal }
+      );
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+      
+      const data: unknown = await response.json();
+
+      // Validate response structure
+      if (!isValidViaCepResponse(data)) {
+        console.warn('Invalid ViaCEP response structure');
+        toast.error("Resposta inválida do serviço de CEP");
+        return;
+      }
 
       if (data.erro) {
         toast.error("CEP não encontrado");
         return;
       }
 
-      setCity(data.localidade || "");
-      setState(data.uf || "");
+      // Sanitize and validate each field
+      const sanitizedCity = sanitizeApiString(data.localidade, MAX_CITY_LENGTH);
+      const sanitizedState = sanitizeApiString(data.uf, 2).toUpperCase();
+      
+      // Validate state code against known Brazilian states
+      const validState = VALID_STATE_CODES.includes(sanitizedState) ? sanitizedState : '';
+
+      setCity(sanitizedCity);
+      setState(validState);
       setCepValid(true);
       toast.success("Cidade e estado preenchidos!");
     } catch (error) {
-      console.error("Error fetching CEP:", error);
-      toast.error("Erro ao buscar CEP");
+      clearTimeout(timeoutId);
+      
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.error("CEP lookup timeout");
+        toast.error("Tempo limite excedido ao buscar CEP");
+      } else {
+        console.error("Error fetching CEP:", error);
+        toast.error("Erro ao buscar CEP");
+      }
     } finally {
       setCepLoading(false);
     }
-  }, []);
+  }, [VALID_STATE_CODES]);
 
   const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatCep(e.target.value);

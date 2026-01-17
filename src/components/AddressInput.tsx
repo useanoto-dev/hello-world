@@ -53,6 +53,58 @@ interface AddressInputProps {
   disabled?: boolean;
 }
 
+// Brazilian state codes for validation
+const VALID_STATE_CODES = STATES.map(s => s.uf);
+
+// CEP validation regex - exactly 8 digits
+const CEP_REGEX = /^\d{8}$/;
+
+// Maximum field lengths for sanitization
+const MAX_LENGTHS = {
+  street: 255,
+  neighborhood: 100,
+  city: 100,
+  state: 2
+} as const;
+
+/**
+ * Validates and sanitizes a string value from the API
+ * - Ensures it's a string
+ * - Trims whitespace
+ * - Limits length
+ */
+const sanitizeApiString = (value: unknown, maxLength: number): string => {
+  if (typeof value !== 'string') return '';
+  return value.trim().slice(0, maxLength);
+};
+
+/**
+ * Validates the structure of the ViaCEP API response
+ */
+const isValidViaCepResponse = (data: unknown): data is { 
+  erro?: boolean;
+  logradouro?: string;
+  bairro?: string;
+  localidade?: string;
+  uf?: string;
+} => {
+  if (!data || typeof data !== 'object') return false;
+  const response = data as Record<string, unknown>;
+  
+  // If it has 'erro', it's a valid response (CEP not found)
+  if (response.erro === true) return true;
+  
+  // Otherwise, validate that expected fields are strings or undefined
+  const stringFields = ['logradouro', 'bairro', 'localidade', 'uf'];
+  for (const field of stringFields) {
+    if (field in response && typeof response[field] !== 'string') {
+      return false;
+    }
+  }
+  
+  return true;
+};
+
 export default function AddressInput({ value, onChange, disabled = false }: AddressInputProps) {
   const [loading, setLoading] = useState(false);
   const [cepValid, setCepValid] = useState(false);
@@ -64,37 +116,78 @@ export default function AddressInput({ value, onChange, disabled = false }: Addr
     return `${digits.slice(0, 5)}-${digits.slice(5, 8)}`;
   };
 
-  // Fetch address from CEP API
+  // Fetch address from CEP API with proper validation
   const fetchAddressFromCep = useCallback(async (cep: string) => {
     const cleanCep = cep.replace(/\D/g, "");
-    if (cleanCep.length !== 8) return;
+    
+    // Validate CEP format before making request
+    if (!CEP_REGEX.test(cleanCep)) {
+      return;
+    }
 
     setLoading(true);
     setCepValid(false);
 
+    // Create AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
     try {
-      const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
-      const data = await response.json();
+      const response = await fetch(
+        `https://viacep.com.br/ws/${cleanCep}/json/`,
+        { signal: controller.signal }
+      );
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+      
+      const data: unknown = await response.json();
+
+      // Validate response structure
+      if (!isValidViaCepResponse(data)) {
+        console.warn('Invalid ViaCEP response structure');
+        toast.error("Resposta inválida do serviço de CEP");
+        return;
+      }
 
       if (data.erro) {
         toast.error("CEP não encontrado");
         return;
       }
 
+      // Sanitize and validate each field
+      const street = sanitizeApiString(data.logradouro, MAX_LENGTHS.street);
+      const neighborhood = sanitizeApiString(data.bairro, MAX_LENGTHS.neighborhood);
+      const city = sanitizeApiString(data.localidade, MAX_LENGTHS.city);
+      const state = sanitizeApiString(data.uf, MAX_LENGTHS.state).toUpperCase();
+      
+      // Validate state code against known Brazilian states
+      const validState = VALID_STATE_CODES.includes(state) ? state : '';
+
       onChange({
         ...value,
         cep: formatCep(cleanCep),
-        street: data.logradouro || "",
-        neighborhood: data.bairro || "",
-        city: data.localidade || "",
-        state: data.uf || "",
+        street,
+        neighborhood,
+        city,
+        state: validState,
       });
 
       setCepValid(true);
       toast.success("Endereço preenchido automaticamente!");
     } catch (error) {
-      console.error("Error fetching CEP:", error);
-      toast.error("Erro ao buscar CEP");
+      clearTimeout(timeoutId);
+      
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.error("CEP lookup timeout");
+        toast.error("Tempo limite excedido ao buscar CEP");
+      } else {
+        console.error("Error fetching CEP:", error);
+        toast.error("Erro ao buscar CEP");
+      }
     } finally {
       setLoading(false);
     }
