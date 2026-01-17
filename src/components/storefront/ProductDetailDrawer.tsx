@@ -87,50 +87,51 @@ export default function ProductDetailDrawer({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: "100%" }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="fixed inset-0 z-50 bg-background flex flex-col"
+        className="fixed inset-0 z-50 bg-background"
       >
-        {/* Hero Image Section */}
-        <div className="relative flex-shrink-0">
-          <div className="relative h-64 sm:h-80 bg-gray-900">
-            {product.image_url ? (
-              <img 
-                src={product.image_url} 
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                <span className="text-7xl">🍽️</span>
-              </div>
-            )}
-            
-            {/* Gradient overlay at bottom */}
-            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white via-white/80 to-transparent" />
-            
-            {/* Back button */}
-            <button 
-              onClick={onClose}
-              className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-700" />
-            </button>
-            
-            {/* Share button */}
-            <button 
-              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
-            >
-              <Share2 className="w-5 h-5 text-gray-700" />
-            </button>
-            
-            {/* Pull indicator */}
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
-              <ChevronDown className="w-6 h-6 text-gray-400 animate-bounce" />
-            </div>
-          </div>
+        {/* Fixed Header with Back/Share buttons */}
+        <div className="fixed top-0 inset-x-0 z-20 flex items-center justify-between p-4">
+          <button 
+            onClick={onClose}
+            className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 text-gray-700" />
+          </button>
+          <button 
+            className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
+          >
+            <Share2 className="w-5 h-5 text-gray-700" />
+          </button>
         </div>
 
-        {/* Content */}
-        <main className="flex-1 overflow-y-auto pb-32">
+        {/* Scrollable Content */}
+        <main className="h-full overflow-y-auto pb-32">
+          {/* Hero Image Section */}
+          <div className="relative">
+            <div className="relative h-64 sm:h-80 bg-gray-900">
+              {product.image_url ? (
+                <img 
+                  src={product.image_url} 
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                  <span className="text-7xl">🍽️</span>
+                </div>
+              )}
+              
+              {/* Gradient overlay at bottom */}
+              <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background via-background/80 to-transparent" />
+              
+              {/* Pull indicator */}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
+                <ChevronDown className="w-6 h-6 text-muted-foreground animate-bounce" />
+              </div>
+            </div>
+          </div>
+
+          {/* Content */}
           <div className="px-4 py-4">
             {/* Product Info */}
             <div className="mb-6">
