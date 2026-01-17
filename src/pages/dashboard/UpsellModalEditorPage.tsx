@@ -633,7 +633,11 @@ export default function UpsellModalEditorPage() {
   );
 
   // Step 3: Appearance
-  const renderAppearanceStep = () => (
+  const renderAppearanceStep = () => {
+    // Combo Modal has a different preview - full screen style
+    const isCombo = selectedTemplate === "combo";
+
+    return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-4">
         <h2 className="text-sm font-semibold text-foreground mb-0.5">
@@ -646,24 +650,118 @@ export default function UpsellModalEditorPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Preview */}
-        <div className="bg-gradient-to-b from-muted/20 to-muted/40 rounded-lg p-4 border border-border/40">
-          <p className="text-[10px] text-muted-foreground mb-3 text-center uppercase tracking-wide">Prévia</p>
-          <div className="bg-background rounded-lg shadow-md p-4 text-center">
-            <span className="text-3xl mb-2 block">{formData.icon}</span>
-            <h4 className="font-semibold text-sm mb-1">{formData.title || "Título do modal"}</h4>
-            <p className="text-[11px] text-muted-foreground mb-3">{formData.description || "Descrição"}</p>
-            <div className="space-y-1.5">
-              <button 
-                className="w-full py-2 rounded-lg text-white text-xs font-semibold"
-                style={{ backgroundColor: formData.button_color }}
-              >
-                + {formData.button_text || "Botão principal"}
-              </button>
-              <button className="w-full py-1.5 rounded-lg border border-border text-xs font-medium">
-                {formData.secondary_button_text || "Botão secundário"}
-              </button>
+        <div className="bg-gradient-to-b from-muted/20 to-muted/40 rounded-lg p-3 border border-border/40">
+          <p className="text-[10px] text-muted-foreground mb-2 text-center uppercase tracking-wide">Prévia</p>
+          
+          {isCombo ? (
+            // Combo Modal Preview - Full screen style like PizzaFlavorSelectionDrawer
+            <div className="bg-background rounded-lg shadow-md overflow-hidden">
+              {/* Hero area */}
+              <div className="relative h-20 bg-gradient-to-br from-amber-100 to-orange-200 flex items-center justify-center">
+                <span className="text-4xl">🍕</span>
+                <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-white to-transparent" />
+              </div>
+              
+              {/* Content */}
+              <div className="px-3 py-2">
+                <h4 className="font-bold text-xs text-foreground leading-tight">{formData.title || "Personalize sua pizza"}</h4>
+                <p className="text-[9px] text-muted-foreground mt-0.5">{formData.description || "Escolha massa, borda e adicionais"}</p>
+                
+                {/* Sections Preview */}
+                <div className="mt-2 space-y-2">
+                  {formData.combo_show_doughs && (
+                    <div>
+                      <p className="text-[8px] font-semibold text-foreground flex items-center gap-1 mb-1">
+                        <span>🥖</span> Escolha a Massa
+                      </p>
+                      <div className="grid grid-cols-2 gap-1">
+                        <div className="px-1.5 py-1 rounded-md border border-purple-300 bg-purple-50 text-[8px] flex items-center justify-between">
+                          <span>Tradicional</span>
+                          <div className="w-3 h-3 rounded-full bg-purple-500 flex items-center justify-center">
+                            <Check className="w-2 h-2 text-white" />
+                          </div>
+                        </div>
+                        <div className="px-1.5 py-1 rounded-md border border-gray-100 bg-white text-[8px]">
+                          Integral
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {formData.combo_show_edges && (
+                    <div>
+                      <p className="text-[8px] font-semibold text-foreground flex items-center gap-1 mb-1">
+                        <span>🧀</span> Escolha a Borda
+                      </p>
+                      <div className="grid grid-cols-2 gap-1">
+                        <div className="px-1.5 py-1 rounded-md border border-orange-300 bg-orange-50 text-[8px] flex items-center justify-between">
+                          <span>Catupiry</span>
+                          <div className="w-3 h-3 rounded-full bg-orange-500 flex items-center justify-center">
+                            <Check className="w-2 h-2 text-white" />
+                          </div>
+                        </div>
+                        <div className="px-1.5 py-1 rounded-md border border-gray-100 bg-white text-[8px]">
+                          Cheddar
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {formData.combo_show_additionals && (
+                    <div>
+                      <p className="text-[8px] font-semibold text-foreground flex items-center gap-1 mb-1">
+                        <span>➕</span> Adicionais
+                      </p>
+                      <div className="grid grid-cols-2 gap-1">
+                        <div className="px-1.5 py-1 rounded-md border border-blue-300 bg-blue-50 text-[8px] flex items-center justify-between">
+                          <span>Bacon</span>
+                          <div className="w-3 h-3 rounded-full bg-blue-500 flex items-center justify-center text-white text-[6px] font-bold">1</div>
+                        </div>
+                        <div className="px-1.5 py-1 rounded-md border border-gray-100 bg-white text-[8px]">
+                          Queijo extra
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Footer */}
+              <div className="px-3 py-2 border-t border-border/50 bg-muted/20">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[8px] text-muted-foreground">Extras</span>
+                  <span className="text-[10px] font-bold">+R$ 12,00</span>
+                </div>
+                <button 
+                  className="w-full py-1.5 rounded-lg text-white text-[10px] font-semibold"
+                  style={{ backgroundColor: formData.button_color }}
+                >
+                  {formData.button_text || "Confirmar"}
+                </button>
+                <button className="w-full py-1 text-[9px] text-muted-foreground mt-1">
+                  {formData.secondary_button_text || "Não, obrigado"}
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            // Default Modal Preview
+            <div className="bg-background rounded-lg shadow-md p-4 text-center">
+              <span className="text-3xl mb-2 block">{formData.icon}</span>
+              <h4 className="font-semibold text-sm mb-1">{formData.title || "Título do modal"}</h4>
+              <p className="text-[11px] text-muted-foreground mb-3">{formData.description || "Descrição"}</p>
+              <div className="space-y-1.5">
+                <button 
+                  className="w-full py-2 rounded-lg text-white text-xs font-semibold"
+                  style={{ backgroundColor: formData.button_color }}
+                >
+                  + {formData.button_text || "Botão principal"}
+                </button>
+                <button className="w-full py-1.5 rounded-lg border border-border text-xs font-medium">
+                  {formData.secondary_button_text || "Botão secundário"}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Form */}
@@ -848,6 +946,7 @@ export default function UpsellModalEditorPage() {
       </div>
     </div>
   );
+  };
 
   // Step 4: Settings
   const renderSettingsStep = () => (
