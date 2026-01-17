@@ -40,6 +40,8 @@ const MODAL_TEMPLATES = [
     label: "Bebidas", 
     icon: "🥤", 
     color: "bg-emerald-500",
+    bgLight: "bg-emerald-50 border-emerald-200 hover:bg-emerald-100",
+    bgSelected: "bg-emerald-100 border-emerald-400",
     description: "Sugere bebidas após adicionar um item",
     defaultTitle: "Que tal uma bebida gelada? 😎",
     defaultDescription: "Complete sua experiência com uma bebida refrescante!",
@@ -53,6 +55,8 @@ const MODAL_TEMPLATES = [
     label: "Bordas", 
     icon: "🍕", 
     color: "bg-orange-500",
+    bgLight: "bg-orange-50 border-orange-200 hover:bg-orange-100",
+    bgSelected: "bg-orange-100 border-orange-400",
     description: "Oferece bordas recheadas para pizzas",
     defaultTitle: "Quer deixar sua pizza ainda melhor? 🍕",
     defaultDescription: "Escolha uma borda recheada deliciosa!",
@@ -66,6 +70,8 @@ const MODAL_TEMPLATES = [
     label: "Adicionais", 
     icon: "➕", 
     color: "bg-blue-500",
+    bgLight: "bg-blue-50 border-blue-200 hover:bg-blue-100",
+    bgSelected: "bg-blue-100 border-blue-400",
     description: "Sugere itens adicionais ao produto",
     defaultTitle: "Deseja adicionar algo mais? ✨",
     defaultDescription: "Turbine seu pedido com ingredientes extras!",
@@ -79,6 +85,8 @@ const MODAL_TEMPLATES = [
     label: "Acompanhamentos", 
     icon: "🍟", 
     color: "bg-amber-500",
+    bgLight: "bg-amber-50 border-amber-200 hover:bg-amber-100",
+    bgSelected: "bg-amber-100 border-amber-400",
     description: "Sugere acompanhamentos como batatas, molhos",
     defaultTitle: "Que tal um acompanhamento? 🍟",
     defaultDescription: "Batatas, molhos e muito mais para você!",
@@ -92,6 +100,8 @@ const MODAL_TEMPLATES = [
     label: "Personalizado", 
     icon: "✨", 
     color: "bg-purple-500",
+    bgLight: "bg-purple-50 border-purple-200 hover:bg-purple-100",
+    bgSelected: "bg-purple-100 border-purple-400",
     description: "Crie um modal totalmente personalizado",
     defaultTitle: "Deseja mais alguma coisa? 🎉",
     defaultDescription: "Aproveite para completar seu pedido!",
@@ -348,8 +358,8 @@ export default function UpsellModalEditorPage() {
             className={cn(
               "w-full px-3 py-2.5 rounded-md border transition-all text-left flex items-center gap-3",
               selectedTemplate === template.id
-                ? "border-primary/60 bg-primary/5"
-                : "border-gray-300 bg-gray-50/50 hover:border-gray-400 hover:bg-gray-50"
+                ? template.bgSelected
+                : template.bgLight
             )}
           >
             <span className="text-lg">{template.icon}</span>
