@@ -60,12 +60,23 @@ interface Props {
   category: Category;
   storeId: string;
   preselectedOptionId?: string | null;
+  /** Controls +/- quantity for option items inside "Adicionais/Acompanhamentos" groups */
+  allowOptionItemQuantity?: boolean;
   onClose: () => void;
   onComplete: () => void;
   onShowUpsell?: (categoryId: string) => void;
 }
 
-export default function ProductCustomizationModal({ product, category, storeId, preselectedOptionId, onClose, onComplete, onShowUpsell }: Props) {
+export default function ProductCustomizationModal({
+  product,
+  category,
+  storeId,
+  preselectedOptionId,
+  allowOptionItemQuantity = true,
+  onClose,
+  onComplete,
+  onShowUpsell,
+}: Props) {
   const [loading, setLoading] = useState(true);
   const [groups, setGroups] = useState<OptionGroup[]>([]);
   const [items, setItems] = useState<Record<string, OptionItem[]>>({});
@@ -261,7 +272,7 @@ export default function ProductCustomizationModal({ product, category, storeId, 
           if (preselectedOptionId && itemId === preselectedOptionId) {
             return;
           }
-          const qty = quantities[itemId] || 1;
+          const qty = allowOptionItemQuantity ? (quantities[itemId] || 1) : 1;
           const effectivePrice = getItemEffectivePrice(item);
           if (effectivePrice > 0 || item.additional_price > 0) {
             const hasItemPromo = item.promotional_price !== null && item.promotional_price < item.additional_price;
@@ -276,7 +287,7 @@ export default function ProductCustomizationModal({ product, category, storeId, 
     });
     
     return breakdown;
-  }, [basePrice, selections, items, quantities, preselectedOptionId, product.name, hasPromotion, originalPrice]);
+  }, [basePrice, selections, items, quantities, allowOptionItemQuantity, preselectedOptionId, product.name, hasPromotion, originalPrice]);
 
   const totalPrice = useMemo(() => {
     let total = basePrice;
@@ -290,14 +301,14 @@ export default function ProductCustomizationModal({ product, category, storeId, 
           if (preselectedOptionId && itemId === preselectedOptionId) {
             return;
           }
-          const qty = quantities[itemId] || 1;
+          const qty = allowOptionItemQuantity ? (quantities[itemId] || 1) : 1;
           total += getItemEffectivePrice(item) * qty;
         }
       });
     });
     
     return total;
-  }, [basePrice, selections, items, quantities, preselectedOptionId]);
+  }, [basePrice, selections, items, quantities, allowOptionItemQuantity, preselectedOptionId]);
 
   const handleSingleSelect = (groupId: string, itemId: string) => {
     setSelections(prev => ({
@@ -333,6 +344,7 @@ export default function ProductCustomizationModal({ product, category, storeId, 
   };
 
   const handleQuantityChange = (itemId: string, delta: number) => {
+    if (!allowOptionItemQuantity) return;
     setQuantities(prev => {
       const current = prev[itemId] || 1;
       const newQty = Math.max(1, current + delta);
@@ -404,7 +416,7 @@ export default function ProductCustomizationModal({ product, category, storeId, 
       selectedIds.forEach(itemId => {
         const item = groupItems.find(i => i.id === itemId);
         if (item) {
-          const qty = quantities[itemId] || 1;
+          const qty = allowOptionItemQuantity ? (quantities[itemId] || 1) : 1;
           if (qty > 1) {
             selectedOptions.push(`${item.name} (${qty}x)`);
           } else {
@@ -572,7 +584,7 @@ export default function ProductCustomizationModal({ product, category, storeId, 
       <div className={isGrid ? `grid ${gridCols} gap-1.5 sm:gap-2` : "space-y-1.5 sm:space-y-2"}>
         {groupItems.map((item) => {
           const isSelected = (selections[group.id] || []).includes(item.id);
-          const qty = quantities[item.id] || 1;
+          const qty = allowOptionItemQuantity ? (quantities[item.id] || 1) : 1;
           
           return (
             <div
@@ -611,7 +623,7 @@ export default function ProductCustomizationModal({ product, category, storeId, 
                       </span>
                     )}
                   </Label>
-                  {isSelected && (
+                  {isSelected && allowOptionItemQuantity && (
                     <div className="flex items-center gap-0.5 sm:gap-1 mt-1.5 sm:mt-2">
                       <Button
                         variant="outline"
@@ -681,7 +693,7 @@ export default function ProductCustomizationModal({ product, category, storeId, 
                     </Label>
                   </div>
                   <div className="flex items-center gap-3">
-                    {isSelected && (
+                    {isSelected && allowOptionItemQuantity && (
                       <div className="flex items-center gap-2">
                         <Button
                           variant="outline"
