@@ -229,8 +229,8 @@ export default function ReviewsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3">
+      <div className="min-h-screen bg-white">
+        <div className="sticky top-0 z-10 bg-white border-b border-border px-4 py-3">
           <Skeleton className="h-6 w-32" />
         </div>
         <div className="p-4 space-y-4">
@@ -245,7 +245,7 @@ export default function ReviewsPage() {
 
   if (!store) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <Store className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <p className="text-muted-foreground">Estabelecimento não encontrado</p>
@@ -258,9 +258,9 @@ export default function ReviewsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-6">
+    <div className="min-h-screen bg-white pb-6">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-background border-b border-border">
+      <div className="sticky top-0 z-10 bg-white border-b border-border">
         <div className="flex items-center gap-3 px-4 py-3">
           <Link
             to={`/cardapio/${slug}`}

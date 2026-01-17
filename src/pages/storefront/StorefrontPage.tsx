@@ -1119,7 +1119,7 @@ export default function StorefrontPage() {
 
   if (!store) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground mb-2">Loja não encontrada</h1>
           <p className="text-muted-foreground">Verifique o link e tente novamente.</p>
