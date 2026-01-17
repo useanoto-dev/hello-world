@@ -224,6 +224,30 @@ export function PizzaFlavorSelectionDrawer({
     return basePrice + selectedFlavors.reduce((sum, f) => sum + f.surcharge, 0);
   }, [selectedFlavors, basePrice]);
 
+  const handleShare = useCallback(async () => {
+    const shareData = {
+      title: `Pizza ${sizeName}`,
+      text: `Confira a pizza ${sizeName}!`,
+      url: window.location.href,
+    };
+    
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch {
+        // User cancelled or error
+      }
+    } else {
+      // Fallback: copy to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success("Link copiado!");
+      } catch {
+        toast.error("Não foi possível compartilhar");
+      }
+    }
+  }, [sizeName]);
+
   const handleSelectFlavor = useCallback((flavor: FlavorWithPrice) => {
     setSelectedFlavors((prev) => {
       const isSelected = prev.some(f => f.id === flavor.id);
@@ -389,7 +413,10 @@ export function PizzaFlavorSelectionDrawer({
               <button className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors">
                 <Search className="w-5 h-5 text-foreground" />
               </button>
-              <button className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors">
+              <button 
+                onClick={handleShare}
+                className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
+              >
                 <Share2 className="w-5 h-5 text-foreground" />
               </button>
             </div>
@@ -404,6 +431,7 @@ export function PizzaFlavorSelectionDrawer({
               <ArrowLeft className="w-5 h-5 text-gray-700" />
             </button>
             <button 
+              onClick={handleShare}
               className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
             >
               <Share2 className="w-5 h-5 text-gray-700" />
