@@ -1,8 +1,7 @@
-// Edge Upsell Modal - Shows pizza edges from database with prices per size
-// Beautiful bottom sheet design matching existing upsell modals
+// Edge Upsell Modal - Compact version showing pizza edges with prices per size
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Check, X } from "lucide-react";
+import { Check, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
@@ -61,7 +60,7 @@ export default function EdgeUpsellModal({
   sizeName,
   title = "Escolha a Borda",
   description,
-  buttonText = "Confirmar",
+  buttonText = "Continuar",
   buttonColor = "#f97316",
   secondaryButtonText = "Sem Borda",
   icon = "🧀",
@@ -119,80 +118,53 @@ export default function EdgeUpsellModal({
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
         className="fixed inset-0 z-[100] bg-black/50"
+        onClick={handleSkip}
       />
       
-      {/* Bottom sheet */}
+      {/* Compact bottom sheet */}
       <motion.div
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 30, stiffness: 300 }}
-        className="fixed inset-x-0 bottom-0 z-[101] bg-background rounded-t-3xl shadow-2xl max-h-[80vh] flex flex-col"
+        className="fixed inset-x-0 bottom-0 z-[101] bg-background rounded-t-2xl shadow-2xl"
       >
         {/* Handle bar */}
-        <div className="flex justify-center pt-3 pb-2">
-          <div className="w-12 h-1.5 bg-muted rounded-full" />
+        <div className="flex justify-center pt-2 pb-1">
+          <div className="w-10 h-1 bg-muted rounded-full" />
         </div>
 
-        {/* Header */}
-        <div className="flex-shrink-0 px-5 pb-3 border-b border-border/50">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={onClose}
-              className="p-2 -ml-2 hover:bg-muted rounded-full transition-colors"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            
-            <div className="text-center flex-1">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <span className="text-2xl">{icon}</span>
-                <h2 className="font-bold text-lg text-foreground">{title}</h2>
-              </div>
-              {sizeName && (
-                <p className="text-sm text-muted-foreground">Tamanho: {sizeName}</p>
-              )}
-              {description && (
-                <p className="text-xs text-muted-foreground mt-1">{description}</p>
-              )}
-            </div>
-            
-            <button
-              onClick={onClose}
-              className="p-2 -mr-2 hover:bg-muted rounded-full transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+        {/* Compact Header */}
+        <div className="px-4 pb-2 flex items-center gap-2">
+          <span className="text-xl">{icon}</span>
+          <div className="flex-1">
+            <h2 className="font-semibold text-base text-foreground">{title}</h2>
+            {sizeName && (
+              <p className="text-xs text-muted-foreground">Tamanho {sizeName}</p>
+            )}
           </div>
         </div>
 
-        {/* Edges List */}
-        <div className="flex-1 overflow-y-auto min-h-0 px-5 py-4">
-          <div className="space-y-2">
+        {/* Compact Edges List */}
+        <div className="px-4 pb-3 max-h-[40vh] overflow-y-auto">
+          <div className="space-y-1.5">
             {/* No edge option */}
             <button
-              onClick={() => setSelectedEdge(null)}
+              onClick={() => { setSelectedEdge(null); handleSkip(); }}
               className={cn(
-                "w-full flex items-center justify-between p-4 rounded-xl transition-all border",
+                "w-full flex items-center justify-between p-3 rounded-xl transition-all border",
                 selectedEdge === null
-                  ? "bg-primary/10 border-primary"
-                  : "bg-card border-border hover:border-muted-foreground/50"
+                  ? "bg-muted/50 border-primary/50"
+                  : "bg-card border-border hover:border-muted-foreground/30"
               )}
             >
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">🚫</span>
-                <span className="font-medium text-foreground">Sem Borda</span>
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🚫</span>
+                <span className="font-medium text-sm text-foreground">Sem Borda</span>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground">Grátis</span>
-                <div className={cn(
-                  "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
-                  selectedEdge === null
-                    ? "bg-primary border-primary"
-                    : "border-muted-foreground/30"
-                )}>
-                  {selectedEdge === null && <Check className="w-4 h-4 text-primary-foreground" />}
-                </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Grátis</span>
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
               </div>
             </button>
 
@@ -202,33 +174,26 @@ export default function EdgeUpsellModal({
               return (
                 <button
                   key={edge.id}
-                  onClick={() => setSelectedEdge(edge)}
+                  onClick={() => { setSelectedEdge(edge); onSelectEdge(edge); }}
                   className={cn(
-                    "w-full flex items-center justify-between p-4 rounded-xl transition-all border",
+                    "w-full flex items-center justify-between p-3 rounded-xl transition-all border",
                     isSelected
-                      ? "bg-primary/10 border-primary"
-                      : "bg-card border-border hover:border-muted-foreground/50"
+                      ? "bg-muted/50 border-primary/50"
+                      : "bg-card border-border hover:border-muted-foreground/30"
                   )}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">🧀</span>
-                    <span className="font-medium text-foreground">{edge.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🧀</span>
+                    <span className="font-medium text-sm text-foreground">{edge.name}</span>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <span 
-                      className="text-sm font-semibold"
+                      className="text-xs font-semibold"
                       style={{ color: buttonColor }}
                     >
                       +{formatCurrency(edge.price)}
                     </span>
-                    <div className={cn(
-                      "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
-                      isSelected
-                        ? "bg-primary border-primary"
-                        : "border-muted-foreground/30"
-                    )}>
-                      {isSelected && <Check className="w-4 h-4 text-primary-foreground" />}
-                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   </div>
                 </button>
               );
@@ -236,31 +201,8 @@ export default function EdgeUpsellModal({
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex-shrink-0 p-5 border-t border-border/50 bg-background space-y-3">
-          <button
-            onClick={handleConfirm}
-            className="w-full h-14 rounded-xl text-white font-semibold text-base transition-all hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg"
-            style={{ backgroundColor: buttonColor }}
-          >
-            {selectedEdge ? (
-              <>
-                {buttonText} • +{formatCurrency(selectedEdge.price)}
-              </>
-            ) : (
-              <>Continuar sem borda</>
-            )}
-          </button>
-          
-          {selectedEdge && (
-            <button
-              onClick={handleSkip}
-              className="w-full h-12 rounded-xl border-2 border-border bg-background hover:bg-muted font-medium text-sm transition-colors"
-            >
-              {secondaryButtonText}
-            </button>
-          )}
-        </div>
+        {/* Minimal safe area padding */}
+        <div className="h-4 bg-background" />
       </motion.div>
     </AnimatePresence>
   );

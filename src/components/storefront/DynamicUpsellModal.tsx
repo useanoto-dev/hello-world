@@ -1,13 +1,12 @@
 // Dynamic Upsell Modal - Fetches configured modals from database and displays them
-// Beautiful bottom sheet design matching the reference image
-import { useState, useEffect } from "react";
+// Supports sequential flow: shows modals in order based on display_order
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/contexts/CartContext";
 import { formatCurrency } from "@/lib/formatters";
 import { toast } from "sonner";
-import { Skeleton } from "@/components/ui/skeleton";
 import EdgeUpsellModal from "./EdgeUpsellModal";
 
 interface UpsellModalConfig {
@@ -28,6 +27,7 @@ interface UpsellModalConfig {
   primary_redirect_category_id: string | null;
   secondary_redirect_category_id: string | null;
   content_type: string | null;
+  display_order: number;
 }
 
 interface Product {
@@ -63,11 +63,15 @@ export default function DynamicUpsellModal({
   onSelectEdge,
 }: DynamicUpsellModalProps) {
   const [loading, setLoading] = useState(true);
-  const [modalConfig, setModalConfig] = useState<UpsellModalConfig | null>(null);
+  const [allModals, setAllModals] = useState<UpsellModalConfig[]>([]);
+  const [currentModalIndex, setCurrentModalIndex] = useState(0);
   const [products, setProducts] = useState<Product[]>([]);
   const [showProducts, setShowProducts] = useState(false);
   
   const { addToCart } = useCart();
+
+  // Current modal being displayed
+  const modalConfig = allModals[currentModalIndex] || null;
 
   useEffect(() => {
     loadModalData();
@@ -76,15 +80,14 @@ export default function DynamicUpsellModal({
 
   const loadModalData = async () => {
     try {
-      // Query upsell_modals table
+      // Query ALL active upsell_modals for this category, ordered by display_order
       const { data: modals, error: modalError } = await (supabase as any)
         .from("upsell_modals")
         .select("*")
         .eq("store_id", storeId)
         .eq("is_active", true)
         .eq("trigger_category_id", triggerCategoryId)
-        .order("display_order")
-        .limit(1);
+        .order("display_order");
 
       if (modalError) throw modalError;
 
@@ -94,12 +97,13 @@ export default function DynamicUpsellModal({
         return;
       }
 
-      const modal = modals[0] as UpsellModalConfig;
-      setModalConfig(modal);
+      setAllModals(modals as UpsellModalConfig[]);
+      setCurrentModalIndex(0);
 
-      // Pre-load products for quick add
-      if (modal.show_quick_add) {
-        await loadProducts(modal);
+      // Pre-load products for first modal if needed
+      const firstModal = modals[0] as UpsellModalConfig;
+      if (firstModal.show_quick_add && firstModal.content_type !== "pizza_edges") {
+        await loadProducts(firstModal);
       }
 
     } catch (error) {
@@ -109,6 +113,25 @@ export default function DynamicUpsellModal({
       setLoading(false);
     }
   };
+
+  // Advance to next modal or close if no more
+  const goToNextModal = useCallback(async () => {
+    const nextIndex = currentModalIndex + 1;
+    
+    if (nextIndex < allModals.length) {
+      setCurrentModalIndex(nextIndex);
+      setShowProducts(false);
+      
+      // Pre-load products for next modal if needed
+      const nextModal = allModals[nextIndex];
+      if (nextModal.show_quick_add && nextModal.content_type !== "pizza_edges") {
+        await loadProducts(nextModal);
+      }
+    } else {
+      // No more modals, close
+      onClose();
+    }
+  }, [currentModalIndex, allModals, onClose]);
 
   const loadProducts = async (modal: UpsellModalConfig) => {
     try {
@@ -209,7 +232,7 @@ export default function DynamicUpsellModal({
     } else if (onSelectProducts) {
       onSelectProducts();
     } else {
-      onClose();
+      goToNextModal();
     }
   };
 
@@ -220,8 +243,18 @@ export default function DynamicUpsellModal({
       onClose();
       return;
     }
-    onClose();
+    // Skip to next modal
+    goToNextModal();
   };
+
+  // Handle edge selection - goes to next modal after selection
+  const handleEdgeSelection = useCallback((edge: { id: string; name: string; price: number } | null) => {
+    if (onSelectEdge) {
+      onSelectEdge(edge);
+    }
+    // Go to next modal in sequence
+    goToNextModal();
+  }, [onSelectEdge, goToNextModal]);
 
   // Don't render anything until we've confirmed there's a modal configured
   if (loading || !modalConfig) {
@@ -229,7 +262,7 @@ export default function DynamicUpsellModal({
   }
 
   // If content_type is pizza_edges, render the EdgeUpsellModal instead
-  if (modalConfig.content_type === "pizza_edges" && sizeId && onSelectEdge) {
+  if (modalConfig.content_type === "pizza_edges" && sizeId) {
     return (
       <EdgeUpsellModal
         storeId={storeId}
@@ -238,12 +271,12 @@ export default function DynamicUpsellModal({
         sizeName={sizeName || ""}
         title={modalConfig.title}
         description={modalConfig.description || undefined}
-        buttonText={modalConfig.button_text || "Confirmar"}
+        buttonText={modalConfig.button_text || "Continuar"}
         buttonColor={modalConfig.button_color || "#f97316"}
         secondaryButtonText={modalConfig.secondary_button_text || "Sem Borda"}
         icon={modalConfig.icon || "🧀"}
-        onClose={onClose}
-        onSelectEdge={onSelectEdge}
+        onClose={goToNextModal}
+        onSelectEdge={handleEdgeSelection}
       />
     );
   }
@@ -252,6 +285,9 @@ export default function DynamicUpsellModal({
   const icon = modalConfig.icon || "🥤";
   const buttonText = modalConfig.button_text || "Escolher";
   const secondaryText = modalConfig.secondary_button_text || "Não, obrigado";
+
+  // Check if there are more modals after this one
+  const hasMoreModals = currentModalIndex < allModals.length - 1;
 
   return (
     <AnimatePresence>
@@ -266,6 +302,7 @@ export default function DynamicUpsellModal({
       
       {/* Bottom sheet - slides up from bottom */}
       <motion.div
+        key={modalConfig.id}
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
@@ -276,6 +313,20 @@ export default function DynamicUpsellModal({
         <div className="flex justify-center pt-3 pb-2">
           <div className="w-12 h-1.5 bg-muted rounded-full" />
         </div>
+
+        {/* Modal progress indicator when multiple modals */}
+        {allModals.length > 1 && (
+          <div className="flex justify-center gap-1.5 pb-2">
+            {allModals.map((_, idx) => (
+              <div 
+                key={idx} 
+                className={`w-2 h-2 rounded-full transition-colors ${
+                  idx === currentModalIndex ? 'bg-primary' : 'bg-muted'
+                }`} 
+              />
+            ))}
+          </div>
+        )}
 
         {showProducts ? (
           // Products view
@@ -326,10 +377,10 @@ export default function DynamicUpsellModal({
 
             <div className="px-5 pb-6 pt-3 border-t">
               <button 
-                onClick={onClose}
+                onClick={goToNextModal}
                 className="w-full h-12 rounded-xl bg-muted hover:bg-muted/80 font-medium text-sm transition-colors"
               >
-                Continuar para o carrinho
+                {hasMoreModals ? "Continuar" : "Ir para o carrinho"}
               </button>
             </div>
           </>
