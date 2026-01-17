@@ -23,7 +23,7 @@ import CardapioSkeleton from "@/components/storefront/skeletons/CardapioSkeleton
 import PedidosSkeleton from "@/components/storefront/skeletons/PedidosSkeleton";
 import SobreSkeleton from "@/components/storefront/skeletons/SobreSkeleton";
 import InstallPrompt from "@/components/storefront/InstallPrompt";
-// UpsellModal removed - now using DynamicUpsellModal in ProductDetailDrawer
+import DynamicUpsellModal from "@/components/storefront/DynamicUpsellModal";
 import { LoyaltyWidget } from "@/components/storefront/LoyaltyWidget";
 import { PizzaSizeGrid } from "@/components/storefront/PizzaSizeGrid";
 import { PizzaFlavorSelectionDrawer } from "@/components/storefront/PizzaFlavorSelectionDrawer";
@@ -429,9 +429,9 @@ export default function StorefrontPage() {
   const [preselectedOptionId, setPreselectedOptionId] = useState<string | null>(null);
   const [showCustomizationModal, setShowCustomizationModal] = useState(false);
   
-  // Upsell modal state - disabled (now handled in ProductDetailDrawer)
-  // const [showUpsellModal, setShowUpsellModal] = useState(false);
-  // const [upsellExcludeCategory, setUpsellExcludeCategory] = useState<string | null>(null);
+  // Upsell modal state for ProductCustomizationModal
+  const [showUpsellModal, setShowUpsellModal] = useState(false);
+  const [upsellTriggerCategoryId, setUpsellTriggerCategoryId] = useState<string | null>(null);
   
   // Pizza flavor selection state
   const [showPizzaFlavorDrawer, setShowPizzaFlavorDrawer] = useState(false);
@@ -868,17 +868,18 @@ export default function StorefrontPage() {
     setPreselectedOptionId(null);
   }, []);
 
-  // Upsell handlers - disabled (now handled in ProductDetailDrawer)
+  // Upsell handler - shows DynamicUpsellModal after adding product from customization modal
   const handleShowUpsell = useCallback((categoryId: string) => {
-    // Do nothing - upsell is now shown in ProductDetailDrawer
     setShowCustomizationModal(false);
     setSelectedProduct(null);
     setSelectedCategory(null);
+    setUpsellTriggerCategoryId(categoryId);
+    setShowUpsellModal(true);
   }, []);
 
-  const handleUpsellContinueShopping = useCallback((categoryId: string) => {
-    setActiveCategory(categoryId);
-    setActiveTab("cardapio");
+  const handleUpsellClose = useCallback(() => {
+    setShowUpsellModal(false);
+    setUpsellTriggerCategoryId(null);
   }, []);
 
   // Pizza size selection handler
@@ -1386,8 +1387,14 @@ export default function StorefrontPage() {
         />
       )}
 
-      {/* Old UpsellModal removed - now using DynamicUpsellModal in ProductDetailDrawer */}
-
+      {/* Dynamic Upsell Modal - triggered after adding product from customization */}
+      {showUpsellModal && upsellTriggerCategoryId && store && (
+        <DynamicUpsellModal
+          storeId={store.id}
+          triggerCategoryId={upsellTriggerCategoryId}
+          onClose={handleUpsellClose}
+        />
+      )}
       {/* Pizza Flavor Selection Drawer */}
       {selectedPizzaSize && store && (
         <PizzaFlavorSelectionDrawer
@@ -1430,6 +1437,7 @@ export default function StorefrontPage() {
         <ProductDetailDrawer
           product={simpleProduct}
           categoryName={simpleProductCategoryName}
+          storeId={store.id}
           isOpen={showProductDetailDrawer}
           onClose={() => {
             setShowProductDetailDrawer(false);
