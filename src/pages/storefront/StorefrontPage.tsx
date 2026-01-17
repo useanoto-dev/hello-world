@@ -750,8 +750,8 @@ export default function StorefrontPage() {
 
   const isPizzaCategory = activeCategoryData?.category_type === "pizza";
   
-  // Check if current category is a standard category (has standard_sizes)
-  const isStandardCategory = effectiveCategory ? standardCategoryIds.has(effectiveCategory) : false;
+  // Check if current category is a standard category (by category_type, not by having sizes)
+  const isStandardCategory = activeCategoryData?.category_type === "standard";
 
   // Define handleSearch before early returns to avoid hook issues
   const handleSearch = useCallback((query: string) => {
