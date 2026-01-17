@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Sparkles, Trash2, Edit2, ArrowRight } from "lucide-react";
+import { Plus, Sparkles, Trash2, Edit2, ArrowRight, GripVertical } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -9,6 +9,23 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveRestaurant } from "@/hooks/useActiveRestaurant";
 import { toast } from "sonner";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface Category {
   id: string;
@@ -41,12 +58,143 @@ const MODAL_TYPE_CONFIG: Record<string, { label: string; icon: string; color: st
   custom: { label: "Personalizado", icon: "✨", color: "bg-purple-100 text-purple-700 border-purple-200" },
 };
 
+interface SortableModalCardProps {
+  modal: UpsellModal;
+  typeConfig: { label: string; icon: string; color: string };
+  onToggle: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  orderNumber: number;
+}
+
+function SortableModalCard({ modal, typeConfig, onToggle, onEdit, onDelete, orderNumber }: SortableModalCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: modal.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <Card 
+      ref={setNodeRef} 
+      style={style} 
+      className={`${!modal.is_active ? "opacity-60" : ""} ${isDragging ? "ring-2 ring-primary" : ""}`}
+    >
+      <CardHeader className="pb-2">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-2">
+            {/* Drag handle */}
+            <div
+              {...attributes}
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing p-1 -ml-1 hover:bg-muted rounded touch-none"
+            >
+              <GripVertical className="w-4 h-4 text-muted-foreground" />
+            </div>
+            {/* Order badge */}
+            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+              <span className="text-xs font-bold text-primary">{orderNumber}</span>
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-lg">{typeConfig.icon}</span>
+                <CardTitle className="text-sm font-medium">
+                  {modal.name}
+                </CardTitle>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className={`text-[10px] ${typeConfig.color}`}>
+                  {typeConfig.label}
+                </Badge>
+                <Badge variant={modal.is_active ? "default" : "secondary"} className="text-[10px]">
+                  {modal.is_active ? "Ativo" : "Inativo"}
+                </Badge>
+              </div>
+            </div>
+          </div>
+          <Switch
+            checked={modal.is_active}
+            onCheckedChange={onToggle}
+          />
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {/* Title preview */}
+        <div className="p-2 rounded-lg bg-muted/30 border border-border/50">
+          <p className="text-xs font-medium text-foreground">{modal.title}</p>
+          {modal.description && (
+            <p className="text-[10px] text-muted-foreground mt-0.5">{modal.description}</p>
+          )}
+        </div>
+
+        {/* Flow visualization */}
+        <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
+          <div className="flex items-center gap-1.5 flex-1 min-w-0">
+            <span className="text-lg">{modal.trigger_category?.icon || "📦"}</span>
+            <span className="text-xs font-medium truncate">
+              {modal.trigger_category?.name || "Qualquer categoria"}
+            </span>
+          </div>
+          <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
+          <div className="flex items-center gap-1.5 flex-1 min-w-0">
+            <span className="text-lg">{modal.target_category?.icon || typeConfig.icon}</span>
+            <span className="text-xs font-medium truncate">
+              {modal.target_category?.name || "Sugestões automáticas"}
+            </span>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2 pt-1">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 h-8 text-xs"
+            onClick={onEdit}
+          >
+            <Edit2 className="w-3.5 h-3.5 mr-1" />
+            Editar
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs text-destructive hover:text-destructive"
+            onClick={onDelete}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function UpsellModalsPage() {
   const navigate = useNavigate();
   const { restaurantId } = useActiveRestaurant();
   const [modals, setModals] = useState<UpsellModal[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     if (restaurantId) {
@@ -90,6 +238,39 @@ export default function UpsellModalsPage() {
       toast.error("Erro ao carregar modais");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = modals.findIndex((m) => m.id === active.id);
+    const newIndex = modals.findIndex((m) => m.id === over.id);
+    
+    const newModals = arrayMove(modals, oldIndex, newIndex);
+    setModals(newModals);
+
+    // Update display_order in database
+    try {
+      const updates = newModals.map((modal, index) => ({
+        id: modal.id,
+        display_order: index + 1,
+      }));
+
+      for (const update of updates) {
+        await supabase
+          .from("upsell_modals")
+          .update({ display_order: update.display_order })
+          .eq("id", update.id);
+      }
+
+      toast.success("Ordem dos modais atualizada");
+    } catch (error) {
+      console.error("Error updating order:", error);
+      toast.error("Erro ao atualizar ordem");
+      loadData(); // Reload on error
     }
   };
 
@@ -167,7 +348,7 @@ export default function UpsellModalsPage() {
             Modais de Venda Adicional
           </h1>
           <p className="text-[11px] text-muted-foreground">
-            Configure modais para sugerir produtos durante o pedido
+            Arraste para definir a ordem em que os modais aparecem
           </p>
         </div>
         <Button size="sm" onClick={handleCreate} className="gap-1.5">
@@ -191,86 +372,33 @@ export default function UpsellModalsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
-          {modals.map((modal) => {
-            const typeConfig = getTypeConfig(modal.modal_type);
-            return (
-              <Card key={modal.id} className={!modal.is_active ? "opacity-60" : ""}>
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-lg">{typeConfig.icon}</span>
-                        <CardTitle className="text-sm font-medium">
-                          {modal.name}
-                        </CardTitle>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className={`text-[10px] ${typeConfig.color}`}>
-                          {typeConfig.label}
-                        </Badge>
-                        <Badge variant={modal.is_active ? "default" : "secondary"} className="text-[10px]">
-                          {modal.is_active ? "Ativo" : "Inativo"}
-                        </Badge>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={modal.is_active}
-                      onCheckedChange={() => toggleModalActive(modal)}
-                    />
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {/* Title preview */}
-                  <div className="p-2 rounded-lg bg-muted/30 border border-border/50">
-                    <p className="text-xs font-medium text-foreground">{modal.title}</p>
-                    {modal.description && (
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{modal.description}</p>
-                    )}
-                  </div>
-
-                  {/* Flow visualization */}
-                  <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                      <span className="text-lg">{modal.trigger_category?.icon || "📦"}</span>
-                      <span className="text-xs font-medium truncate">
-                        {modal.trigger_category?.name || "Qualquer categoria"}
-                      </span>
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
-                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                      <span className="text-lg">{modal.target_category?.icon || typeConfig.icon}</span>
-                      <span className="text-xs font-medium truncate">
-                        {modal.target_category?.name || "Sugestões automáticas"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 pt-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 h-8 text-xs"
-                      onClick={() => handleEdit(modal)}
-                    >
-                      <Edit2 className="w-3.5 h-3.5 mr-1" />
-                      Editar
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 text-xs text-destructive hover:text-destructive"
-                      onClick={() => deleteModal(modal)}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={modals.map(m => m.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              {modals.map((modal, index) => {
+                const typeConfig = getTypeConfig(modal.modal_type);
+                return (
+                  <SortableModalCard
+                    key={modal.id}
+                    modal={modal}
+                    typeConfig={typeConfig}
+                    orderNumber={index + 1}
+                    onToggle={() => toggleModalActive(modal)}
+                    onEdit={() => handleEdit(modal)}
+                    onDelete={() => deleteModal(modal)}
+                  />
+                );
+              })}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   );
