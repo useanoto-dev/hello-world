@@ -1414,10 +1414,9 @@ export default function StorefrontPage() {
           onSelectEdge={(edge) => {
             if (edge) {
               setSelectedPizzaEdge(edge);
-              // The edge price will be added to the pizza in the cart
               toast.success(`Borda ${edge.name} adicionada!`);
             }
-            handleUpsellClose();
+            // Don't call handleUpsellClose - DynamicUpsellModal handles sequential flow
           }}
         />
       )}
