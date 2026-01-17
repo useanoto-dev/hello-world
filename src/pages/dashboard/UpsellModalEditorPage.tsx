@@ -770,20 +770,6 @@ export default function UpsellModalEditorPage() {
       </div>
 
       <div className="bg-card rounded-lg border border-border/60 p-4 space-y-4">
-        {/* Name */}
-        <div className="space-y-1">
-          <Label className="text-xs font-medium">Nome do modal (interno)</Label>
-          <Input
-            placeholder="Ex: Bebidas após Pizza"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="h-8 text-sm"
-          />
-          <p className="text-[10px] text-muted-foreground">
-            Usado apenas para identificação no painel
-          </p>
-        </div>
-
         {/* Target Category */}
         {(selectedTemplate === "drink" || selectedTemplate === "custom" || selectedTemplate === "accompaniment") && (
           <div className="space-y-1">
@@ -850,21 +836,6 @@ export default function UpsellModalEditorPage() {
             </>
           )}
 
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0">
-              <Label className="text-xs font-medium">Modal ativo</Label>
-              <p className="text-[10px] text-muted-foreground">
-                Desative para pausar temporariamente
-              </p>
-            </div>
-            <Switch
-              checked={formData.is_active}
-              onCheckedChange={(checked) => 
-                setFormData({ ...formData, is_active: checked })
-              }
-              className="scale-90"
-            />
-          </div>
         </div>
       </div>
     </div>
