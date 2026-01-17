@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
 import { 
   Sparkles, 
-  Coffee, 
-  Circle, 
-  Sandwich, 
   ChevronRight, 
   ChevronLeft,
   Check,
-  Plus
+  Palette
 } from "lucide-react";
 import {
   Dialog,
@@ -51,6 +48,10 @@ interface UpsellModal {
   show_quick_add: boolean;
   max_products: number;
   display_order: number;
+  button_text?: string | null;
+  button_color?: string | null;
+  secondary_button_text?: string | null;
+  icon?: string | null;
 }
 
 interface UpsellModalWizardProps {
@@ -61,16 +62,20 @@ interface UpsellModalWizardProps {
   storeId: string;
 }
 
-// Templates pré-definidos
+// Templates pré-definidos com configurações completas
 const MODAL_TEMPLATES = [
   { 
     id: "drink", 
     label: "Bebidas", 
     icon: "🥤", 
-    color: "bg-blue-500",
+    color: "bg-emerald-500",
     description: "Sugere bebidas após adicionar um item",
-    defaultTitle: "Que tal uma bebida?",
-    defaultDescription: "Complete seu pedido com uma bebida gelada!",
+    defaultTitle: "Que tal uma bebida gelada? 😎",
+    defaultDescription: "Complete sua experiência com uma bebida refrescante!",
+    defaultButtonText: "Escolher Bebida",
+    defaultButtonColor: "#22c55e",
+    defaultSecondaryText: "Sem Bebida",
+    defaultIcon: "🥤",
   },
   { 
     id: "edge", 
@@ -78,26 +83,38 @@ const MODAL_TEMPLATES = [
     icon: "🍕", 
     color: "bg-orange-500",
     description: "Oferece bordas recheadas para pizzas",
-    defaultTitle: "Escolha a Borda",
-    defaultDescription: "Deixe sua pizza ainda mais gostosa",
+    defaultTitle: "Quer deixar sua pizza ainda melhor? 🍕",
+    defaultDescription: "Escolha uma borda recheada deliciosa!",
+    defaultButtonText: "Escolher Borda",
+    defaultButtonColor: "#f97316",
+    defaultSecondaryText: "Sem Borda",
+    defaultIcon: "🧀",
   },
   { 
     id: "additional", 
     label: "Adicionais", 
     icon: "➕", 
-    color: "bg-green-500",
+    color: "bg-blue-500",
     description: "Sugere itens adicionais ao produto",
-    defaultTitle: "Deseja adicionar algo?",
-    defaultDescription: "Adicione ingredientes extras",
+    defaultTitle: "Deseja adicionar algo mais? ✨",
+    defaultDescription: "Turbine seu pedido com ingredientes extras!",
+    defaultButtonText: "Ver Adicionais",
+    defaultButtonColor: "#3b82f6",
+    defaultSecondaryText: "Não, obrigado",
+    defaultIcon: "➕",
   },
   { 
     id: "accompaniment", 
     label: "Acompanhamentos", 
     icon: "🍟", 
-    color: "bg-yellow-500",
+    color: "bg-amber-500",
     description: "Sugere acompanhamentos como batatas, molhos",
-    defaultTitle: "Acompanhamentos",
-    defaultDescription: "Que tal um acompanhamento?",
+    defaultTitle: "Que tal um acompanhamento? 🍟",
+    defaultDescription: "Batatas, molhos e muito mais para você!",
+    defaultButtonText: "Ver Acompanhamentos",
+    defaultButtonColor: "#eab308",
+    defaultSecondaryText: "Sem Acompanhamento",
+    defaultIcon: "🍟",
   },
   { 
     id: "custom", 
@@ -105,9 +122,25 @@ const MODAL_TEMPLATES = [
     icon: "✨", 
     color: "bg-purple-500",
     description: "Crie um modal totalmente personalizado",
-    defaultTitle: "Deseja mais alguma coisa?",
-    defaultDescription: "Aproveite para completar seu pedido",
+    defaultTitle: "Deseja mais alguma coisa? 🎉",
+    defaultDescription: "Aproveite para completar seu pedido!",
+    defaultButtonText: "Ver Opções",
+    defaultButtonColor: "#a855f7",
+    defaultSecondaryText: "Não, obrigado",
+    defaultIcon: "✨",
   },
+];
+
+// Cores pré-definidas para seleção rápida
+const BUTTON_COLORS = [
+  { value: "#22c55e", label: "Verde", class: "bg-green-500" },
+  { value: "#3b82f6", label: "Azul", class: "bg-blue-500" },
+  { value: "#f97316", label: "Laranja", class: "bg-orange-500" },
+  { value: "#ef4444", label: "Vermelho", class: "bg-red-500" },
+  { value: "#a855f7", label: "Roxo", class: "bg-purple-500" },
+  { value: "#eab308", label: "Amarelo", class: "bg-yellow-500" },
+  { value: "#ec4899", label: "Rosa", class: "bg-pink-500" },
+  { value: "#14b8a6", label: "Teal", class: "bg-teal-500" },
 ];
 
 type WizardStep = "template" | "categories" | "settings";
@@ -127,12 +160,16 @@ export function UpsellModalWizard({
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     name: "",
-    title: "Deseja mais alguma coisa?",
-    description: "Aproveite para completar seu pedido",
+    title: "Deseja mais alguma coisa? 🎉",
+    description: "Aproveite para completar seu pedido!",
     target_category_id: "",
     is_active: true,
     show_quick_add: true,
     max_products: 4,
+    button_text: "Ver Opções",
+    button_color: "#22c55e",
+    secondary_button_text: "Não, obrigado",
+    icon: "✨",
   });
 
   // Initialize for editing
@@ -148,6 +185,10 @@ export function UpsellModalWizard({
         is_active: modal.is_active,
         show_quick_add: modal.show_quick_add,
         max_products: modal.max_products,
+        button_text: modal.button_text || "Ver Opções",
+        button_color: modal.button_color || "#22c55e",
+        secondary_button_text: modal.secondary_button_text || "Não, obrigado",
+        icon: modal.icon || "✨",
       });
       // Go to settings when editing
       setStep("settings");
@@ -158,12 +199,16 @@ export function UpsellModalWizard({
       setSelectedCategories([]);
       setFormData({
         name: "",
-        title: "Deseja mais alguma coisa?",
-        description: "Aproveite para completar seu pedido",
+        title: "Deseja mais alguma coisa? 🎉",
+        description: "Aproveite para completar seu pedido!",
         target_category_id: "",
         is_active: true,
         show_quick_add: true,
         max_products: 4,
+        button_text: "Ver Opções",
+        button_color: "#22c55e",
+        secondary_button_text: "Não, obrigado",
+        icon: "✨",
       });
     }
   }, [modal, open]);
@@ -177,6 +222,10 @@ export function UpsellModalWizard({
         name: template.label,
         title: template.defaultTitle,
         description: template.defaultDescription,
+        button_text: template.defaultButtonText,
+        button_color: template.defaultButtonColor,
+        secondary_button_text: template.defaultSecondaryText,
+        icon: template.defaultIcon,
       }));
     }
   };
@@ -219,8 +268,6 @@ export function UpsellModalWizard({
     setSaving(true);
 
     try {
-      // For now, we save as one modal with the first category as trigger
-      // In the future, we could create multiple modals, one per category
       const data = {
         store_id: storeId,
         name: formData.name.trim(),
@@ -232,6 +279,10 @@ export function UpsellModalWizard({
         is_active: formData.is_active,
         show_quick_add: formData.show_quick_add,
         max_products: formData.max_products,
+        button_text: formData.button_text.trim(),
+        button_color: formData.button_color,
+        secondary_button_text: formData.secondary_button_text.trim(),
+        icon: formData.icon,
       };
 
       if (modal) {
@@ -405,12 +456,32 @@ export function UpsellModalWizard({
     <div className="space-y-4">
       <div className="text-center mb-2">
         <h3 className="font-medium text-sm">Personalize o modal</h3>
-        <p className="text-xs text-muted-foreground">Configure o conteúdo e comportamento</p>
+        <p className="text-xs text-muted-foreground">Configure o conteúdo e aparência</p>
+      </div>
+
+      {/* Preview */}
+      <div className="p-4 rounded-xl bg-muted/30 border border-border/50">
+        <div className="text-center">
+          <span className="text-3xl mb-2 block">{formData.icon}</span>
+          <h4 className="font-semibold text-sm">{formData.title || "Título do modal"}</h4>
+          <p className="text-xs text-muted-foreground mt-1">{formData.description || "Descrição"}</p>
+          <div className="mt-3 space-y-2">
+            <button 
+              className="w-full py-2 rounded-lg text-white text-xs font-medium"
+              style={{ backgroundColor: formData.button_color }}
+            >
+              + {formData.button_text}
+            </button>
+            <button className="w-full py-2 rounded-lg border border-border text-xs font-medium">
+              {formData.secondary_button_text}
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Name */}
       <div className="space-y-1.5">
-        <Label htmlFor="name" className="text-xs">Nome do Modal</Label>
+        <Label htmlFor="name" className="text-xs">Nome do Modal (interno)</Label>
         <Input
           id="name"
           placeholder="Ex: Bebidas após Pizza"
@@ -419,12 +490,25 @@ export function UpsellModalWizard({
         />
       </div>
 
+      {/* Icon */}
+      <div className="space-y-1.5">
+        <Label htmlFor="icon" className="text-xs">Ícone (emoji)</Label>
+        <Input
+          id="icon"
+          placeholder="🥤"
+          value={formData.icon}
+          onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+          className="text-lg"
+          maxLength={4}
+        />
+      </div>
+
       {/* Title */}
       <div className="space-y-1.5">
         <Label htmlFor="title" className="text-xs">Título exibido</Label>
         <Input
           id="title"
-          placeholder="Deseja mais alguma coisa?"
+          placeholder="Que tal uma bebida gelada? 😎"
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
         />
@@ -435,10 +519,57 @@ export function UpsellModalWizard({
         <Label htmlFor="description" className="text-xs">Descrição</Label>
         <Textarea
           id="description"
-          placeholder="Aproveite para completar seu pedido"
+          placeholder="Complete sua experiência com uma bebida refrescante!"
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           rows={2}
+        />
+      </div>
+
+      {/* Button Text */}
+      <div className="space-y-1.5">
+        <Label htmlFor="button_text" className="text-xs">Texto do botão principal</Label>
+        <Input
+          id="button_text"
+          placeholder="Escolher Bebida"
+          value={formData.button_text}
+          onChange={(e) => setFormData({ ...formData, button_text: e.target.value })}
+        />
+      </div>
+
+      {/* Button Color */}
+      <div className="space-y-1.5">
+        <Label className="text-xs flex items-center gap-1">
+          <Palette className="w-3 h-3" />
+          Cor do botão
+        </Label>
+        <div className="flex flex-wrap gap-2">
+          {BUTTON_COLORS.map((color) => (
+            <button
+              key={color.value}
+              type="button"
+              onClick={() => setFormData({ ...formData, button_color: color.value })}
+              className={cn(
+                "w-8 h-8 rounded-full border-2 transition-all",
+                color.class,
+                formData.button_color === color.value
+                  ? "border-foreground scale-110 ring-2 ring-primary/30"
+                  : "border-transparent hover:scale-105"
+              )}
+              title={color.label}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Secondary Button Text */}
+      <div className="space-y-1.5">
+        <Label htmlFor="secondary_button_text" className="text-xs">Texto do botão secundário</Label>
+        <Input
+          id="secondary_button_text"
+          placeholder="Sem Bebida"
+          value={formData.secondary_button_text}
+          onChange={(e) => setFormData({ ...formData, secondary_button_text: e.target.value })}
         />
       </div>
 

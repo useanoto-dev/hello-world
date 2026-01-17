@@ -2793,14 +2793,18 @@ export type Database = {
       }
       upsell_modals: {
         Row: {
+          button_color: string | null
+          button_text: string | null
           created_at: string
           description: string | null
           display_order: number | null
+          icon: string | null
           id: string
           is_active: boolean
           max_products: number | null
           modal_type: string
           name: string
+          secondary_button_text: string | null
           show_quick_add: boolean
           store_id: string
           target_category_id: string | null
@@ -2809,14 +2813,18 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          button_color?: string | null
+          button_text?: string | null
           created_at?: string
           description?: string | null
           display_order?: number | null
+          icon?: string | null
           id?: string
           is_active?: boolean
           max_products?: number | null
           modal_type?: string
           name: string
+          secondary_button_text?: string | null
           show_quick_add?: boolean
           store_id: string
           target_category_id?: string | null
@@ -2825,14 +2833,18 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          button_color?: string | null
+          button_text?: string | null
           created_at?: string
           description?: string | null
           display_order?: number | null
+          icon?: string | null
           id?: string
           is_active?: boolean
           max_products?: number | null
           modal_type?: string
           name?: string
+          secondary_button_text?: string | null
           show_quick_add?: boolean
           store_id?: string
           target_category_id?: string | null
