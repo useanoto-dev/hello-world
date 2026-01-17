@@ -137,6 +137,7 @@ function AnimatedRoutes() {
             <Route path="products" element={<MenuManagerPage />} />
             <Route path="menu-manager" element={<MenuManagerPage />} />
             <Route path="menu-images" element={<UpsellModalsPage />} />
+            <Route path="upsell-modals" element={<UpsellModalsPage />} />
             <Route path="menu-bulk-edit" element={<MenuBulkEditPage />} />
             
             <Route path="orders" element={<OrdersPage />} />
