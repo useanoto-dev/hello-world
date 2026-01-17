@@ -682,8 +682,7 @@ export default function UpsellModalEditorPage() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-primary" />
+            <h1 className="text-sm font-semibold text-foreground">
               {editId ? "Editar Modal" : "Novo Modal"}
             </h1>
             <p className="text-xs text-muted-foreground">
