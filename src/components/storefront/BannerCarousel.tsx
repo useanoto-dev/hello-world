@@ -43,8 +43,8 @@ export default function BannerCarousel({ storeId }: BannerCarouselProps) {
 
   if (loading) {
     return (
-      <div className="px-3 sm:px-4 py-2">
-        <Skeleton className="h-28 sm:h-32 w-full rounded-xl" />
+      <div className="px-3 sm:px-4 lg:px-6 py-2 sm:py-3">
+        <Skeleton className="h-32 sm:h-40 md:h-48 lg:h-56 w-full rounded-xl lg:rounded-2xl" />
       </div>
     );
   }
@@ -60,7 +60,7 @@ export default function BannerCarousel({ storeId }: BannerCarouselProps) {
   };
 
   return (
-    <div className="px-3 sm:px-4 py-2">
+    <div className="px-3 sm:px-4 lg:px-6 py-2 sm:py-3">
       <Carousel
         opts={{
           align: "start",
@@ -74,21 +74,21 @@ export default function BannerCarousel({ storeId }: BannerCarouselProps) {
         ]}
         className="w-full"
       >
-        <CarouselContent className="-ml-2">
+        <CarouselContent className="-ml-2 lg:-ml-4">
           {banners.map((banner) => (
-            <CarouselItem key={banner.id} className="pl-2 basis-full">
+            <CarouselItem key={banner.id} className="pl-2 lg:pl-4 basis-full">
               <div
-                className={`relative overflow-hidden rounded-xl ${banner.link_url ? "cursor-pointer" : ""}`}
+                className={`relative overflow-hidden rounded-xl lg:rounded-2xl ${banner.link_url ? "cursor-pointer" : ""}`}
                 onClick={() => handleBannerClick(banner.link_url)}
               >
                 <img
                   src={banner.image_url}
                   alt={banner.title || "Banner promocional"}
-                  className="w-full h-28 sm:h-32 object-cover"
+                  className="w-full h-32 sm:h-40 md:h-48 lg:h-56 object-cover"
                 />
                 {banner.title && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2.5">
-                    <p className="text-white text-xs sm:text-sm font-medium">{banner.title}</p>
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 sm:p-4 lg:p-5">
+                    <p className="text-white text-sm sm:text-base lg:text-lg font-medium">{banner.title}</p>
                   </div>
                 )}
               </div>
