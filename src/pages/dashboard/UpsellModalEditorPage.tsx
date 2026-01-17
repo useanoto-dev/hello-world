@@ -238,6 +238,10 @@ export default function UpsellModalEditorPage() {
     button_color: "#22c55e",
     secondary_button_text: "",
     icon: "✨",
+    // Combo modal settings
+    combo_show_edges: true,
+    combo_show_doughs: true,
+    combo_show_additionals: true,
   });
   
   // Get templates based on selected model
@@ -280,6 +284,22 @@ export default function UpsellModalEditorPage() {
 
       setSelectedTemplate(data.modal_type);
       setSelectedCategories(data.trigger_category_id ? [data.trigger_category_id] : []);
+      
+      // For combo modals, decode show settings from secondary_button_text
+      // Format: "text|edges:1|doughs:1|additionals:1"
+      let comboEdges = true, comboDoughs = true, comboAdditionals = true;
+      let secondaryText = data.secondary_button_text || "Não, obrigado";
+      
+      if (data.modal_type === "combo" && secondaryText.includes("|")) {
+        const parts = secondaryText.split("|");
+        secondaryText = parts[0];
+        parts.slice(1).forEach(part => {
+          if (part.startsWith("edges:")) comboEdges = part === "edges:1";
+          if (part.startsWith("doughs:")) comboDoughs = part === "doughs:1";
+          if (part.startsWith("additionals:")) comboAdditionals = part === "additionals:1";
+        });
+      }
+      
       setFormData({
         name: data.name,
         title: data.title,
@@ -292,8 +312,11 @@ export default function UpsellModalEditorPage() {
         max_products: data.max_products,
         button_text: data.button_text || "Ver Opções",
         button_color: data.button_color || "#22c55e",
-        secondary_button_text: data.secondary_button_text || "Não, obrigado",
+        secondary_button_text: secondaryText,
         icon: data.icon || "✨",
+        combo_show_edges: comboEdges,
+        combo_show_doughs: comboDoughs,
+        combo_show_additionals: comboAdditionals,
       });
       // Skip to step 3 when editing
       setCurrentStep(3);
@@ -379,6 +402,12 @@ export default function UpsellModalEditorPage() {
                        ALL_TEMPLATES.find(t => t.id === selectedTemplate);
       const contentType = template?.contentType || "products";
 
+      // For combo modals, encode settings in secondary_button_text
+      let secondaryButtonText = formData.secondary_button_text.trim();
+      if (selectedTemplate === "combo") {
+        secondaryButtonText = `${secondaryButtonText}|edges:${formData.combo_show_edges ? 1 : 0}|doughs:${formData.combo_show_doughs ? 1 : 0}|additionals:${formData.combo_show_additionals ? 1 : 0}`;
+      }
+
       const data = {
         store_id: restaurantId,
         name: formData.name.trim(),
@@ -394,7 +423,7 @@ export default function UpsellModalEditorPage() {
         max_products: formData.max_products,
         button_text: formData.button_text.trim(),
         button_color: formData.button_color,
-        secondary_button_text: formData.secondary_button_text.trim(),
+        secondary_button_text: secondaryButtonText,
         icon: formData.icon,
         content_type: contentType,
       };
@@ -768,6 +797,53 @@ export default function UpsellModalEditorPage() {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Combo Modal Settings */}
+          {selectedTemplate === "combo" && (
+            <div className="space-y-2 pt-2 border-t border-border/40">
+              <Label className="text-xs font-medium flex items-center gap-1.5">
+                <span>🍕</span> Seções do Modal Casado
+              </Label>
+              <p className="text-[10px] text-muted-foreground mb-2">
+                Escolha quais seções aparecerão no modal
+              </p>
+              <div className="space-y-2">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <Checkbox
+                    checked={formData.combo_show_doughs}
+                    onCheckedChange={(checked) => setFormData({ ...formData, combo_show_doughs: !!checked })}
+                    className="h-4 w-4"
+                  />
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🥖</span>
+                    <span className="text-xs font-medium">Massas</span>
+                  </div>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <Checkbox
+                    checked={formData.combo_show_edges}
+                    onCheckedChange={(checked) => setFormData({ ...formData, combo_show_edges: !!checked })}
+                    className="h-4 w-4"
+                  />
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🧀</span>
+                    <span className="text-xs font-medium">Bordas</span>
+                  </div>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <Checkbox
+                    checked={formData.combo_show_additionals}
+                    onCheckedChange={(checked) => setFormData({ ...formData, combo_show_additionals: !!checked })}
+                    className="h-4 w-4"
+                  />
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">➕</span>
+                    <span className="text-xs font-medium">Adicionais</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
