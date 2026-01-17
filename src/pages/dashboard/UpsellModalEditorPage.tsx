@@ -349,7 +349,7 @@ export default function UpsellModalEditorPage() {
               "w-full px-3 py-2.5 rounded-md border transition-all text-left flex items-center gap-3",
               selectedTemplate === template.id
                 ? "border-primary/60 bg-primary/5"
-                : "border-gray-100 bg-gray-50/50 hover:border-gray-200 hover:bg-gray-50"
+                : "border-gray-300 bg-gray-50/50 hover:border-gray-400 hover:bg-gray-50"
             )}
           >
             <span className="text-lg">{template.icon}</span>
