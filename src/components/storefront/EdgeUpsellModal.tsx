@@ -20,7 +20,6 @@ interface EdgeUpsellModalProps {
   title?: string;
   description?: string;
   buttonText?: string;
-  buttonColor?: string;
   secondaryButtonText?: string;
   icon?: string;
   onClose: () => void;
@@ -54,14 +53,11 @@ async function fetchEdgesWithPrices(categoryId: string, sizeId: string) {
 }
 
 export default function EdgeUpsellModal({
-  storeId,
   categoryId,
   sizeId,
   sizeName,
   title = "Escolha a Borda",
   description,
-  buttonText = "Continuar",
-  buttonColor = "#f97316",
   secondaryButtonText = "Sem Borda",
   icon = "🧀",
   onClose,
@@ -187,10 +183,7 @@ export default function EdgeUpsellModal({
                     <span className="font-medium text-sm text-foreground">{edge.name}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span 
-                      className="text-xs font-semibold"
-                      style={{ color: buttonColor }}
-                    >
+                    <span className="text-xs font-semibold text-primary">
                       +{formatCurrency(edge.price)}
                     </span>
                     <ChevronRight className="w-4 h-4 text-muted-foreground" />

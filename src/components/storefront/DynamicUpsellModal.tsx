@@ -274,8 +274,6 @@ export default function DynamicUpsellModal({
         sizeName={sizeName || ""}
         title={modalConfig.title}
         description={modalConfig.description || undefined}
-        buttonText={modalConfig.button_text || "Continuar"}
-        buttonColor={modalConfig.button_color || "#f97316"}
         secondaryButtonText={modalConfig.secondary_button_text || "Sem Borda"}
         icon={modalConfig.icon || "🧀"}
         onClose={goToNextModal}
@@ -294,13 +292,10 @@ export default function DynamicUpsellModal({
         sizeName={sizeName || ""}
         title={modalConfig.title}
         description={modalConfig.description || undefined}
-        buttonText={modalConfig.button_text || "Continuar"}
-        buttonColor={modalConfig.button_color || "#a855f7"}
         secondaryButtonText={modalConfig.secondary_button_text || "Massa Tradicional"}
         icon={modalConfig.icon || "🥖"}
         onClose={goToNextModal}
         onSelectDough={(dough) => {
-          // Handle dough selection - could add to cart or state
           if (dough) {
             toast.success(`Massa ${dough.name} selecionada!`);
           }
@@ -319,7 +314,6 @@ export default function DynamicUpsellModal({
         title={modalConfig.title}
         description={modalConfig.description || undefined}
         buttonText={modalConfig.button_text || "Confirmar"}
-        buttonColor={modalConfig.button_color || "#3b82f6"}
         secondaryButtonText={modalConfig.secondary_button_text || "Não, obrigado"}
         icon={modalConfig.icon || "➕"}
         maxItems={modalConfig.max_products || 10}
@@ -360,13 +354,11 @@ export default function DynamicUpsellModal({
         title={modalConfig.title}
         description={modalConfig.description || undefined}
         buttonText={modalConfig.button_text || "Confirmar"}
-        buttonColor={modalConfig.button_color || "#f59e0b"}
         showEdges={showEdges}
         showDoughs={showDoughs}
         showAdditionals={showAdditionals}
         onClose={goToNextModal}
         onComplete={(selections, totalPrice) => {
-          // Handle combo selections
           if (selections.edge) {
             toast.success(`Borda ${selections.edge.name} selecionada!`);
           }
@@ -460,13 +452,12 @@ export default function DynamicUpsellModal({
                       />
                     )}
                     <p className="font-medium text-sm line-clamp-2">{product.name}</p>
-                    <p className="text-sm font-semibold mt-1" style={{ color: buttonColor }}>
+                    <p className="text-sm font-semibold mt-1 text-primary">
                       {formatCurrency(product.promotional_price || product.price)}
                     </p>
                     <button
                       onClick={() => handleQuickAdd(product)}
-                      className="w-full mt-2 h-9 text-xs font-medium rounded-lg text-white transition-colors flex items-center justify-center gap-1"
-                      style={{ backgroundColor: buttonColor }}
+                      className="w-full mt-2 h-9 text-xs font-medium rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground transition-colors flex items-center justify-center gap-1"
                     >
                       <Plus className="w-4 h-4" />
                       Adicionar
@@ -506,8 +497,7 @@ export default function DynamicUpsellModal({
               {/* Primary button */}
               <button
                 onClick={handlePrimaryAction}
-                className="w-full h-14 rounded-xl text-white font-semibold text-base transition-all hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg"
-                style={{ backgroundColor: buttonColor }}
+                className="w-full h-14 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg"
               >
                 <Plus className="w-5 h-5" />
                 {buttonText}
