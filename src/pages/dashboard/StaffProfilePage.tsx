@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useStaffAuth } from "@/hooks/useStaffAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,7 +20,10 @@ const roleLabels: Record<string, { label: string; color: string }> = {
 };
 
 export default function StaffProfilePage() {
-  const { staffSession, name, role, logout } = useStaffAuth();
+  const { staffSession, staffId, name, role, logout } = useStaffAuth();
+  
+  // Staff CPF loaded from database (not stored in session for security)
+  const [staffCpf, setStaffCpf] = useState<string | null>(null);
   
   // Password change state
   const [currentPassword, setCurrentPassword] = useState("");
@@ -30,6 +33,29 @@ export default function StaffProfilePage() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
+
+  // Fetch staff CPF from database when component mounts
+  useEffect(() => {
+    const fetchStaffCpf = async () => {
+      if (!staffId) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('store_staff')
+          .select('cpf')
+          .eq('id', staffId)
+          .single();
+        
+        if (!error && data) {
+          setStaffCpf(data.cpf);
+        }
+      } catch (err) {
+        console.error('Error fetching staff CPF:', err);
+      }
+    };
+    
+    fetchStaffCpf();
+  }, [staffId]);
 
   // Format CPF
   const formatCPF = (cpf: string) => {
@@ -169,7 +195,7 @@ export default function StaffProfilePage() {
               <div>
                 <Label className="text-muted-foreground text-xs">CPF</Label>
                 <p className="font-medium">
-                  {staffSession?.cpf ? formatCPF(staffSession.cpf) : '---'}
+                  {staffCpf ? formatCPF(staffCpf) : '---'}
                 </p>
               </div>
             </div>

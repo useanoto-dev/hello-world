@@ -1,14 +1,29 @@
 import { useCallback, useSyncExternalStore } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+
+// Session expiration time in milliseconds (8 hours)
+const SESSION_EXPIRATION_MS = 8 * 60 * 60 * 1000;
+// Session key for storage
+const SESSION_STORAGE_KEY = 'staff_session_v2';
 
 export interface StaffSession {
   staffId: string;
   storeId: string;
   name: string;
-  cpf: string;
+  role: 'admin' | 'garcom';
+  // Timestamp when session was created (for expiration check)
+  createdAt: number;
+}
+
+// Legacy session format for migration
+interface LegacySession {
+  staffId?: string;
+  id?: string;
+  storeId?: string;
+  store_id?: string;
+  name: string;
+  cpf?: string;
   role: 'admin' | 'garcom';
 }
 
@@ -89,6 +104,38 @@ export const canAccessRoute = (route: string, role: StaffRole | null): boolean =
 };
 
 // ============================================
+// Session Security Utilities
+// ============================================
+
+/**
+ * Checks if a session has expired
+ */
+const isSessionExpired = (session: StaffSession): boolean => {
+  const now = Date.now();
+  const sessionAge = now - session.createdAt;
+  return sessionAge > SESSION_EXPIRATION_MS;
+};
+
+/**
+ * Validates session data structure to prevent tampering
+ */
+const isValidSessionStructure = (data: unknown): data is StaffSession => {
+  if (!data || typeof data !== 'object') return false;
+  const session = data as Record<string, unknown>;
+  
+  return (
+    typeof session.staffId === 'string' &&
+    session.staffId.length > 0 &&
+    typeof session.storeId === 'string' &&
+    session.storeId.length > 0 &&
+    typeof session.name === 'string' &&
+    (session.role === 'admin' || session.role === 'garcom') &&
+    typeof session.createdAt === 'number' &&
+    session.createdAt > 0
+  );
+};
+
+// ============================================
 // Shared state store for staff session
 // Ensures all components see the same state instantly
 // ============================================
@@ -109,28 +156,68 @@ const setStore = (newStore: Partial<StaffStore>) => {
   notifyListeners();
 };
 
-// Initialize session from localStorage (runs once on module load)
+// Initialize session from sessionStorage (runs once on module load)
+// Using sessionStorage instead of localStorage for better security
+// - Session is cleared when browser tab is closed
+// - Not accessible to other tabs
 const initializeSession = () => {
   try {
-    const savedSession = localStorage.getItem('staff_session');
+    // First, try to migrate from old localStorage format
+    const oldSession = localStorage.getItem('staff_session');
+    if (oldSession) {
+      // Remove old format immediately for security
+      localStorage.removeItem('staff_session');
+      
+      try {
+        const parsed = JSON.parse(oldSession) as LegacySession;
+        // Migrate to new format in sessionStorage (without CPF)
+        const migratedSession: StaffSession = {
+          staffId: parsed.staffId || parsed.id || '',
+          storeId: parsed.storeId || parsed.store_id || '',
+          name: parsed.name,
+          role: parsed.role,
+          createdAt: Date.now() // Treat as new session
+        };
+        
+        if (migratedSession.staffId && migratedSession.storeId) {
+          sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(migratedSession));
+          store = { session: migratedSession, loading: false };
+          return;
+        }
+      } catch {
+        // Ignore migration errors
+      }
+    }
+
+    // Load from sessionStorage
+    const savedSession = sessionStorage.getItem(SESSION_STORAGE_KEY);
     if (savedSession) {
       const parsed = JSON.parse(savedSession);
-      store = {
-        session: {
-          staffId: parsed.staffId || parsed.id,
-          storeId: parsed.storeId || parsed.store_id,
-          name: parsed.name,
-          cpf: parsed.cpf || '',
-          role: parsed.role
-        },
-        loading: false
-      };
+      
+      // Validate session structure
+      if (!isValidSessionStructure(parsed)) {
+        console.warn('Invalid session structure detected, clearing session');
+        sessionStorage.removeItem(SESSION_STORAGE_KEY);
+        store = { session: null, loading: false };
+        return;
+      }
+      
+      // Check session expiration
+      if (isSessionExpired(parsed)) {
+        console.info('Session expired, clearing session');
+        sessionStorage.removeItem(SESSION_STORAGE_KEY);
+        store = { session: null, loading: false };
+        return;
+      }
+      
+      store = { session: parsed, loading: false };
     } else {
       store = { session: null, loading: false };
     }
   } catch (error) {
     console.error('Error loading staff session:', error);
-    localStorage.removeItem('staff_session');
+    sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    localStorage.removeItem('staff_session'); // Also clean up old format
     store = { session: null, loading: false };
   }
 };
@@ -150,13 +237,30 @@ const getServerSnapshot = (): StaffStore => ({ session: null, loading: false });
 
 // Export function to clear session (used by logout)
 export const clearStaffSession = () => {
-  localStorage.removeItem('staff_session');
+  sessionStorage.removeItem(SESSION_STORAGE_KEY);
+  localStorage.removeItem('staff_session'); // Also clear legacy format
   setStore({ session: null });
 };
 
 // Export function to set session (used by login)
-export const setStaffSession = (session: StaffSession) => {
-  localStorage.setItem('staff_session', JSON.stringify(session));
+// Note: CPF is intentionally NOT stored in the session
+export const setStaffSession = (sessionInput: { 
+  staffId: string; 
+  storeId: string; 
+  name: string; 
+  role: 'admin' | 'garcom';
+  cpf?: string; // Accept but don't store
+}) => {
+  // Create session without sensitive PII (CPF)
+  const session: StaffSession = {
+    staffId: sessionInput.staffId,
+    storeId: sessionInput.storeId,
+    name: sessionInput.name,
+    role: sessionInput.role,
+    createdAt: Date.now()
+  };
+  
+  sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
   setStore({ session });
 };
 
