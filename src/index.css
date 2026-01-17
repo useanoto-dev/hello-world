@@ -40,8 +40,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 13% 18%;
 
-    /* Primary - Brand Yellow #FEDE01 */
-    --primary: 53 99% 50%;
+    /* Primary - Premium Amber (sidebar color) */
+    --primary: 45 93% 58%;
     --primary-foreground: 0 0% 0%;
 
     /* Secondary - Neutral Gray (main interactive color) */
@@ -52,9 +52,9 @@
     --muted: 220 14% 96%;
     --muted-foreground: 220 9% 46%;
 
-    /* Accent - Subtle Yellow tint */
-    --accent: 53 40% 96%;
-    --accent-foreground: 53 99% 35%;
+    /* Accent - Subtle Amber tint */
+    --accent: 45 50% 96%;
+    --accent-foreground: 45 93% 35%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
@@ -65,26 +65,26 @@
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 53 99% 50%;
+    --ring: 45 93% 58%;
 
     /* Surface for cards/elevated elements */
     --surface: 220 14% 97%;
     
-    /* Sidebar tokens - Brand Yellow #FEDE01 */
-    --sidebar-bg: 53 99% 50%;
-    --sidebar-bg-end: 53 99% 45%;
-    --sidebar-border: 53 99% 40%;
-    --sidebar-hover: 53 99% 45%;
-    --sidebar-active: 53 99% 40%;
+    /* Sidebar tokens - Premium Amber */
+    --sidebar-bg: 45 93% 58%;
+    --sidebar-bg-end: 45 93% 53%;
+    --sidebar-border: 45 93% 48%;
+    --sidebar-hover: 45 93% 53%;
+    --sidebar-active: 45 93% 48%;
     --sidebar-foreground: 0 0% 0%;
     --sidebar-foreground-muted: 0 0% 20%;
-    --sidebar-accent: 53 99% 35%;
+    --sidebar-accent: 45 93% 40%;
     --sidebar-button-bg: 0 0% 0%;
     --sidebar-button-hover: 0 0% 15%;
     --sidebar-indicator: 0 0% 0%;
     
-    /* Admin specific - Brand Yellow */
-    --admin-accent: 53 99% 50%;
+    /* Admin specific - Premium Amber */
+    --admin-accent: 45 93% 58%;
     --admin-accent-foreground: 0 0% 0%;
     
     /* Chart colors - Professional teal/green */
