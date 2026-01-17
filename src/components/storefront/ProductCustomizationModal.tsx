@@ -142,9 +142,9 @@ export default function ProductCustomizationModal({
       const loadedGroups = (groupsData || []) as (OptionGroup & { is_primary: boolean })[];
       setGroups(loadedGroups);
       
-      // Expand first group by default
+      // Expand ALL groups by default
       if (loadedGroups.length > 0) {
-        setExpandedGroups(new Set([loadedGroups[0].id]));
+        setExpandedGroups(new Set(loadedGroups.map(g => g.id)));
       }
 
       if (loadedGroups.length > 0) {
