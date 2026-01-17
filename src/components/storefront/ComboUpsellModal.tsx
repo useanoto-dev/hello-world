@@ -353,7 +353,7 @@ export default function ComboUpsellModal({
         className={cn(
           "text-left px-3 py-2.5 rounded-xl border transition-all duration-150 w-full",
           isSelected 
-            ? "bg-purple-50 border-purple-300 shadow-sm" 
+            ? "bg-primary/10 border-primary/50 shadow-sm" 
             : "bg-white border-gray-100 hover:border-gray-200"
         )}
       >
@@ -373,13 +373,13 @@ export default function ComboUpsellModal({
           </div>
           <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
             {!isDefault && dough && dough.price > 0 ? (
-              <span className="text-xs font-semibold text-purple-600">+{formatCurrency(dough.price)}</span>
+              <span className="text-xs font-semibold text-gray-600">+{formatCurrency(dough.price)}</span>
             ) : (
               <span className="text-xs text-muted-foreground">Incluso</span>
             )}
             {isSelected && (
-              <div className="w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center">
-                <Check className="w-3 h-3 text-white" strokeWidth={3} />
+              <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                <Check className="w-3 h-3 text-primary-foreground" strokeWidth={3} />
               </div>
             )}
           </div>
@@ -397,7 +397,7 @@ export default function ComboUpsellModal({
         className={cn(
           "text-left px-3 py-2.5 rounded-xl border transition-all duration-150 w-full",
           isSelected 
-            ? "bg-orange-50 border-orange-300 shadow-sm" 
+            ? "bg-primary/10 border-primary/50 shadow-sm" 
             : "bg-white border-gray-100 hover:border-gray-200"
         )}
       >
@@ -409,13 +409,13 @@ export default function ComboUpsellModal({
           </div>
           <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
             {!isDefault && edge ? (
-              <span className="text-xs font-semibold text-orange-600">+{formatCurrency(edge.price)}</span>
+              <span className="text-xs font-semibold text-gray-600">+{formatCurrency(edge.price)}</span>
             ) : (
               <span className="text-xs text-muted-foreground">Grátis</span>
             )}
             {isSelected && (
-              <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center">
-                <Check className="w-3 h-3 text-white" strokeWidth={3} />
+              <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                <Check className="w-3 h-3 text-primary-foreground" strokeWidth={3} />
               </div>
             )}
           </div>
@@ -434,7 +434,7 @@ export default function ComboUpsellModal({
         className={cn(
           "px-3 py-2.5 rounded-xl border transition-all duration-150 w-full",
           isSelected 
-            ? "bg-blue-50 border-blue-300 shadow-sm" 
+            ? "bg-primary/10 border-primary/50 shadow-sm" 
             : "bg-white border-gray-100 hover:border-gray-200"
         )}
       >
@@ -445,7 +445,7 @@ export default function ComboUpsellModal({
           >
             <p className="font-medium text-sm text-foreground leading-tight">{item.name}</p>
             {item.price > 0 && (
-              <p className="text-xs font-semibold text-blue-600 mt-0.5">+{formatCurrency(item.price)}</p>
+              <p className="text-xs font-semibold text-gray-600 mt-0.5">+{formatCurrency(item.price)}</p>
             )}
           </button>
           
@@ -460,7 +460,7 @@ export default function ComboUpsellModal({
               <span className="w-6 text-center font-semibold text-sm">{selectedItem.quantity}</span>
               <button
                 onClick={() => updateAdditionalQuantity(item.id, 1)}
-                className="w-7 h-7 rounded-full bg-blue-500 text-white flex items-center justify-center"
+                className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center"
               >
                 <Plus className="w-3.5 h-3.5" />
               </button>
@@ -468,9 +468,9 @@ export default function ComboUpsellModal({
           ) : (
             <button
               onClick={() => toggleAdditional(item)}
-              className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0"
+              className="w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0"
             >
-              <Plus className="w-3 h-3 text-white" strokeWidth={3} />
+              <Plus className="w-3 h-3 text-primary-foreground" strokeWidth={3} />
             </button>
           )}
         </div>
@@ -586,40 +586,39 @@ export default function ComboUpsellModal({
             </div>
           </main>
 
-          {/* Footer - Same style as PizzaFlavorSelectionDrawer */}
+          {/* Footer - Compact style */}
           <motion.footer
             initial={{ y: 60, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2, type: "spring", damping: 25, stiffness: 400 }}
-            className="fixed bottom-0 inset-x-0 bg-white border-t border-border p-4 z-10"
+            className="fixed bottom-0 inset-x-0 bg-white border-t border-border px-4 py-2.5 z-10"
           >
             <div className="lg:max-w-2xl lg:mx-auto lg:px-4">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-2">
                 <div>
-                  <span className="text-sm text-muted-foreground">Extras</span>
+                  <span className="text-xs text-muted-foreground">Extras</span>
                   {selectionCount > 0 && (
-                    <p className="text-xs text-muted-foreground">
-                      {selectionCount} {selectionCount === 1 ? 'item' : 'itens'}
-                    </p>
+                    <span className="text-xs text-muted-foreground ml-1">
+                      • {selectionCount} {selectionCount === 1 ? 'item' : 'itens'}
+                    </span>
                   )}
                 </div>
-                <span className="text-xl font-bold text-foreground">
+                <span className="text-base font-bold text-gray-700">
                   {totalPrice > 0 ? `+${formatCurrency(totalPrice)}` : "Sem custo extra"}
                 </span>
               </div>
               <Button
                 onClick={handleConfirm}
-                className="w-full h-12 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-lg"
+                className="w-full h-11 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-lg"
               >
                 {buttonText}
               </Button>
-              <Button
-                variant="ghost"
+              <button
                 onClick={handleSkip}
-                className="w-full h-10 text-sm mt-2"
+                className="w-full h-8 text-sm text-muted-foreground hover:text-foreground mt-1.5 transition-colors"
               >
                 Não, obrigado
-              </Button>
+              </button>
             </div>
           </motion.footer>
         </motion.div>
