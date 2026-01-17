@@ -29,6 +29,7 @@ interface SelectedFlavor {
   flavor_type: string;
 }
 
+// EdgeWithPrice and Drink interfaces kept for onComplete signature compatibility
 interface EdgeWithPrice {
   id: string;
   name: string;
@@ -43,11 +44,6 @@ interface Drink {
   image_url: string | null;
 }
 
-interface FlowStepConfig {
-  is_enabled: boolean;
-  next_step_id: string | null;
-}
-
 interface PizzaFlavorSelectionDrawerProps {
   open: boolean;
   onClose: () => void;
@@ -58,7 +54,7 @@ interface PizzaFlavorSelectionDrawerProps {
   storeId: string;
   basePrice: number;
   sizeImageUrl?: string | null;
-  flowSteps?: Record<string, FlowStepConfig>;
+  flowSteps?: Record<string, { is_enabled: boolean; next_step_id: string | null }>;
   onComplete: (flavors: SelectedFlavor[], totalPrice: number, edge?: EdgeWithPrice | null, drink?: Drink | null, notes?: string) => void;
 }
 
@@ -103,58 +99,6 @@ async function fetchFlavorsWithPrices(categoryId: string, sizeId: string) {
   });
 }
 
-async function fetchEdgesWithPrices(categoryId: string, sizeId: string) {
-  const { data, error } = await supabase
-    .from("pizza_edges")
-    .select(`
-      id,
-      name,
-      pizza_edge_prices!inner(
-        price,
-        is_available
-      )
-    `)
-    .eq("category_id", categoryId)
-    .eq("is_active", true)
-    .eq("pizza_edge_prices.size_id", sizeId)
-    .eq("pizza_edge_prices.is_available", true)
-    .order("display_order");
-
-  if (error) throw error;
-
-  return (data || []).map((edge: any) => ({
-    id: edge.id,
-    name: edge.name,
-    price: edge.pizza_edge_prices[0]?.price || 0,
-  }));
-}
-
-async function fetchDrinks(storeId: string): Promise<Drink[]> {
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("id, name, slug")
-    .eq("store_id", storeId)
-    .eq("is_active", true)
-    .or("slug.ilike.%bebida%,name.ilike.%bebida%,slug.ilike.%drink%,name.ilike.%drink%,slug.ilike.%refrigerante%,name.ilike.%refrigerante%");
-
-  if (!categories || categories.length === 0) return [];
-
-  const categoryIds = categories.map(c => c.id);
-
-  const { data: products } = await supabase
-    .from("products")
-    .select("id, name, price, promotional_price, image_url")
-    .eq("store_id", storeId)
-    .eq("is_available", true)
-    .in("category_id", categoryIds)
-    .order("display_order")
-    .limit(6);
-
-  return (products || []) as Drink[];
-}
-
-type FlowStep = 'flavors' | 'edge' | 'drink';
-
 export function PizzaFlavorSelectionDrawer({
   open,
   onClose,
@@ -169,9 +113,6 @@ export function PizzaFlavorSelectionDrawer({
   onComplete,
 }: PizzaFlavorSelectionDrawerProps) {
   const [selectedFlavors, setSelectedFlavors] = useState<SelectedFlavor[]>([]);
-  const [currentStep, setCurrentStep] = useState<FlowStep>('flavors');
-  const [selectedEdge, setSelectedEdge] = useState<EdgeWithPrice | null>(null);
-  const [calculatedPrice, setCalculatedPrice] = useState(0);
   const [notes, setNotes] = useState("");
 
   const { data: flavors = [], isLoading } = useQuery({
@@ -180,18 +121,6 @@ export function PizzaFlavorSelectionDrawer({
     enabled: open && !!sizeId,
   });
 
-  const { data: edges = [] } = useQuery({
-    queryKey: ["pizza-edges-modal", categoryId, sizeId],
-    queryFn: () => fetchEdgesWithPrices(categoryId, sizeId),
-    enabled: open && !!sizeId,
-  });
-
-  const { data: drinks = [] } = useQuery({
-    queryKey: ["drinks-modal", storeId],
-    queryFn: () => fetchDrinks(storeId),
-    enabled: open && !!storeId,
-    staleTime: 5 * 60 * 1000,
-  });
 
   useEffect(() => {
     if (open) {
@@ -207,9 +136,6 @@ export function PizzaFlavorSelectionDrawer({
   useEffect(() => {
     if (open) {
       setSelectedFlavors([]);
-      setCurrentStep('flavors');
-      setSelectedEdge(null);
-      setCalculatedPrice(0);
       setNotes("");
     }
   }, [open]);
@@ -273,47 +199,14 @@ export function PizzaFlavorSelectionDrawer({
     }
   }, [flavors, selectedFlavors, maxFlavors, handleSelectFlavor]);
 
-  const isStepEnabled = useCallback((stepType: string) => {
-    if (!flowSteps) return true;
-    return flowSteps[stepType]?.is_enabled !== false;
-  }, [flowSteps]);
-
-  const getNextStep = useCallback((currentStepType: string): FlowStep | 'complete' => {
-    const stepOrder: FlowStep[] = ['edge', 'drink'];
-    const currentIndex = stepOrder.indexOf(currentStepType as FlowStep);
-    for (let i = currentIndex + 1; i < stepOrder.length; i++) {
-      if (isStepEnabled(stepOrder[i])) {
-        if (stepOrder[i] === 'edge' && edges.length === 0) continue;
-        if (stepOrder[i] === 'drink' && drinks.length === 0) continue;
-        return stepOrder[i];
-      }
-    }
-    return 'complete';
-  }, [isStepEnabled, edges.length, drinks.length]);
 
   const handleContinue = () => {
     if (selectedFlavors.length === 0) {
       toast.error("Selecione pelo menos 1 sabor");
       return;
     }
-    setCalculatedPrice(totalPrice);
-    if (isStepEnabled('edge') && edges.length > 0) setCurrentStep('edge');
-    else if (isStepEnabled('drink') && drinks.length > 0) setCurrentStep('drink');
-    else onComplete(selectedFlavors, totalPrice, null, null, notes.trim() || undefined);
-  };
-
-  const handleEdgeContinue = () => {
-    const nextStep = getNextStep('edge');
-    if (nextStep === 'complete') onComplete(selectedFlavors, calculatedPrice, selectedEdge, null, notes.trim() || undefined);
-    else setCurrentStep(nextStep);
-  };
-
-  const handleDrinkSelect = (drink: Drink) => {
-    onComplete(selectedFlavors, calculatedPrice, selectedEdge, drink, notes.trim() || undefined);
-  };
-
-  const handleDrinkSkip = () => {
-    onComplete(selectedFlavors, calculatedPrice, selectedEdge, null, notes.trim() || undefined);
+    // Go directly to complete - no edge or drink modals
+    onComplete(selectedFlavors, totalPrice, null, null, notes.trim() || undefined);
   };
 
   // Card for traditional flavors
@@ -628,136 +521,6 @@ export function PizzaFlavorSelectionDrawer({
         </motion.div>
       )}
 
-      {/* Edge Modal */}
-      <AnimatePresence>
-        {currentStep === 'edge' && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/40 z-[60]"
-              onClick={() => setCurrentStep('flavors')}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-sm z-[60] bg-background rounded-2xl flex flex-col max-h-[70vh] shadow-xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-4 border-b border-border">
-                <h3 className="text-base font-semibold text-center text-foreground">Escolha a Borda</h3>
-              </div>
-              <div className="flex-1 overflow-y-auto p-3 space-y-2">
-                <button
-                  onClick={() => setSelectedEdge(null)}
-                  className={cn(
-                    "w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-all",
-                    selectedEdge === null ? "bg-amber-50 border-amber-300" : "bg-background border-border hover:border-muted-foreground/30"
-                  )}
-                >
-                  <span className="font-medium text-foreground">Sem Borda</span>
-                  <span className="text-sm text-muted-foreground">Grátis</span>
-                </button>
-                {edges.map((edge) => (
-                  <button
-                    key={edge.id}
-                    onClick={() => setSelectedEdge(edge)}
-                    className={cn(
-                      "w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-all",
-                      selectedEdge?.id === edge.id ? "bg-amber-50 border-amber-300" : "bg-background border-border hover:border-muted-foreground/30"
-                    )}
-                  >
-                    <span className="font-medium text-foreground">{edge.name}</span>
-                    <span className="text-sm font-medium text-amber-600">
-                      {edge.price > 0 ? `+${formatCurrency(edge.price)}` : 'Grátis'}
-                    </span>
-                  </button>
-                ))}
-              </div>
-              <div className="p-3 border-t border-border">
-                <Button onClick={handleEdgeContinue} className="w-full h-11 text-sm font-semibold bg-amber-500 hover:bg-amber-600 rounded-xl">
-                  Continuar
-                </Button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* Drink Modal */}
-      <AnimatePresence>
-        {currentStep === 'drink' && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/40"
-              onClick={handleDrinkSkip}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ type: "spring", damping: 25, stiffness: 400 }}
-              className="relative w-full max-w-sm bg-background rounded-2xl shadow-xl overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-4 text-center">
-                <p className="text-3xl mb-1">🥤</p>
-                <h3 className="text-base font-semibold text-foreground">Que tal uma bebida?</h3>
-                <p className="text-sm text-muted-foreground">Complete seu pedido!</p>
-              </div>
-              <div className="px-4 pb-3 max-h-[250px] overflow-y-auto">
-                {drinks.length === 0 ? (
-                  <p className="text-center text-sm text-muted-foreground py-6">Nenhuma bebida disponível</p>
-                ) : (
-                  <div className="grid grid-cols-3 gap-2">
-                    {drinks.map((drink) => {
-                      const price = drink.promotional_price ?? drink.price;
-                      return (
-                        <button
-                          key={drink.id}
-                          onClick={() => handleDrinkSelect(drink)}
-                          className="flex flex-col rounded-xl overflow-hidden border border-border hover:border-amber-300 transition-all bg-background"
-                        >
-                          <div className="h-16 bg-muted relative flex items-center justify-center">
-                            {drink.image_url ? (
-                              <img src={drink.image_url} alt={drink.name} className="w-full h-full object-cover" />
-                            ) : (
-                              <span className="text-2xl">🥤</span>
-                            )}
-                            {drink.promotional_price && drink.promotional_price < drink.price && (
-                              <span className="absolute top-0 left-0 px-1 bg-red-500 text-white text-[8px] font-bold rounded-br">%</span>
-                            )}
-                          </div>
-                          <div className="p-2 text-center">
-                            <p className="text-xs font-medium text-foreground line-clamp-1">{drink.name}</p>
-                            <p className="text-xs font-bold text-amber-600">{formatCurrency(price)}</p>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-              <div className="p-4 border-t border-border space-y-2">
-                <Button onClick={handleDrinkSkip} variant="outline" className="w-full h-10 text-sm font-medium rounded-xl">
-                  Sem bebida
-                </Button>
-                <button
-                  onClick={() => isStepEnabled('edge') && edges.length > 0 ? setCurrentStep('edge') : setCurrentStep('flavors')}
-                  className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  ← Voltar
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </AnimatePresence>
   );
 }
