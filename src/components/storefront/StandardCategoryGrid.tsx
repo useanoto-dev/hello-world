@@ -228,7 +228,7 @@ export function StandardCategoryGrid({
                     className="cursor-pointer"
                   >
                     {/* Mobile: só linha divisória / Desktop: card com borda fina */}
-                    <div className="flex items-start gap-3 py-3 border-b border-border/60 lg:border lg:rounded-md lg:p-4 lg:my-2 hover:bg-muted/20 transition-colors">
+                    <div className="flex items-start gap-3 py-3 border-b border-border lg:border lg:border-border/80 lg:rounded-md lg:p-4 lg:my-2 hover:bg-muted/20 transition-colors">
                       {/* Info - Left side */}
                       <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-foreground text-xs lg:text-sm uppercase leading-tight line-clamp-2">
@@ -406,7 +406,7 @@ export function StandardCategoryGrid({
                 className="cursor-pointer"
               >
                 {/* Mobile: só linha divisória / Desktop: card com borda fina */}
-                <div className="flex items-start gap-3 py-3 border-b border-border/60 lg:border lg:rounded-md lg:p-4 lg:my-2 hover:bg-muted/20 transition-colors">
+                <div className="flex items-start gap-3 py-3 border-b border-border lg:border lg:border-border/80 lg:rounded-md lg:p-4 lg:my-2 hover:bg-muted/20 transition-colors">
                   {/* Info - Left side */}
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-foreground text-xs lg:text-sm uppercase leading-tight line-clamp-2">
