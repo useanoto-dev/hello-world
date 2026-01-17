@@ -343,8 +343,7 @@ export default function UpsellModalsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-base font-semibold flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
+          <h1 className="text-base font-semibold">
             Modais de Venda Adicional
           </h1>
           <p className="text-[11px] text-muted-foreground">
