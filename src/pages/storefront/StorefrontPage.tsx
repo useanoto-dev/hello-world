@@ -869,10 +869,8 @@ export default function StorefrontPage() {
   }, []);
 
   // Upsell handler - shows DynamicUpsellModal after adding product from customization modal
+  // DON'T close the customization modal here - keep it open while upsell shows
   const handleShowUpsell = useCallback((categoryId: string) => {
-    setShowCustomizationModal(false);
-    setSelectedProduct(null);
-    setSelectedCategory(null);
     setUpsellTriggerCategoryId(categoryId);
     setShowUpsellModal(true);
   }, []);
@@ -880,13 +878,19 @@ export default function StorefrontPage() {
   const handleUpsellClose = useCallback(() => {
     setShowUpsellModal(false);
     setUpsellTriggerCategoryId(null);
-    // Reset pizza selection state when upsell closes (keeps drawers open until upsell is done)
+    // Close all open drawers/modals
+    setShowPizzaFlavorDrawer(false);
+    setShowPizzaDoughDrawer(false);
+    setShowCustomizationModal(false);
+    setShowProductDetailDrawer(false);
+    // Reset all selection states
     setSelectedPizzaSize(null);
     setSelectedPizzaFlavors(null);
     setSelectedPizzaEdge(null);
     setSelectedPizzaDough(null);
-    // Also close any open product drawer
     setSelectedProduct(null);
+    setSelectedCategory(null);
+    setSimpleProduct(null);
   }, []);
 
   // Pizza size selection handler
@@ -976,7 +980,7 @@ export default function StorefrontPage() {
   ) => {
     if (!selectedPizzaSize || !activeCategoryData) return;
 
-    setShowPizzaFlavorDrawer(false);
+    // DON'T close the drawer here - keep it open while upsell shows
 
     const flavorNames = flavors.map(f => f.name).join(" + ");
     const edgePrice = edge?.price || 0;
