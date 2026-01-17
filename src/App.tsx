@@ -126,6 +126,7 @@ function AnimatedRoutes() {
           <Route path="/dashboard/pizza-flavor/new" element={<PizzaFlavorWizard />} />
           <Route path="/dashboard/pizza-flavor/edit" element={<PizzaFlavorWizard />} />
           <Route path="/dashboard/pizza-flavors" element={<PizzaFlavorsListPage />} />
+          <Route path="/dashboard/flavors" element={<PizzaFlavorsListPage />} />
           <Route path="/dashboard/upsell-modal/new" element={<UpsellModalEditorPage />} />
           <Route path="/dashboard/upsell-modal/edit" element={<UpsellModalEditorPage />} />
           
