@@ -508,9 +508,9 @@ export default function ComboUpsellModal({
           </header>
 
           {/* Scrollable Content - Minimalist design without banner */}
-          <main className="flex-1 overflow-y-auto pb-32 lg:pb-36">
-            {/* Content */}
-            <div className="px-4 py-4 lg:max-w-2xl lg:mx-auto lg:px-8">
+          <main className="flex-1 overflow-y-auto pb-32 lg:pb-36 px-3 py-3">
+            {/* Content with dotted border */}
+            <div className="border-2 border-dashed border-gray-300 rounded-2xl px-4 py-4 lg:max-w-2xl lg:mx-auto lg:px-8">
               
               {/* Description and size info */}
               {(description || sizeName) && (
