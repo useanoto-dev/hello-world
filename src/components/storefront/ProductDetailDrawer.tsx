@@ -8,6 +8,7 @@ import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
+import DynamicUpsellModal from "./DynamicUpsellModal";
 
 interface Product {
   id: string;
@@ -22,18 +23,23 @@ interface Product {
 interface Props {
   product: Product;
   categoryName: string;
+  storeId: string;
   isOpen: boolean;
   onClose: () => void;
+  onNavigateToCategory?: (categoryId: string) => void;
 }
 
 export default function ProductDetailDrawer({
   product,
   categoryName,
+  storeId,
   isOpen,
   onClose,
+  onNavigateToCategory,
 }: Props) {
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState("");
+  const [showUpsell, setShowUpsell] = useState(false);
   const { addToCart } = useCart();
 
   // Reset state when product changes
@@ -99,7 +105,26 @@ export default function ProductDetailDrawer({
     });
 
     toast.success("Adicionado ao carrinho!");
+    
+    // Show upsell modal if category is available
+    if (product.category_id && storeId) {
+      setShowUpsell(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const handleUpsellClose = () => {
+    setShowUpsell(false);
     onClose();
+  };
+
+  const handleContinueShopping = (categoryId?: string) => {
+    setShowUpsell(false);
+    onClose();
+    if (categoryId && onNavigateToCategory) {
+      onNavigateToCategory(categoryId);
+    }
   };
 
   if (!isOpen) return null;
@@ -310,6 +335,16 @@ export default function ProductDetailDrawer({
             </Button>
           </div>
         </motion.footer>
+
+        {/* Upsell Modal */}
+        {showUpsell && product.category_id && storeId && (
+          <DynamicUpsellModal
+            storeId={storeId}
+            triggerCategoryId={product.category_id}
+            onClose={handleUpsellClose}
+            onContinueShopping={handleContinueShopping}
+          />
+        )}
       </motion.div>
     </AnimatePresence>
   );
