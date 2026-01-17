@@ -13,13 +13,86 @@ import { cn } from "@/lib/utils";
 interface ThemeToggleProps {
   variant?: "default" | "simple" | "sidebar";
   collapsed?: boolean;
+  compact?: boolean;
 }
 
-export function ThemeToggle({ variant = "default", collapsed = false }: ThemeToggleProps) {
+export function ThemeToggle({ variant = "default", collapsed = false, compact = false }: ThemeToggleProps) {
   const { theme, setTheme, isDark, toggleTheme } = useTheme();
 
   // Animated sidebar variant with sun/moon transition
   if (variant === "sidebar") {
+    // Compact version for footer
+    if (compact && !collapsed) {
+      return (
+        <button
+          onClick={toggleTheme}
+          className="flex items-center gap-1.5 text-[11px] font-medium text-gray-600 hover:text-gray-800 transition-colors"
+          aria-label={isDark ? "Ativar modo claro" : "Ativar modo escuro"}
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            {isDark ? (
+              <motion.div
+                key="sun"
+                initial={{ rotate: -90, scale: 0, opacity: 0 }}
+                animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                exit={{ rotate: 90, scale: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+              >
+                <Sun className="w-3.5 h-3.5" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="moon"
+                initial={{ rotate: 90, scale: 0, opacity: 0 }}
+                animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                exit={{ rotate: -90, scale: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+              >
+                <Moon className="w-3.5 h-3.5" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <span>{isDark ? "Claro" : "Escuro"}</span>
+        </button>
+      );
+    }
+
+    // Compact collapsed version
+    if (compact && collapsed) {
+      return (
+        <button
+          onClick={toggleTheme}
+          className="flex items-center justify-center w-8 h-8 rounded-md text-gray-600 hover:text-gray-800 hover:bg-black/5 transition-all"
+          aria-label={isDark ? "Ativar modo claro" : "Ativar modo escuro"}
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            {isDark ? (
+              <motion.div
+                key="sun"
+                initial={{ rotate: -90, scale: 0, opacity: 0 }}
+                animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                exit={{ rotate: 90, scale: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+              >
+                <Sun className="w-4 h-4" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="moon"
+                initial={{ rotate: 90, scale: 0, opacity: 0 }}
+                animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                exit={{ rotate: -90, scale: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+              >
+                <Moon className="w-4 h-4" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </button>
+      );
+    }
+
+    // Regular sidebar version
     return (
       <button
         onClick={toggleTheme}
