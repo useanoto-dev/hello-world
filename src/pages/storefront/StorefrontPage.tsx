@@ -1430,14 +1430,8 @@ export default function StorefrontPage() {
         <ProductDetailDrawer
           product={simpleProduct}
           categoryName={simpleProductCategoryName}
-          storeId={store.id}
           isOpen={showProductDetailDrawer}
           onClose={() => {
-            setShowProductDetailDrawer(false);
-            setSimpleProduct(null);
-          }}
-          onNavigateToCategory={(categoryId) => {
-            setActiveCategory(categoryId);
             setShowProductDetailDrawer(false);
             setSimpleProduct(null);
           }}
