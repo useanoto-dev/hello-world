@@ -1,12 +1,12 @@
 // Upsell Modal Editor Page - Full screen professional editor
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { 
-  ArrowLeft, 
-  Check, 
-  Sparkles, 
+import {
+  ArrowLeft,
+  Check,
+  Sparkles,
   Palette,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import ComboUpsellModal from "@/components/storefront/ComboUpsellModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveRestaurant } from "@/hooks/useActiveRestaurant";
 import { toast } from "sonner";
@@ -31,6 +32,13 @@ interface Category {
   name: string;
   icon: string | null;
   category_type: string | null;
+}
+
+interface PreviewPizzaSize {
+  id: string;
+  name: string;
+  image_url: string | null;
+  base_price: number;
 }
 
 // Modelo types
@@ -243,6 +251,57 @@ export default function UpsellModalEditorPage() {
     combo_show_doughs: true,
     combo_show_additionals: true,
   });
+
+  // Fullscreen preview (igual a página de sabores)
+  const [fullscreenPreviewOpen, setFullscreenPreviewOpen] = useState(false);
+  const [previewSize, setPreviewSize] = useState<PreviewPizzaSize | null>(null);
+  const [previewSizeLoading, setPreviewSizeLoading] = useState(false);
+
+  useEffect(() => {
+    // Se sair do template combo, fecha a prévia
+    if (selectedTemplate !== "combo") {
+      setFullscreenPreviewOpen(false);
+      setPreviewSize(null);
+      setPreviewSizeLoading(false);
+    }
+  }, [selectedTemplate]);
+
+  useEffect(() => {
+    if (!fullscreenPreviewOpen) return;
+    if (!restaurantId) return;
+
+    const categoryId = selectedCategories[0];
+    if (!categoryId) return;
+
+    let cancelled = false;
+
+    const loadPreviewSize = async () => {
+      setPreviewSizeLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("pizza_sizes")
+          .select("id, name, image_url, base_price")
+          .eq("store_id", restaurantId)
+          .eq("category_id", categoryId)
+          .eq("is_active", true)
+          .order("display_order")
+          .limit(1);
+
+        if (error) throw error;
+        if (!cancelled) setPreviewSize((data && data[0]) || null);
+      } catch (e) {
+        console.error("Error loading preview size:", e);
+        if (!cancelled) setPreviewSize(null);
+      } finally {
+        if (!cancelled) setPreviewSizeLoading(false);
+      }
+    };
+
+    loadPreviewSize();
+    return () => {
+      cancelled = true;
+    };
+  }, [fullscreenPreviewOpen, restaurantId, selectedCategories]);
   
   // Get templates based on selected model
   const currentTemplates = selectedModel === "pizza" ? PIZZA_TEMPLATES : 
@@ -762,6 +821,25 @@ export default function UpsellModalEditorPage() {
               </div>
             </div>
           )}
+
+          {isCombo && (
+            <div className="mt-3">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => setFullscreenPreviewOpen(true)}
+              >
+                Ver prévia em tela cheia
+              </Button>
+              {previewSizeLoading && (
+                <p className="mt-1 text-[10px] text-muted-foreground text-center">
+                  Preparando prévia…
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Form */}
@@ -1004,100 +1082,120 @@ export default function UpsellModalEditorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      {/* Header */}
-      <div className="bg-card border-b border-border px-4 py-2.5">
-        <div className="flex items-center gap-3">
-          <button onClick={handleClose} className="text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div>
-            <h1 className="text-sm font-semibold text-foreground">
-              {editId ? "Editar Modal" : "Novo Modal"}
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              Escolha o modelo
-            </p>
+    <>
+      <ComboUpsellModal
+        open={fullscreenPreviewOpen && selectedTemplate === "combo"}
+        storeId={restaurantId || ""}
+        categoryId={selectedCategories[0] || ""}
+        sizeId={previewSize?.id || ""}
+        sizeName={previewSize?.name || "Pizza"}
+        sizeImageUrl={previewSize?.image_url || null}
+        title={formData.title || "Personalize sua pizza ✨"}
+        description={formData.description || undefined}
+        buttonText={formData.button_text || "Confirmar"}
+        buttonColor={formData.button_color}
+        showEdges={formData.combo_show_edges}
+        showDoughs={formData.combo_show_doughs}
+        showAdditionals={formData.combo_show_additionals}
+        onClose={() => setFullscreenPreviewOpen(false)}
+        onComplete={() => setFullscreenPreviewOpen(false)}
+      />
+
+      <div className="min-h-screen bg-white flex flex-col">
+        {/* Header */}
+        <div className="bg-card border-b border-border px-4 py-2.5">
+          <div className="flex items-center gap-3">
+            <button onClick={handleClose} className="text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div>
+              <h1 className="text-sm font-semibold text-foreground">
+                {editId ? "Editar Modal" : "Novo Modal"}
+              </h1>
+              <p className="text-xs text-muted-foreground">
+                Escolha o modelo
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Steps */}
+        <div className="bg-card border-b border-border px-4">
+          <div className="flex gap-2 overflow-x-auto max-w-3xl mx-auto py-1">
+            {STEPS.map((step) => {
+              const isCurrent = step.id === currentStep;
+              const isCompleted = step.id < currentStep;
+              const isDisabled = !editId && step.id > currentStep;
+              
+              return (
+                <button
+                  key={step.id}
+                  onClick={() => {
+                    if (editId || step.id <= currentStep) setCurrentStep(step.id);
+                  }}
+                  disabled={isDisabled}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors whitespace-nowrap border-b-2",
+                    isCurrent ? "text-muted-foreground border-primary" 
+                      : isCompleted || editId ? "text-muted-foreground border-transparent cursor-pointer hover:text-foreground"
+                      : "text-muted-foreground border-transparent cursor-not-allowed"
+                  )}
+                >
+                  <span className={cn(
+                    "flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-semibold",
+                    isCurrent ? "bg-primary text-primary-foreground"
+                      : isCompleted || editId ? "bg-foreground text-background"
+                      : "bg-muted text-muted-foreground"
+                  )}>
+                    {isCompleted ? <Check className="w-3 h-3" /> : step.id}
+                  </span>
+                  {step.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 overflow-y-auto pb-24 bg-white">
+          <div className="p-6">
+            {currentStep === 1 && renderTemplateStep()}
+            {currentStep === 2 && renderCategoriesStep()}
+            {currentStep === 3 && renderAppearanceStep()}
+            {currentStep === 4 && renderSettingsStep()}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="fixed bottom-0 left-0 right-0 px-4 py-4 md:left-64">
+          <div className="max-w-xl mx-auto flex items-center justify-center gap-3">
+            <Button
+              variant="outline"
+              onClick={currentStep === 1 ? handleClose : handleBack}
+            >
+              {currentStep === 1 ? "Cancelar" : "Voltar"}
+            </Button>
+            
+            {currentStep < 4 ? (
+              <Button
+                onClick={handleNext}
+                disabled={!canProceed()}
+                className="gap-1"
+              >
+                Continuar
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSave}
+                disabled={saving || !canProceed()}
+              >
+                {saving ? "Salvando..." : editId ? "Salvar Alterações" : "Criar Modal"}
+              </Button>
+            )}
           </div>
         </div>
       </div>
-
-      {/* Steps */}
-      <div className="bg-card border-b border-border px-4">
-        <div className="flex gap-2 overflow-x-auto max-w-3xl mx-auto py-1">
-          {STEPS.map((step) => {
-            const isCurrent = step.id === currentStep;
-            const isCompleted = step.id < currentStep;
-            const isDisabled = !editId && step.id > currentStep;
-            
-            return (
-              <button
-                key={step.id}
-                onClick={() => {
-                  if (editId || step.id <= currentStep) setCurrentStep(step.id);
-                }}
-                disabled={isDisabled}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors whitespace-nowrap border-b-2",
-                  isCurrent ? "text-muted-foreground border-primary" 
-                    : isCompleted || editId ? "text-muted-foreground border-transparent cursor-pointer hover:text-foreground"
-                    : "text-muted-foreground border-transparent cursor-not-allowed"
-                )}
-              >
-                <span className={cn(
-                  "flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-semibold",
-                  isCurrent ? "bg-primary text-primary-foreground"
-                    : isCompleted || editId ? "bg-foreground text-background"
-                    : "bg-muted text-muted-foreground"
-                )}>
-                  {isCompleted ? <Check className="w-3 h-3" /> : step.id}
-                </span>
-                {step.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto pb-24 bg-white">
-        <div className="p-6">
-          {currentStep === 1 && renderTemplateStep()}
-          {currentStep === 2 && renderCategoriesStep()}
-          {currentStep === 3 && renderAppearanceStep()}
-          {currentStep === 4 && renderSettingsStep()}
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="fixed bottom-0 left-0 right-0 px-4 py-4 md:left-64">
-        <div className="max-w-xl mx-auto flex items-center justify-center gap-3">
-          <Button
-            variant="outline"
-            onClick={currentStep === 1 ? handleClose : handleBack}
-          >
-            {currentStep === 1 ? "Cancelar" : "Voltar"}
-          </Button>
-          
-          {currentStep < 4 ? (
-            <Button
-              onClick={handleNext}
-              disabled={!canProceed()}
-              className="gap-1"
-            >
-              Continuar
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          ) : (
-            <Button
-              onClick={handleSave}
-              disabled={saving || !canProceed()}
-            >
-              {saving ? "Salvando..." : editId ? "Salvar Alterações" : "Criar Modal"}
-            </Button>
-          )}
-        </div>
-      </div>
-    </div>
+    </>
   );
 }
