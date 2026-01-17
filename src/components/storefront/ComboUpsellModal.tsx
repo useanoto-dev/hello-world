@@ -540,8 +540,8 @@ export default function ComboUpsellModal({
                   {/* Doughs Section */}
                   {showDoughs && doughs.length > 0 && (
                     <section>
-                      <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
-                        <span>🥖</span> Escolha a Massa
+                      <h3 className="text-base font-bold text-foreground mb-3">
+                        Escolha a Massa
                       </h3>
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
                         <DoughCard isDefault />
@@ -553,8 +553,8 @@ export default function ComboUpsellModal({
                   {/* Edges Section */}
                   {showEdges && edges.length > 0 && (
                     <section>
-                      <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
-                        <span>🧀</span> Escolha a Borda
+                      <h3 className="text-base font-bold text-foreground mb-3">
+                        Escolha a Borda
                       </h3>
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
                         <EdgeCard isDefault />
@@ -566,8 +566,8 @@ export default function ComboUpsellModal({
                   {/* Additionals Section */}
                   {showAdditionals && Object.keys(groupedAdditionals).length > 0 && (
                     <section>
-                      <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
-                        <span>➕</span> Adicionais
+                      <h3 className="text-base font-bold text-foreground mb-3">
+                        Adicionais
                       </h3>
                       {Object.entries(groupedAdditionals).map(([groupName, items]) => (
                         <div key={groupName} className="mb-3">
