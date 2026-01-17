@@ -292,7 +292,9 @@ export function StandardCategoryGrid({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.03, duration: 0.3 }}
                 >
-                  <button
+                  <div
+                    role="button"
+                    tabIndex={0}
                     onClick={() => onItemSelect({ 
                       id: size.id, 
                       name: size.name, 
@@ -301,6 +303,19 @@ export function StandardCategoryGrid({
                       item_type: 'standard',
                       is_premium: false 
                     }, size, size.base_price, allowQuantitySelector ? quantity : 1)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onItemSelect({
+                          id: size.id,
+                          name: size.name,
+                          description: size.description,
+                          image_url: size.image_url,
+                          item_type: "standard",
+                          is_premium: false,
+                        }, size, size.base_price, allowQuantitySelector ? quantity : 1);
+                      }
+                    }}
                     className="w-full text-left bg-card rounded-xl overflow-hidden border border-border transition-all duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary group hover:shadow-lg hover:border-primary/30 active:scale-[0.98]"
                   >
                     {/* Image - Aspect 4/3 */}
@@ -376,7 +391,7 @@ export function StandardCategoryGrid({
                         </div>
                       )}
                     </div>
-                  </button>
+                  </div>
                 </motion.div>
               );
             })}
@@ -507,8 +522,16 @@ export function StandardCategoryGrid({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.03, duration: 0.3 }}
             >
-              <button
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => handleItemClick(item)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleItemClick(item);
+                  }
+                }}
                 className="w-full text-left bg-card rounded-xl overflow-hidden border border-border transition-all duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary group hover:shadow-lg hover:border-primary/30 active:scale-[0.98]"
               >
                 {/* Image - Aspect 4/3 */}
@@ -592,7 +615,7 @@ export function StandardCategoryGrid({
                     </div>
                   )}
                 </div>
-              </button>
+              </div>
             </motion.div>
           );
         })}
