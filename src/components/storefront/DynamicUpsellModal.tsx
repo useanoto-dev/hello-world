@@ -1,9 +1,8 @@
 // Dynamic Upsell Modal - Fetches configured modals from database and displays them
+// Appears as overlay on top of current page/drawer
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { X, Check, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/contexts/CartContext";
 import { formatCurrency } from "@/lib/formatters";
@@ -176,10 +175,9 @@ export default function DynamicUpsellModal({
     toast.success(`${product.name} adicionado!`);
   };
 
-  if (!modalConfig) return null;
-
   // Get icon based on modal type
   const getIcon = () => {
+    if (!modalConfig) return "✨";
     switch (modalConfig.modal_type) {
       case "drink": return "🥤";
       case "accompaniment": return "🍟";
@@ -190,38 +188,58 @@ export default function DynamicUpsellModal({
   };
 
   return (
-    <Drawer open onOpenChange={(open) => !open && onClose()}>
-      <DrawerContent className="max-h-[60vh] bg-white dark:bg-zinc-900 rounded-t-2xl border-t border-x border-border/30 shadow-xl">
-        {/* Header minimalista */}
-        <div className="px-5 pt-2 pb-4">
-          <div className="w-10 h-1 bg-zinc-300 dark:bg-zinc-600 rounded-full mx-auto mb-4" />
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                {getIcon()}
-                {modalConfig.title}
-              </h3>
-              {modalConfig.description && (
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {modalConfig.description}
-                </p>
-              )}
-            </div>
-            <button 
-              onClick={onClose}
-              className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-            >
-              <X className="w-4 h-4 text-muted-foreground" />
-            </button>
-          </div>
+    <AnimatePresence>
+      {/* Backdrop overlay - sits on top of everything */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="fixed inset-0 z-[100] bg-black/50"
+        onClick={onClose}
+      />
+      
+      {/* Bottom sheet - slides up from bottom */}
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 30, stiffness: 300 }}
+        className="fixed inset-x-0 bottom-0 z-[101] bg-white dark:bg-zinc-900 rounded-t-2xl shadow-2xl max-h-[55vh] flex flex-col"
+      >
+        {/* Handle bar */}
+        <div className="flex justify-center pt-3 pb-2">
+          <div className="w-10 h-1 bg-zinc-300 dark:bg-zinc-600 rounded-full" />
         </div>
 
-        {/* Conteúdo */}
+        {/* Header */}
+        <div className="px-5 pb-3 flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+              {getIcon()}
+              {modalConfig?.title || "Sugestão"}
+            </h3>
+            {modalConfig?.description && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {modalConfig.description}
+              </p>
+            )}
+          </div>
+          <button 
+            onClick={onClose}
+            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          >
+            <X className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        {/* Products - horizontal scroll */}
         <div className="flex-1 overflow-y-auto px-5 pb-2">
           {loading ? (
             <div className="flex gap-3">
-              <Skeleton className="h-28 flex-1 rounded-xl" />
-              <Skeleton className="h-28 flex-1 rounded-xl" />
+              <Skeleton className="h-28 w-32 flex-shrink-0 rounded-xl" />
+              <Skeleton className="h-28 w-32 flex-shrink-0 rounded-xl" />
+              <Skeleton className="h-28 w-32 flex-shrink-0 rounded-xl" />
             </div>
           ) : products.length === 0 ? (
             <div className="text-center py-6">
@@ -229,7 +247,7 @@ export default function DynamicUpsellModal({
               <p className="text-sm text-muted-foreground">Nenhum produto disponível</p>
             </div>
           ) : (
-            <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
               {products.map((product) => (
                 <motion.div
                   key={product.id}
@@ -260,8 +278,8 @@ export default function DynamicUpsellModal({
           )}
         </div>
 
-        {/* Footer minimalista */}
-        <div className="px-5 pb-5 pt-3">
+        {/* Footer */}
+        <div className="px-5 pb-5 pt-3 border-t border-zinc-100 dark:border-zinc-800">
           <button 
             onClick={onClose}
             className="w-full h-11 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-foreground font-medium text-sm transition-colors"
@@ -269,7 +287,7 @@ export default function DynamicUpsellModal({
             Continuar
           </button>
         </div>
-      </DrawerContent>
-    </Drawer>
+      </motion.div>
+    </AnimatePresence>
   );
 }
