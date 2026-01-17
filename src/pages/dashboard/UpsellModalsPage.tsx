@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Sparkles, Trash2, Edit2, ArrowRight, Circle, Coffee, Sandwich } from "lucide-react";
+import { Plus, Sparkles, Trash2, Edit2, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -8,12 +8,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveRestaurant } from "@/hooks/useActiveRestaurant";
 import { toast } from "sonner";
-import { UpsellModalEditor } from "@/components/admin/UpsellModalEditor";
+import { UpsellModalWizard } from "@/components/admin/UpsellModalWizard";
 
 interface Category {
   id: string;
   name: string;
   icon: string | null;
+  category_type: string | null;
 }
 
 interface UpsellModal {
@@ -33,9 +34,11 @@ interface UpsellModal {
 }
 
 const MODAL_TYPE_CONFIG: Record<string, { label: string; icon: string; color: string }> = {
-  edge: { label: "Borda", icon: "🍕", color: "bg-orange-100 text-orange-700 border-orange-200" },
-  drink: { label: "Bebida", icon: "🥤", color: "bg-blue-100 text-blue-700 border-blue-200" },
-  upsell: { label: "Venda adicional", icon: "✨", color: "bg-purple-100 text-purple-700 border-purple-200" },
+  drink: { label: "Bebidas", icon: "🥤", color: "bg-blue-100 text-blue-700 border-blue-200" },
+  edge: { label: "Bordas", icon: "🍕", color: "bg-orange-100 text-orange-700 border-orange-200" },
+  additional: { label: "Adicionais", icon: "➕", color: "bg-green-100 text-green-700 border-green-200" },
+  accompaniment: { label: "Acompanhamentos", icon: "🍟", color: "bg-yellow-100 text-yellow-700 border-yellow-200" },
+  custom: { label: "Personalizado", icon: "✨", color: "bg-purple-100 text-purple-700 border-purple-200" },
 };
 
 export default function UpsellModalsPage() {
@@ -59,7 +62,7 @@ export default function UpsellModalsPage() {
       // Load categories
       const { data: categoriesData } = await supabase
         .from("categories")
-        .select("id, name, icon")
+        .select("id, name, icon, category_type")
         .eq("store_id", restaurantId)
         .eq("is_active", true)
         .order("display_order");
@@ -146,7 +149,7 @@ export default function UpsellModalsPage() {
     loadData();
   };
 
-  const getTypeConfig = (type: string) => MODAL_TYPE_CONFIG[type] || MODAL_TYPE_CONFIG.upsell;
+  const getTypeConfig = (type: string) => MODAL_TYPE_CONFIG[type] || MODAL_TYPE_CONFIG.custom;
 
   if (loading) {
     return (
@@ -280,7 +283,7 @@ export default function UpsellModalsPage() {
       )}
 
       {showEditor && (
-        <UpsellModalEditor
+        <UpsellModalWizard
           open={showEditor}
           onClose={handleEditorClose}
           modal={editingModal}
