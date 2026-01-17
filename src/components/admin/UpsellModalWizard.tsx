@@ -3,8 +3,7 @@ import {
   Sparkles, 
   ChevronRight, 
   ChevronLeft,
-  Check,
-  Palette
+  Check
 } from "lucide-react";
 import {
   Dialog,
@@ -131,17 +130,7 @@ const MODAL_TEMPLATES = [
   },
 ];
 
-// Cores pré-definidas para seleção rápida
-const BUTTON_COLORS = [
-  { value: "#22c55e", label: "Verde", class: "bg-green-500" },
-  { value: "#3b82f6", label: "Azul", class: "bg-blue-500" },
-  { value: "#f97316", label: "Laranja", class: "bg-orange-500" },
-  { value: "#ef4444", label: "Vermelho", class: "bg-red-500" },
-  { value: "#a855f7", label: "Roxo", class: "bg-purple-500" },
-  { value: "#eab308", label: "Amarelo", class: "bg-yellow-500" },
-  { value: "#ec4899", label: "Rosa", class: "bg-pink-500" },
-  { value: "#14b8a6", label: "Teal", class: "bg-teal-500" },
-];
+// Removed BUTTON_COLORS - using brand identity (primary color) instead
 
 type WizardStep = "template" | "categories" | "settings";
 
@@ -535,31 +524,6 @@ export function UpsellModalWizard({
           value={formData.button_text}
           onChange={(e) => setFormData({ ...formData, button_text: e.target.value })}
         />
-      </div>
-
-      {/* Button Color */}
-      <div className="space-y-1.5">
-        <Label className="text-xs flex items-center gap-1">
-          <Palette className="w-3 h-3" />
-          Cor do botão
-        </Label>
-        <div className="flex flex-wrap gap-2">
-          {BUTTON_COLORS.map((color) => (
-            <button
-              key={color.value}
-              type="button"
-              onClick={() => setFormData({ ...formData, button_color: color.value })}
-              className={cn(
-                "w-8 h-8 rounded-full border-2 transition-all",
-                color.class,
-                formData.button_color === color.value
-                  ? "border-foreground scale-110 ring-2 ring-primary/30"
-                  : "border-transparent hover:scale-105"
-              )}
-              title={color.label}
-            />
-          ))}
-        </div>
       </div>
 
       {/* Secondary Button Text */}

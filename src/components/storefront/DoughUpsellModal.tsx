@@ -21,7 +21,6 @@ interface DoughUpsellModalProps {
   title?: string;
   description?: string;
   buttonText?: string;
-  buttonColor?: string;
   secondaryButtonText?: string;
   icon?: string;
   onClose: () => void;
@@ -57,14 +56,11 @@ async function fetchDoughsWithPrices(categoryId: string, sizeId: string) {
 }
 
 export default function DoughUpsellModal({
-  storeId,
   categoryId,
   sizeId,
   sizeName,
   title = "Escolha a Massa",
   description,
-  buttonText = "Continuar",
-  buttonColor = "#a855f7",
   secondaryButtonText = "Massa Tradicional",
   icon = "🥖",
   onClose,
@@ -199,10 +195,7 @@ export default function DoughUpsellModal({
                   </div>
                   <div className="flex items-center gap-2">
                     {dough.price > 0 ? (
-                      <span 
-                        className="text-xs font-semibold"
-                        style={{ color: buttonColor }}
-                      >
+                      <span className="text-xs font-semibold text-primary">
                         +{formatCurrency(dough.price)}
                       </span>
                     ) : (

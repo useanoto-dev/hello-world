@@ -5,7 +5,6 @@ import {
   ArrowLeft,
   Check,
   Sparkles,
-  Palette,
   ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -198,17 +197,7 @@ const PADRAO_TEMPLATES = [
 // All templates for lookup
 const ALL_TEMPLATES = [...PIZZA_TEMPLATES, ...PADRAO_TEMPLATES];
 
-// Cores pré-definidas para seleção rápida
-const BUTTON_COLORS = [
-  { value: "#22c55e", label: "Verde", class: "bg-green-500" },
-  { value: "#3b82f6", label: "Azul", class: "bg-blue-500" },
-  { value: "#f97316", label: "Laranja", class: "bg-orange-500" },
-  { value: "#ef4444", label: "Vermelho", class: "bg-red-500" },
-  { value: "#a855f7", label: "Roxo", class: "bg-purple-500" },
-  { value: "#eab308", label: "Amarelo", class: "bg-yellow-500" },
-  { value: "#ec4899", label: "Rosa", class: "bg-pink-500" },
-  { value: "#14b8a6", label: "Teal", class: "bg-teal-500" },
-];
+// Removed BUTTON_COLORS - using brand identity (primary color) instead
 
 const STEPS = [
   { id: 1, label: "Modelo" },
@@ -890,31 +879,6 @@ export default function UpsellModalEditorPage() {
             />
           </div>
 
-          {/* Button Color */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium flex items-center gap-1.5">
-              <Palette className="w-3 h-3" />
-              Cor do botão
-            </Label>
-            <div className="flex flex-wrap gap-1.5">
-              {BUTTON_COLORS.map((color) => (
-                <button
-                  key={color.value}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, button_color: color.value })}
-                  className={cn(
-                    "w-7 h-7 rounded-full border-2 transition-all",
-                    color.class,
-                    formData.button_color === color.value
-                      ? "border-foreground scale-110 ring-2 ring-primary/20"
-                      : "border-transparent hover:scale-105"
-                  )}
-                  title={color.label}
-                />
-              ))}
-            </div>
-          </div>
-
           {/* Secondary Button Text */}
           <div className="space-y-1">
             <Label className="text-xs font-medium">Texto do botão secundário</Label>
@@ -1093,7 +1057,6 @@ export default function UpsellModalEditorPage() {
         title={formData.title || "Personalize sua pizza ✨"}
         description={formData.description || undefined}
         buttonText={formData.button_text || "Confirmar"}
-        buttonColor={formData.button_color}
         showEdges={formData.combo_show_edges}
         showDoughs={formData.combo_show_doughs}
         showAdditionals={formData.combo_show_additionals}

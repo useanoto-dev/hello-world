@@ -29,7 +29,6 @@ interface AdditionalsUpsellModalProps {
   title?: string;
   description?: string;
   buttonText?: string;
-  buttonColor?: string;
   secondaryButtonText?: string;
   icon?: string;
   maxItems?: number;
@@ -81,7 +80,6 @@ export default function AdditionalsUpsellModal({
   title = "Deseja adicionar algo?",
   description,
   buttonText = "Confirmar",
-  buttonColor = "#3b82f6",
   secondaryButtonText = "Não, obrigado",
   icon = "➕",
   maxItems = 10,
@@ -210,10 +208,7 @@ export default function AdditionalsUpsellModal({
             )}
           </div>
           {totalSelected > 0 && (
-            <div 
-              className="px-2 py-1 rounded-full text-xs font-semibold text-white"
-              style={{ backgroundColor: buttonColor }}
-            >
+            <div className="px-2 py-1 rounded-full text-xs font-semibold bg-primary text-primary-foreground">
               {totalSelected} item{totalSelected > 1 ? 's' : ''}
             </div>
           )}
@@ -259,10 +254,7 @@ export default function AdditionalsUpsellModal({
                         <div className="min-w-0">
                           <span className="font-medium text-sm text-foreground block truncate">{item.name}</span>
                           {item.price > 0 && (
-                            <span 
-                              className="text-xs font-semibold"
-                              style={{ color: buttonColor }}
-                            >
+                            <span className="text-xs font-semibold text-primary">
                               +{formatCurrency(item.price)}
                             </span>
                           )}
@@ -282,8 +274,7 @@ export default function AdditionalsUpsellModal({
                           </span>
                           <button
                             onClick={() => updateQuantity(item.id, 1)}
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-white"
-                            style={{ backgroundColor: buttonColor }}
+                            className="w-8 h-8 rounded-full flex items-center justify-center bg-primary text-primary-foreground"
                           >
                             <Plus className="w-4 h-4" />
                           </button>
@@ -308,8 +299,7 @@ export default function AdditionalsUpsellModal({
         <div className="p-4 border-t border-border space-y-2">
           <Button
             onClick={handleConfirm}
-            className="w-full h-12 text-base font-semibold"
-            style={{ backgroundColor: buttonColor }}
+            className="w-full h-12 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {totalSelected > 0 ? (
               <>

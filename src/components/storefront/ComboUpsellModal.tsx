@@ -54,7 +54,6 @@ interface ComboUpsellModalProps {
   title?: string;
   description?: string;
   buttonText?: string;
-  buttonColor?: string;
   showEdges?: boolean;
   showDoughs?: boolean;
   showAdditionals?: boolean;
@@ -169,7 +168,6 @@ export default function ComboUpsellModal({
   title = "Personalize sua pizza ✨",
   description = "Escolha massa, borda e adicionais",
   buttonText = "Confirmar",
-  buttonColor = "#f59e0b",
   showEdges = true,
   showDoughs = true,
   showAdditionals = true,
@@ -595,8 +593,7 @@ export default function ComboUpsellModal({
               </div>
               <Button
                 onClick={handleConfirm}
-                className="w-full h-12 text-base font-semibold text-white rounded-xl shadow-lg"
-                style={{ backgroundColor: buttonColor }}
+                className="w-full h-12 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-lg"
               >
                 {buttonText}
               </Button>
