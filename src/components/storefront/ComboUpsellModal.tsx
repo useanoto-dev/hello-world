@@ -297,25 +297,25 @@ export default function ComboUpsellModal({
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
           className="fixed inset-0 z-50 bg-background flex flex-col"
         >
-          {/* Header */}
-          <header className="flex items-center justify-between px-4 py-3 border-b border-border bg-background sticky top-0 z-20">
-            <div className="flex items-center gap-3">
+          {/* Header - Compact */}
+          <header className="flex items-center justify-between px-3 py-2 border-b border-border bg-background sticky top-0 z-20">
+            <div className="flex items-center gap-2">
               <button 
                 onClick={onClose}
-                className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
               >
-                <ArrowLeft className="w-5 h-5 text-foreground" />
+                <ArrowLeft className="w-4 h-4 text-foreground" />
               </button>
               <div>
-                <h1 className="text-base font-semibold text-foreground">{title}</h1>
+                <h1 className="text-sm font-semibold text-foreground">{title}</h1>
                 {sizeName && (
-                  <p className="text-xs text-muted-foreground">Tamanho {sizeName}</p>
+                  <p className="text-[11px] text-muted-foreground">Tamanho {sizeName}</p>
                 )}
               </div>
             </div>
             {totalPrice > 0 && (
               <div 
-                className="px-3 py-1.5 rounded-full text-sm font-semibold text-white"
+                className="px-2.5 py-1 rounded-full text-xs font-semibold text-white"
                 style={{ backgroundColor: buttonColor }}
               >
                 +{formatCurrency(totalPrice)}
@@ -336,46 +336,42 @@ export default function ComboUpsellModal({
                 <p className="text-muted-foreground">Nenhum item disponível</p>
               </div>
             ) : (
-              <div className="p-4 space-y-6">
+              <div className="p-3 space-y-4">
                 {/* Description */}
                 {description && (
-                  <p className="text-sm text-muted-foreground">{description}</p>
+                  <p className="text-xs text-muted-foreground">{description}</p>
                 )}
 
-                {/* Doughs Section */}
+                {/* Doughs Section - Compact */}
                 {doughs.length > 0 && (
                   <section>
-                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
-                      <span className="text-base">🥖</span> MASSA
+                    <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                      <span className="text-sm">🥖</span> MASSA
                     </h3>
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       {/* Traditional (default) */}
                       <button
                         onClick={() => setSelectedDough(null)}
                         className={cn(
-                          "w-full flex items-center justify-between p-3 rounded-xl transition-all border",
+                          "w-full flex items-center gap-2.5 p-2 rounded-lg transition-all",
                           selectedDough === null
-                            ? "bg-purple-50 border-purple-300"
-                            : "bg-card border-border hover:border-muted-foreground/30"
+                            ? "bg-purple-50"
+                            : "bg-card hover:bg-muted/50"
                         )}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                            <span className="text-lg">🍕</span>
-                          </div>
-                          <div className="text-left">
-                            <span className="font-medium text-sm text-foreground">Tradicional</span>
-                            <p className="text-xs text-muted-foreground">Massa padrão</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">Incluso</span>
+                        {/* Radio Button */}
+                        <div className={cn(
+                          "w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0",
+                          selectedDough === null
+                            ? "border-purple-500 bg-purple-500"
+                            : "border-muted-foreground/40"
+                        )}>
                           {selectedDough === null && (
-                            <div className="w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center">
-                              <Check className="w-3 h-3 text-white" strokeWidth={3} />
-                            </div>
+                            <div className="w-1.5 h-1.5 rounded-full bg-white" />
                           )}
                         </div>
+                        <span className="font-medium text-xs text-foreground flex-1 text-left">Tradicional</span>
+                        <span className="text-[10px] text-muted-foreground">Incluso</span>
                       </button>
                       
                       {doughs.map((dough) => (
@@ -383,74 +379,72 @@ export default function ComboUpsellModal({
                           key={dough.id}
                           onClick={() => setSelectedDough(dough)}
                           className={cn(
-                            "w-full flex items-center justify-between p-3 rounded-xl transition-all border",
+                            "w-full flex items-center gap-2.5 p-2 rounded-lg transition-all",
                             selectedDough?.id === dough.id
-                              ? "bg-purple-50 border-purple-300"
-                              : "bg-card border-border hover:border-muted-foreground/30"
+                              ? "bg-purple-50"
+                              : "bg-card hover:bg-muted/50"
                           )}
                         >
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                              <span className="text-lg">🥖</span>
-                            </div>
-                            <div className="text-left">
-                              <span className="font-medium text-sm text-foreground">{dough.name}</span>
-                              {dough.description && (
-                                <p className="text-xs text-muted-foreground line-clamp-1">{dough.description}</p>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {dough.price > 0 ? (
-                              <span className="text-xs font-semibold text-purple-600">
-                                +{formatCurrency(dough.price)}
-                              </span>
-                            ) : (
-                              <span className="text-xs text-muted-foreground">Incluso</span>
-                            )}
+                          {/* Radio Button */}
+                          <div className={cn(
+                            "w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0",
+                            selectedDough?.id === dough.id
+                              ? "border-purple-500 bg-purple-500"
+                              : "border-muted-foreground/40"
+                          )}>
                             {selectedDough?.id === dough.id && (
-                              <div className="w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center">
-                                <Check className="w-3 h-3 text-white" strokeWidth={3} />
-                              </div>
+                              <div className="w-1.5 h-1.5 rounded-full bg-white" />
                             )}
                           </div>
+                          <div className="flex-1 text-left min-w-0">
+                            <span className="font-medium text-xs text-foreground block truncate">{dough.name}</span>
+                            {dough.description && (
+                              <p className="text-[10px] text-muted-foreground truncate">{dough.description}</p>
+                            )}
+                          </div>
+                          {dough.price > 0 ? (
+                            <span className="text-[10px] font-semibold text-purple-600 flex-shrink-0">
+                              +{formatCurrency(dough.price)}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground flex-shrink-0">Incluso</span>
+                          )}
                         </button>
                       ))}
                     </div>
                   </section>
                 )}
 
-                {/* Edges Section */}
+                {/* Edges Section - Compact */}
                 {edges.length > 0 && (
                   <section>
-                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
-                      <span className="text-base">🧀</span> BORDA
+                    <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                      <span className="text-sm">🧀</span> BORDA
                     </h3>
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       {/* No edge (default) */}
                       <button
                         onClick={() => setSelectedEdge(null)}
                         className={cn(
-                          "w-full flex items-center justify-between p-3 rounded-xl transition-all border",
+                          "w-full flex items-center gap-2.5 p-2 rounded-lg transition-all",
                           selectedEdge === null
-                            ? "bg-orange-50 border-orange-300"
-                            : "bg-card border-border hover:border-muted-foreground/30"
+                            ? "bg-orange-50"
+                            : "bg-card hover:bg-muted/50"
                         )}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
-                            <span className="text-lg">🚫</span>
-                          </div>
-                          <span className="font-medium text-sm text-foreground">Sem Borda</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">Grátis</span>
+                        {/* Radio Button */}
+                        <div className={cn(
+                          "w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0",
+                          selectedEdge === null
+                            ? "border-orange-500 bg-orange-500"
+                            : "border-muted-foreground/40"
+                        )}>
                           {selectedEdge === null && (
-                            <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center">
-                              <Check className="w-3 h-3 text-white" strokeWidth={3} />
-                            </div>
+                            <div className="w-1.5 h-1.5 rounded-full bg-white" />
                           )}
                         </div>
+                        <span className="font-medium text-xs text-foreground flex-1 text-left">Sem Borda</span>
+                        <span className="text-[10px] text-muted-foreground">Grátis</span>
                       </button>
                       
                       {edges.map((edge) => (
@@ -458,46 +452,45 @@ export default function ComboUpsellModal({
                           key={edge.id}
                           onClick={() => setSelectedEdge(edge)}
                           className={cn(
-                            "w-full flex items-center justify-between p-3 rounded-xl transition-all border",
+                            "w-full flex items-center gap-2.5 p-2 rounded-lg transition-all",
                             selectedEdge?.id === edge.id
-                              ? "bg-orange-50 border-orange-300"
-                              : "bg-card border-border hover:border-muted-foreground/30"
+                              ? "bg-orange-50"
+                              : "bg-card hover:bg-muted/50"
                           )}
                         >
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
-                              <span className="text-lg">🧀</span>
-                            </div>
-                            <span className="font-medium text-sm text-foreground">{edge.name}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-semibold text-orange-600">
-                              +{formatCurrency(edge.price)}
-                            </span>
+                          {/* Radio Button */}
+                          <div className={cn(
+                            "w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0",
+                            selectedEdge?.id === edge.id
+                              ? "border-orange-500 bg-orange-500"
+                              : "border-muted-foreground/40"
+                          )}>
                             {selectedEdge?.id === edge.id && (
-                              <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center">
-                                <Check className="w-3 h-3 text-white" strokeWidth={3} />
-                              </div>
+                              <div className="w-1.5 h-1.5 rounded-full bg-white" />
                             )}
                           </div>
+                          <span className="font-medium text-xs text-foreground flex-1 text-left">{edge.name}</span>
+                          <span className="text-[10px] font-semibold text-orange-600 flex-shrink-0">
+                            +{formatCurrency(edge.price)}
+                          </span>
                         </button>
                       ))}
                     </div>
                   </section>
                 )}
 
-                {/* Additionals Section */}
+                {/* Additionals Section - Compact */}
                 {Object.keys(groupedAdditionals).length > 0 && (
                   <section>
-                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
-                      <span className="text-base">➕</span> ADICIONAIS
+                    <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                      <span className="text-sm">➕</span> ADICIONAIS
                     </h3>
                     {Object.entries(groupedAdditionals).map(([groupName, items]) => (
-                      <div key={groupName} className="mb-4">
+                      <div key={groupName} className="mb-3">
                         {Object.keys(groupedAdditionals).length > 1 && (
-                          <p className="text-xs font-medium text-muted-foreground mb-2">{groupName}</p>
+                          <p className="text-[10px] font-medium text-muted-foreground mb-1.5">{groupName}</p>
                         )}
-                        <div className="space-y-2">
+                        <div className="space-y-1">
                           {items.map((item) => {
                             const selectedItem = selectedAdditionals.get(item.id);
                             const isSelected = !!selectedItem;
@@ -506,62 +499,53 @@ export default function ComboUpsellModal({
                               <div
                                 key={item.id}
                                 className={cn(
-                                  "flex items-center justify-between p-3 rounded-xl transition-all border",
+                                  "flex items-center gap-2 p-2 rounded-lg transition-all",
                                   isSelected
-                                    ? "bg-blue-50 border-blue-300"
-                                    : "bg-card border-border hover:border-muted-foreground/30"
+                                    ? "bg-blue-50"
+                                    : "bg-card hover:bg-muted/50"
                                 )}
                               >
                                 <button
                                   onClick={() => !isSelected && toggleAdditional(item)}
-                                  className="flex items-center gap-3 flex-1 text-left"
+                                  className="flex items-center gap-2 flex-1 text-left min-w-0"
                                 >
-                                  {item.image_url ? (
-                                    <img 
-                                      src={item.image_url} 
-                                      alt={item.name}
-                                      className="w-10 h-10 rounded-lg object-cover"
-                                    />
-                                  ) : (
-                                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                                      <span className="text-lg">➕</span>
-                                    </div>
-                                  )}
-                                  <div className="min-w-0">
-                                    <span className="font-medium text-sm text-foreground block truncate">{item.name}</span>
-                                    {item.price > 0 && (
-                                      <span className="text-xs font-semibold text-blue-600">
-                                        +{formatCurrency(item.price)}
-                                      </span>
+                                  {/* Checkbox style */}
+                                  <div className={cn(
+                                    "w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0",
+                                    isSelected
+                                      ? "border-blue-500 bg-blue-500"
+                                      : "border-muted-foreground/40"
+                                  )}>
+                                    {isSelected && (
+                                      <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
                                     )}
                                   </div>
+                                  <span className="font-medium text-xs text-foreground truncate">{item.name}</span>
+                                  {item.price > 0 && (
+                                    <span className="text-[10px] font-semibold text-blue-600 flex-shrink-0">
+                                      +{formatCurrency(item.price)}
+                                    </span>
+                                  )}
                                 </button>
                                 
-                                {isSelected ? (
-                                  <div className="flex items-center gap-1">
+                                {isSelected && (
+                                  <div className="flex items-center gap-0.5 flex-shrink-0">
                                     <button
                                       onClick={() => updateAdditionalQuantity(item.id, -1)}
-                                      className="w-8 h-8 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center"
+                                      className="w-6 h-6 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center"
                                     >
-                                      <Minus className="w-4 h-4" />
+                                      <Minus className="w-3 h-3" />
                                     </button>
-                                    <span className="w-8 text-center font-semibold text-sm">
+                                    <span className="w-5 text-center font-semibold text-xs">
                                       {selectedItem.quantity}
                                     </span>
                                     <button
                                       onClick={() => updateAdditionalQuantity(item.id, 1)}
-                                      className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center"
+                                      className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center"
                                     >
-                                      <Plus className="w-4 h-4" />
+                                      <Plus className="w-3 h-3" />
                                     </button>
                                   </div>
-                                ) : (
-                                  <button
-                                    onClick={() => toggleAdditional(item)}
-                                    className="w-8 h-8 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center hover:border-blue-400"
-                                  >
-                                    <Plus className="w-4 h-4 text-muted-foreground" />
-                                  </button>
                                 )}
                               </div>
                             );
@@ -575,11 +559,11 @@ export default function ComboUpsellModal({
             )}
           </main>
 
-          {/* Fixed Footer */}
-          <div className="fixed inset-x-0 bottom-0 p-4 bg-background border-t border-border space-y-2 z-30">
+          {/* Fixed Footer - Compact */}
+          <div className="fixed inset-x-0 bottom-0 p-3 bg-background border-t border-border space-y-1.5 z-30">
             <Button
               onClick={handleConfirm}
-              className="w-full h-12 text-base font-semibold text-white"
+              className="w-full h-10 text-sm font-semibold text-white"
               style={{ backgroundColor: buttonColor }}
             >
               {totalPrice > 0 ? (
@@ -593,7 +577,7 @@ export default function ComboUpsellModal({
             <Button
               variant="ghost"
               onClick={handleSkip}
-              className="w-full h-10 text-sm"
+              className="w-full h-8 text-xs"
             >
               Não, obrigado
             </Button>
