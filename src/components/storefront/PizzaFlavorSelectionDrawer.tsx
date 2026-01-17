@@ -436,29 +436,6 @@ export function PizzaFlavorSelectionDrawer({
               {/* Sr Pizza */}
               <SrPizzaButton flavors={flavors} onFlavorSelect={handleSrPizzaSelect} />
 
-              {/* Selected Flavors Badge */}
-              {selectedFlavors.length > 0 && (
-                <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl py-3 px-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-foreground">
-                      Sabores selecionados
-                    </span>
-                    <span className="text-sm font-bold text-amber-600">
-                      {selectedFlavors.length}/{maxFlavors}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {selectedFlavors.map((f) => (
-                      <span 
-                        key={f.id}
-                        className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full font-medium"
-                      >
-                        {f.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {isLoading ? (
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-2">
