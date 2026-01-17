@@ -1,8 +1,8 @@
 // Dynamic Upsell Modal - Fetches configured modals from database and displays them
-// Appears as overlay on top of current page/drawer
+// Beautiful bottom sheet design matching the reference image
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus } from "lucide-react";
+import { Plus, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/contexts/CartContext";
 import { formatCurrency } from "@/lib/formatters";
@@ -20,6 +20,10 @@ interface UpsellModalConfig {
   is_active: boolean;
   show_quick_add: boolean;
   max_products: number;
+  button_text: string | null;
+  button_color: string | null;
+  secondary_button_text: string | null;
+  icon: string | null;
 }
 
 interface Product {
@@ -36,16 +40,19 @@ interface DynamicUpsellModalProps {
   storeId: string;
   triggerCategoryId: string;
   onClose: () => void;
+  onSelectProducts?: () => void;
 }
 
 export default function DynamicUpsellModal({ 
   storeId, 
   triggerCategoryId,
   onClose,
+  onSelectProducts,
 }: DynamicUpsellModalProps) {
   const [loading, setLoading] = useState(true);
   const [modalConfig, setModalConfig] = useState<UpsellModalConfig | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const [showProducts, setShowProducts] = useState(false);
   
   const { addToCart } = useCart();
 
@@ -56,7 +63,7 @@ export default function DynamicUpsellModal({
 
   const loadModalData = async () => {
     try {
-      // Query upsell_modals table (not in generated types, so we use type assertion)
+      // Query upsell_modals table
       const { data: modals, error: modalError } = await (supabase as any)
         .from("upsell_modals")
         .select("*")
@@ -77,8 +84,10 @@ export default function DynamicUpsellModal({
       const modal = modals[0] as UpsellModalConfig;
       setModalConfig(modal);
 
-      // Load products based on modal type
-      await loadProducts(modal);
+      // Pre-load products for quick add
+      if (modal.show_quick_add) {
+        await loadProducts(modal);
+      }
 
     } catch (error) {
       console.error("Error loading modal data:", error);
@@ -113,7 +122,6 @@ export default function DynamicUpsellModal({
 
         if (categoryIds.length === 0) {
           setProducts([]);
-          setLoading(false);
           return;
         }
       }
@@ -175,23 +183,25 @@ export default function DynamicUpsellModal({
     toast.success(`${product.name} adicionado!`);
   };
 
-  // Get icon based on modal type
-  const getIcon = () => {
-    if (!modalConfig) return "✨";
-    switch (modalConfig.modal_type) {
-      case "drink": return "🥤";
-      case "accompaniment": return "🍟";
-      case "additional": return "➕";
-      case "edge": return "🍕";
-      default: return "✨";
+  const handlePrimaryAction = () => {
+    if (modalConfig?.show_quick_add && products.length > 0) {
+      setShowProducts(true);
+    } else if (onSelectProducts) {
+      onSelectProducts();
+    } else {
+      onClose();
     }
   };
 
   // Don't render anything until we've confirmed there's a modal configured
-  // This prevents the brief flash when no modal exists for this category
   if (loading || !modalConfig) {
     return null;
   }
+
+  const buttonColor = modalConfig.button_color || "#22c55e";
+  const icon = modalConfig.icon || "🥤";
+  const buttonText = modalConfig.button_text || "Escolher";
+  const secondaryText = modalConfig.secondary_button_text || "Não, obrigado";
 
   return (
     <AnimatePresence>
@@ -202,7 +212,6 @@ export default function DynamicUpsellModal({
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
         className="fixed inset-0 z-[100] bg-black/50"
-        // No onClick - user must use the close button
       />
       
       {/* Bottom sheet - slides up from bottom */}
@@ -211,88 +220,116 @@ export default function DynamicUpsellModal({
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 30, stiffness: 300 }}
-        className="fixed inset-x-0 bottom-0 z-[101] bg-white dark:bg-zinc-900 rounded-t-2xl shadow-2xl max-h-[55vh] flex flex-col"
+        className="fixed inset-x-0 bottom-0 z-[101] bg-background rounded-t-3xl shadow-2xl max-h-[70vh] flex flex-col"
       >
         {/* Handle bar */}
         <div className="flex justify-center pt-3 pb-2">
-          <div className="w-10 h-1 bg-zinc-300 dark:bg-zinc-600 rounded-full" />
+          <div className="w-12 h-1.5 bg-muted rounded-full" />
         </div>
 
-        {/* Header */}
-        <div className="px-5 pb-3 flex items-center justify-between">
-          <div>
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              {getIcon()}
-              {modalConfig?.title || "Sugestão"}
-            </h3>
-            {modalConfig?.description && (
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {modalConfig.description}
-              </p>
-            )}
-          </div>
-          <button 
-            onClick={onClose}
-            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-          >
-            <X className="w-4 h-4 text-muted-foreground" />
-          </button>
-        </div>
+        {showProducts ? (
+          // Products view
+          <>
+            <div className="px-5 pb-3 flex items-center gap-3">
+              <button 
+                onClick={() => setShowProducts(false)}
+                className="p-2 -ml-2 rounded-full hover:bg-muted transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <h3 className="text-base font-semibold">
+                {modalConfig?.title?.split(" ")[0]} {modalConfig?.title?.split(" ")[1]}
+              </h3>
+            </div>
 
-        {/* Products - horizontal scroll */}
-        <div className="flex-1 overflow-y-auto px-5 pb-2">
-          {loading ? (
-            <div className="flex gap-3">
-              <Skeleton className="h-28 w-32 flex-shrink-0 rounded-xl" />
-              <Skeleton className="h-28 w-32 flex-shrink-0 rounded-xl" />
-              <Skeleton className="h-28 w-32 flex-shrink-0 rounded-xl" />
-            </div>
-          ) : products.length === 0 ? (
-            <div className="text-center py-6">
-              <p className="text-3xl mb-2">{getIcon()}</p>
-              <p className="text-sm text-muted-foreground">Nenhum produto disponível</p>
-            </div>
-          ) : (
-            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-              {products.map((product) => (
-                <motion.div
-                  key={product.id}
-                  className="flex-shrink-0 w-32 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-700/50"
-                  whileTap={{ scale: 0.97 }}
-                >
-                  {product.image_url && (
-                    <img 
-                      src={product.image_url} 
-                      alt={product.name}
-                      className="w-full h-20 rounded-lg object-cover mb-2"
-                    />
-                  )}
-                  <p className="font-medium text-xs line-clamp-2 text-foreground">{product.name}</p>
-                  <p className="text-xs text-primary font-semibold mt-1">
-                    {formatCurrency(product.promotional_price || product.price)}
-                  </p>
-                  <button
-                    onClick={() => handleQuickAdd(product)}
-                    className="w-full mt-2 h-7 text-[10px] font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center justify-center gap-1"
+            <div className="flex-1 overflow-y-auto px-5 pb-4">
+              <div className="grid grid-cols-2 gap-3">
+                {products.map((product) => (
+                  <motion.div
+                    key={product.id}
+                    className="p-3 rounded-xl bg-muted/30 border border-border/50"
+                    whileTap={{ scale: 0.98 }}
                   >
-                    <Plus className="w-3 h-3" />
-                    Adicionar
-                  </button>
-                </motion.div>
-              ))}
+                    {product.image_url && (
+                      <img 
+                        src={product.image_url} 
+                        alt={product.name}
+                        className="w-full h-24 rounded-lg object-cover mb-2"
+                      />
+                    )}
+                    <p className="font-medium text-sm line-clamp-2">{product.name}</p>
+                    <p className="text-sm font-semibold mt-1" style={{ color: buttonColor }}>
+                      {formatCurrency(product.promotional_price || product.price)}
+                    </p>
+                    <button
+                      onClick={() => handleQuickAdd(product)}
+                      className="w-full mt-2 h-9 text-xs font-medium rounded-lg text-white transition-colors flex items-center justify-center gap-1"
+                      style={{ backgroundColor: buttonColor }}
+                    >
+                      <Plus className="w-4 h-4" />
+                      Adicionar
+                    </button>
+                  </motion.div>
+                ))}
+              </div>
             </div>
-          )}
-        </div>
 
-        {/* Footer */}
-        <div className="px-5 pb-5 pt-3 border-t border-zinc-100 dark:border-zinc-800">
-          <button 
-            onClick={onClose}
-            className="w-full h-11 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-foreground font-medium text-sm transition-colors"
-          >
-            Continuar
-          </button>
-        </div>
+            <div className="px-5 pb-6 pt-3 border-t">
+              <button 
+                onClick={onClose}
+                className="w-full h-12 rounded-xl bg-muted hover:bg-muted/80 font-medium text-sm transition-colors"
+              >
+                Continuar para o carrinho
+              </button>
+            </div>
+          </>
+        ) : (
+          // Main modal view (like the reference image)
+          <div className="flex-1 flex flex-col px-6 pb-6">
+            {/* Icon and content - centered */}
+            <div className="flex-1 flex flex-col items-center justify-center text-center py-6">
+              <span className="text-5xl mb-4">{icon}</span>
+              <h2 className="text-xl font-bold text-foreground mb-2">
+                {modalConfig.title}
+              </h2>
+              {modalConfig.description && (
+                <p className="text-sm text-muted-foreground max-w-[280px]">
+                  {modalConfig.description}
+                </p>
+              )}
+            </div>
+
+            {/* Action buttons */}
+            <div className="space-y-3">
+              {/* Primary button */}
+              <button
+                onClick={handlePrimaryAction}
+                className="w-full h-14 rounded-xl text-white font-semibold text-base transition-all hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg"
+                style={{ backgroundColor: buttonColor }}
+              >
+                <Plus className="w-5 h-5" />
+                {buttonText}
+              </button>
+
+              {/* Secondary button */}
+              <button
+                onClick={onClose}
+                className="w-full h-12 rounded-xl border-2 border-border bg-background hover:bg-muted font-medium text-sm transition-colors"
+              >
+                {secondaryText}
+              </button>
+
+              {/* Back link */}
+              <button
+                onClick={onClose}
+                className="w-full py-2 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Voltar
+              </button>
+            </div>
+          </div>
+        )}
       </motion.div>
     </AnimatePresence>
   );
