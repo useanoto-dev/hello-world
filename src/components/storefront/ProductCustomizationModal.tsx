@@ -376,10 +376,10 @@ export default function ProductCustomizationModal({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: "100%" }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="fixed inset-0 z-50 bg-background lg:bg-[#f5f5f5] flex flex-col"
+        className="fixed inset-0 z-50 bg-background flex flex-col"
       >
         {/* Desktop Header - Only visible on lg+ */}
-        <header className="hidden lg:flex items-center justify-between px-6 py-4 border-b border-border bg-white sticky top-0 z-20">
+        <header className="hidden lg:flex items-center justify-between px-6 py-4 border-b border-border bg-background sticky top-0 z-20">
           <div className="flex items-center gap-3">
             <button 
               onClick={onClose}
@@ -436,11 +436,11 @@ export default function ProductCustomizationModal({
         </div>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto pb-24 lg:pb-28 lg:bg-[#f5f5f5]">
+        <main className="flex-1 overflow-y-auto pb-24 lg:pb-28">
           <div className="px-4 py-4 lg:max-w-2xl lg:mx-auto lg:px-8 lg:py-8">
             
             {/* Desktop Product Hero - Horizontal layout */}
-            <div className="hidden lg:flex gap-5 mb-6 p-5 bg-white rounded-2xl shadow-sm">
+            <div className="hidden lg:flex gap-5 mb-6 p-5 bg-muted/30 rounded-2xl">
               {/* Product Image */}
               <div className="w-36 h-24 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
                 {product.image_url ? (
@@ -712,7 +712,7 @@ export default function ProductCustomizationModal({
           initial={{ y: 60, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, type: "spring", damping: 25, stiffness: 400 }}
-          className="fixed bottom-0 inset-x-0 bg-white border-t border-border p-4 z-10"
+          className="fixed bottom-0 inset-x-0 bg-background border-t border-border p-4 z-10"
         >
           <div className="lg:max-w-2xl lg:mx-auto lg:px-4">
             <Button
