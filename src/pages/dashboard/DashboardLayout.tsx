@@ -443,31 +443,27 @@ export default function DashboardLayout() {
       }
     };
 
-    // macOS Finder style - active indicator with blue left border
-    const activeIndicator = (isActive || isSubItemActive) && (
-      <motion.div
-        layoutId="sidebarActiveIndicator"
-        className="absolute left-0 top-1 bottom-1 w-[3px] bg-blue-500 rounded-r-full"
-        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-      />
-    );
-
     // If has sub-items, render as expandable
     if (hasSubItems && !sidebarCollapsed) {
       return (
         <div className="relative">
-          {activeIndicator}
           <button
             onClick={() => toggleMenuExpand(item.path)}
             className={cn(
-              "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium outline-none",
-              "bg-white/60 hover:bg-white/80 text-gray-900 transition-colors"
+              "w-full flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium outline-none transition-all duration-200",
+              "text-gray-800 hover:text-gray-900 hover:bg-black/5 rounded-lg",
+              (isActive || isSubItemActive) && "bg-black/10 text-gray-900"
             )}
           >
-            <item.icon className="flex-shrink-0 w-4 h-4" />
+            <div className={cn(
+              "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
+              (isActive || isSubItemActive) ? "bg-gray-900 text-white shadow-lg" : "bg-white/70 text-gray-700"
+            )}>
+              <item.icon className="w-4 h-4" />
+            </div>
             <span className="truncate flex-1 text-left">{item.label}</span>
             <ChevronDown className={cn(
-              "w-3.5 h-3.5 opacity-60 transition-transform duration-200",
+              "w-4 h-4 opacity-50 transition-transform duration-200",
               isExpanded && "rotate-180"
             )} />
           </button>
@@ -481,19 +477,18 @@ export default function DashboardLayout() {
                 transition={{ duration: 0.15 }}
                 className="overflow-hidden"
               >
-                <div className="ml-3.5 mt-0.5 space-y-0.5 border-l-2 border-amber-600/30 pl-2">
+                <div className="ml-5 mt-1 space-y-1 border-l-2 border-gray-900/20 pl-4">
                   {/* Main item link */}
                   <Link
                     to={item.path}
                     className={cn(
-                      "relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[13px]",
-                      "bg-white/50 hover:bg-white/70 text-gray-900 font-medium transition-colors"
+                      "flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-medium transition-all",
+                      isActive 
+                        ? "bg-gray-900 text-white" 
+                        : "text-gray-700 hover:bg-black/5 hover:text-gray-900"
                     )}
                     onMouseEnter={() => prefetchRoute(item.path)}
                   >
-                    {isActive && (
-                      <div className="absolute left-0 top-1 bottom-1 w-[3px] bg-blue-500 rounded-r-full" />
-                    )}
                     <Package className="w-3.5 h-3.5" />
                     <span>Produtos</span>
                   </Link>
@@ -506,14 +501,13 @@ export default function DashboardLayout() {
                         key={subItem.path}
                         to={subItem.path}
                         className={cn(
-                          "relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[13px]",
-                          "bg-white/50 hover:bg-white/70 text-gray-900 font-medium transition-colors"
+                          "flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-medium transition-all",
+                          isSubActive 
+                            ? "bg-gray-900 text-white" 
+                            : "text-gray-700 hover:bg-black/5 hover:text-gray-900"
                         )}
                         onMouseEnter={() => prefetchRoute(subItem.path)}
                       >
-                        {isSubActive && (
-                          <div className="absolute left-0 top-1 bottom-1 w-[3px] bg-blue-500 rounded-r-full" />
-                        )}
                         <subItem.icon className="w-3.5 h-3.5" />
                         <span>{subItem.label}</span>
                       </Link>
@@ -532,23 +526,20 @@ export default function DashboardLayout() {
         to={item.path}
         onClick={handleClick}
         className={cn(
-          "ripple-container relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium outline-none",
-          "bg-white/60 text-gray-900 hover:bg-white/80 transition-colors",
+          "ripple-container relative flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium outline-none transition-all duration-200",
+          "text-gray-800 hover:text-gray-900 hover:bg-black/5 rounded-lg",
+          isActive && "bg-black/10 text-gray-900",
           sidebarCollapsed && "justify-center px-2"
         )}
         onMouseEnter={() => prefetchRoute(item.path)}
         onTouchStart={() => prefetchRoute(item.path)}
       >
-        {/* Blue left border indicator */}
-        {isActive && (
-          <motion.div
-            layoutId="sidebarActiveIndicator"
-            className="absolute left-0 top-1 bottom-1 w-[3px] bg-gray-900 rounded-r-full"
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-          />
-        )}
-        
-        <div className="relative">
+        <div className={cn(
+          "relative flex items-center justify-center transition-all",
+          sidebarCollapsed ? "w-9 h-9" : "w-8 h-8",
+          "rounded-lg",
+          isActive ? "bg-gray-900 text-white shadow-lg" : "bg-white/70 text-gray-700"
+        )}>
           <item.icon className={cn(
             "flex-shrink-0",
             sidebarCollapsed ? "w-[18px] h-[18px]" : "w-4 h-4",
@@ -559,11 +550,7 @@ export default function DashboardLayout() {
             <motion.span
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className={cn(
-                "absolute -top-1.5 -right-1.5 min-w-[16px] h-4 flex items-center justify-center",
-                "bg-red-600 text-white text-[10px] font-bold rounded-full px-1",
-                sidebarCollapsed && "-top-1 -right-1"
-              )}
+              className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full px-1 shadow-md"
             >
               {pendingOrdersCount > 99 ? "99+" : pendingOrdersCount}
             </motion.span>
@@ -779,7 +766,7 @@ export default function DashboardLayout() {
           </AlertDialog>
 
           {/* Menu - Scrollable */}
-          <nav className="flex-1 p-1.5 space-y-0.5 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-[#FFBE00]">
+          <nav className="flex-1 px-2 py-3 space-y-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {menuItems.map(item => (
               <NavItem key={item.path} item={item} />
             ))}
@@ -788,9 +775,9 @@ export default function DashboardLayout() {
           {/* Footer - Fixed Bottom */}
           <div 
             className={cn(
-              "p-1.5 space-y-0.5 flex-shrink-0 overflow-hidden",
+              "px-2 py-3 space-y-1 flex-shrink-0 overflow-hidden",
               sidebarCollapsed && "flex flex-col items-center",
-              "border-t border-[#e5a800]"
+              "border-t border-gray-900/10"
             )}
           >
             {/* Theme Toggle */}
@@ -814,11 +801,16 @@ export default function DashboardLayout() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(
-                      "flex items-center gap-2 text-xs text-gray-900 rounded-lg hover:bg-[#e5a800]",
-                      sidebarCollapsed ? "p-1.5 justify-center" : "px-2.5 py-1.5"
+                      "flex items-center gap-3 text-[13px] font-medium text-gray-800 rounded-lg hover:bg-black/5 transition-all",
+                      sidebarCollapsed ? "p-2 justify-center" : "px-3 py-2.5"
                     )}
                   >
-                    <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 text-gray-900" />
+                    <div className={cn(
+                      "flex items-center justify-center rounded-lg bg-white/70 text-gray-700",
+                      sidebarCollapsed ? "w-9 h-9" : "w-8 h-8"
+                    )}>
+                      <ExternalLink className="w-4 h-4" />
+                    </div>
                     <AnimatePresence mode="wait">
                       {!sidebarCollapsed && (
                         <motion.span
@@ -843,18 +835,24 @@ export default function DashboardLayout() {
               <TooltipTrigger asChild>
                 <button
                   onClick={handleLogout}
-                    className={cn(
-                      "flex items-center gap-2 text-xs text-red-600 w-full rounded-lg hover:bg-[#e5a800]",
-                      sidebarCollapsed ? "p-1.5 justify-center" : "px-2.5 py-1.5"
-                    )}
+                  className={cn(
+                    "flex items-center gap-3 text-[13px] font-medium text-gray-800 w-full rounded-lg hover:bg-black/5 transition-all",
+                    sidebarCollapsed ? "p-2 justify-center" : "px-3 py-2.5"
+                  )}
                 >
-                  <LogOut className="w-3.5 h-3.5 flex-shrink-0" />
+                  <div className={cn(
+                    "flex items-center justify-center rounded-lg bg-red-500/20 text-red-600",
+                    sidebarCollapsed ? "w-9 h-9" : "w-8 h-8"
+                  )}>
+                    <LogOut className="w-4 h-4" />
+                  </div>
                   <AnimatePresence mode="wait">
                     {!sidebarCollapsed && (
                       <motion.span
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
+                        className="text-red-600"
                       >
                         Sair
                       </motion.span>
