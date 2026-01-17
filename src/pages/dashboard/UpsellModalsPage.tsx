@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Sparkles, Trash2, Edit2, Power, PowerOff, ArrowRight } from "lucide-react";
+import { Plus, Sparkles, Trash2, Edit2, ArrowRight, Circle, Coffee, Sandwich } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -19,6 +19,7 @@ interface Category {
 interface UpsellModal {
   id: string;
   name: string;
+  modal_type: string;
   trigger_category_id: string | null;
   target_category_id: string | null;
   title: string;
@@ -30,6 +31,12 @@ interface UpsellModal {
   trigger_category?: Category;
   target_category?: Category;
 }
+
+const MODAL_TYPE_CONFIG: Record<string, { label: string; icon: string; color: string }> = {
+  edge: { label: "Borda", icon: "🍕", color: "bg-orange-100 text-orange-700 border-orange-200" },
+  drink: { label: "Bebida", icon: "🥤", color: "bg-blue-100 text-blue-700 border-blue-200" },
+  upsell: { label: "Venda adicional", icon: "✨", color: "bg-purple-100 text-purple-700 border-purple-200" },
+};
 
 export default function UpsellModalsPage() {
   const { restaurantId } = useActiveRestaurant();
@@ -139,6 +146,8 @@ export default function UpsellModalsPage() {
     loadData();
   };
 
+  const getTypeConfig = (type: string) => MODAL_TYPE_CONFIG[type] || MODAL_TYPE_CONFIG.upsell;
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -164,7 +173,7 @@ export default function UpsellModalsPage() {
             Modais de Venda Adicional
           </h1>
           <p className="text-[11px] text-muted-foreground">
-            Configure modais para sugerir produtos após o cliente adicionar itens ao carrinho
+            Configure modais para sugerir produtos durante o pedido
           </p>
         </div>
         <Button size="sm" onClick={handleCreate} className="gap-1.5">
@@ -189,68 +198,84 @@ export default function UpsellModalsPage() {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {modals.map((modal) => (
-            <Card key={modal.id} className={!modal.is_active ? "opacity-60" : ""}>
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      {modal.name}
-                      <Badge variant={modal.is_active ? "default" : "secondary"} className="text-[10px]">
-                        {modal.is_active ? "Ativo" : "Inativo"}
-                      </Badge>
-                    </CardTitle>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {modal.title}
-                    </p>
+          {modals.map((modal) => {
+            const typeConfig = getTypeConfig(modal.modal_type);
+            return (
+              <Card key={modal.id} className={!modal.is_active ? "opacity-60" : ""}>
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-lg">{typeConfig.icon}</span>
+                        <CardTitle className="text-sm font-medium">
+                          {modal.name}
+                        </CardTitle>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className={`text-[10px] ${typeConfig.color}`}>
+                          {typeConfig.label}
+                        </Badge>
+                        <Badge variant={modal.is_active ? "default" : "secondary"} className="text-[10px]">
+                          {modal.is_active ? "Ativo" : "Inativo"}
+                        </Badge>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={modal.is_active}
+                      onCheckedChange={() => toggleModalActive(modal)}
+                    />
                   </div>
-                  <Switch
-                    checked={modal.is_active}
-                    onCheckedChange={() => toggleModalActive(modal)}
-                  />
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {/* Flow visualization */}
-                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
-                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                    <span className="text-lg">{modal.trigger_category?.icon || "📦"}</span>
-                    <span className="text-xs font-medium truncate">
-                      {modal.trigger_category?.name || "Qualquer categoria"}
-                    </span>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {/* Title preview */}
+                  <div className="p-2 rounded-lg bg-muted/30 border border-border/50">
+                    <p className="text-xs font-medium text-foreground">{modal.title}</p>
+                    {modal.description && (
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{modal.description}</p>
+                    )}
                   </div>
-                  <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
-                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                    <span className="text-lg">{modal.target_category?.icon || "🎯"}</span>
-                    <span className="text-xs font-medium truncate">
-                      {modal.target_category?.name || "Sugestões automáticas"}
-                    </span>
-                  </div>
-                </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-2 pt-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 h-8 text-xs"
-                    onClick={() => handleEdit(modal)}
-                  >
-                    <Edit2 className="w-3.5 h-3.5 mr-1" />
-                    Editar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 text-xs text-destructive hover:text-destructive"
-                    onClick={() => deleteModal(modal)}
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  {/* Flow visualization */}
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
+                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                      <span className="text-lg">{modal.trigger_category?.icon || "📦"}</span>
+                      <span className="text-xs font-medium truncate">
+                        {modal.trigger_category?.name || "Qualquer categoria"}
+                      </span>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                      <span className="text-lg">{modal.target_category?.icon || typeConfig.icon}</span>
+                      <span className="text-xs font-medium truncate">
+                        {modal.target_category?.name || "Sugestões automáticas"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                      onClick={() => handleEdit(modal)}
+                    >
+                      <Edit2 className="w-3.5 h-3.5 mr-1" />
+                      Editar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs text-destructive hover:text-destructive"
+                      onClick={() => deleteModal(modal)}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 

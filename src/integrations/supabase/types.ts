@@ -2799,6 +2799,7 @@ export type Database = {
           id: string
           is_active: boolean
           max_products: number | null
+          modal_type: string
           name: string
           show_quick_add: boolean
           store_id: string
@@ -2814,6 +2815,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           max_products?: number | null
+          modal_type?: string
           name: string
           show_quick_add?: boolean
           store_id: string
@@ -2829,6 +2831,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           max_products?: number | null
+          modal_type?: string
           name?: string
           show_quick_add?: boolean
           store_id?: string
