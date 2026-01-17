@@ -26,7 +26,7 @@ export function ThemeToggle({ variant = "default", collapsed = false, compact = 
       return (
         <button
           onClick={toggleTheme}
-          className="flex items-center gap-1.5 text-[11px] font-medium text-gray-600 hover:text-gray-800 transition-colors"
+          className="flex items-center gap-1.5 text-[11px] font-medium text-gray-700 hover:text-gray-900 transition-colors"
           aria-label={isDark ? "Ativar modo claro" : "Ativar modo escuro"}
         >
           <AnimatePresence mode="wait" initial={false}>
@@ -62,7 +62,7 @@ export function ThemeToggle({ variant = "default", collapsed = false, compact = 
       return (
         <button
           onClick={toggleTheme}
-          className="flex items-center justify-center w-8 h-8 rounded-md text-gray-600 hover:text-gray-800 hover:bg-black/5 transition-all"
+          className="flex items-center justify-center w-9 h-9 rounded-xl text-gray-700 hover:text-gray-900 hover:bg-white/40 transition-all"
           aria-label={isDark ? "Ativar modo claro" : "Ativar modo escuro"}
         >
           <AnimatePresence mode="wait" initial={false}>
