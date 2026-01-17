@@ -435,35 +435,30 @@ export default function DashboardLayout() {
     const isExpanded = expandedMenus.includes(item.path);
     const isSubItemActive = item.subItems?.some(sub => location.pathname === sub.path);
 
-    const handleClick = (e: React.MouseEvent<HTMLElement>) => {
-      createRipple(e);
-      if (sidebarCollapsed) {
-        setAnimatingIcon(item.path);
-        setTimeout(() => setAnimatingIcon(null), 400);
-      }
-    };
-
-    // If has sub-items, render as expandable
+    // Expandable menu with sub-items
     if (hasSubItems && !sidebarCollapsed) {
       return (
         <div className="relative">
           <button
             onClick={() => toggleMenuExpand(item.path)}
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium outline-none transition-all duration-200",
-              "text-gray-800 hover:text-gray-900 hover:bg-black/5 rounded-lg",
-              (isActive || isSubItemActive) && "bg-black/10 text-gray-900"
+              "w-full flex items-center gap-3 px-2 py-2 text-[13px] font-medium outline-none transition-all duration-200 rounded-xl",
+              (isActive || isSubItemActive) 
+                ? "bg-gray-900 text-white shadow-lg shadow-gray-900/20" 
+                : "text-gray-800 hover:bg-white/40"
             )}
           >
             <div className={cn(
-              "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
-              (isActive || isSubItemActive) ? "bg-gray-900 text-white shadow-lg" : "bg-white/70 text-gray-700"
+              "w-9 h-9 rounded-xl flex items-center justify-center transition-all",
+              (isActive || isSubItemActive) 
+                ? "bg-white/20" 
+                : "bg-white/60"
             )}>
-              <item.icon className="w-4 h-4" />
+              <item.icon className="w-[18px] h-[18px]" />
             </div>
             <span className="truncate flex-1 text-left">{item.label}</span>
             <ChevronDown className={cn(
-              "w-4 h-4 opacity-50 transition-transform duration-200",
+              "w-4 h-4 opacity-60 transition-transform duration-200",
               isExpanded && "rotate-180"
             )} />
           </button>
@@ -474,26 +469,24 @@ export default function DashboardLayout() {
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.15 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
                 className="overflow-hidden"
               >
-                <div className="ml-5 mt-1 space-y-1 border-l-2 border-gray-900/20 pl-4">
-                  {/* Main item link */}
+                <div className="mt-1.5 ml-3 space-y-1 pl-4 border-l-2 border-gray-800/20">
                   <Link
                     to={item.path}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-medium transition-all",
+                      "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium transition-all",
                       isActive 
-                        ? "bg-gray-900 text-white" 
-                        : "text-gray-700 hover:bg-black/5 hover:text-gray-900"
+                        ? "bg-gray-900 text-white shadow-md" 
+                        : "text-gray-700 hover:bg-white/50"
                     )}
                     onMouseEnter={() => prefetchRoute(item.path)}
                   >
-                    <Package className="w-3.5 h-3.5" />
+                    <Package className="w-4 h-4" />
                     <span>Produtos</span>
                   </Link>
                   
-                  {/* Sub items */}
                   {item.subItems?.map(subItem => {
                     const isSubActive = location.pathname === subItem.path;
                     return (
@@ -501,14 +494,14 @@ export default function DashboardLayout() {
                         key={subItem.path}
                         to={subItem.path}
                         className={cn(
-                          "flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-medium transition-all",
+                          "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium transition-all",
                           isSubActive 
-                            ? "bg-gray-900 text-white" 
-                            : "text-gray-700 hover:bg-black/5 hover:text-gray-900"
+                            ? "bg-gray-900 text-white shadow-md" 
+                            : "text-gray-700 hover:bg-white/50"
                         )}
                         onMouseEnter={() => prefetchRoute(subItem.path)}
                       >
-                        <subItem.icon className="w-3.5 h-3.5" />
+                        <subItem.icon className="w-4 h-4" />
                         <span>{subItem.label}</span>
                       </Link>
                     );
@@ -524,33 +517,28 @@ export default function DashboardLayout() {
     const content = (
       <Link
         to={item.path}
-        onClick={handleClick}
         className={cn(
-          "ripple-container relative flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium outline-none transition-all duration-200",
-          "text-gray-800 hover:text-gray-900 hover:bg-black/5 rounded-lg",
-          isActive && "bg-black/10 text-gray-900",
-          sidebarCollapsed && "justify-center px-2"
+          "relative flex items-center gap-3 text-[13px] font-medium outline-none transition-all duration-200 rounded-xl",
+          sidebarCollapsed ? "p-2 justify-center" : "px-2 py-2",
+          isActive 
+            ? "bg-gray-900 text-white shadow-lg shadow-gray-900/20" 
+            : "text-gray-800 hover:bg-white/40"
         )}
         onMouseEnter={() => prefetchRoute(item.path)}
         onTouchStart={() => prefetchRoute(item.path)}
       >
         <div className={cn(
-          "relative flex items-center justify-center transition-all",
-          sidebarCollapsed ? "w-9 h-9" : "w-8 h-8",
-          "rounded-lg",
-          isActive ? "bg-gray-900 text-white shadow-lg" : "bg-white/70 text-gray-700"
+          "relative flex items-center justify-center transition-all rounded-xl",
+          sidebarCollapsed ? "w-9 h-9" : "w-9 h-9",
+          isActive ? "bg-white/20" : "bg-white/60"
         )}>
-          <item.icon className={cn(
-            "flex-shrink-0",
-            sidebarCollapsed ? "w-[18px] h-[18px]" : "w-4 h-4",
-            sidebarCollapsed && animatingIcon === item.path && "animate-icon-spin"
-          )} />
+          <item.icon className="w-[18px] h-[18px]" />
           {/* Badge for pending orders */}
           {item.path === "/dashboard/orders" && pendingOrdersCount > 0 && (
             <motion.span
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full px-1 shadow-md"
+              className="absolute -top-1 -right-1 min-w-[16px] h-[16px] flex items-center justify-center bg-red-500 text-white text-[9px] font-bold rounded-full px-1 shadow-md border-2 border-amber-400"
             >
               {pendingOrdersCount > 99 ? "99+" : pendingOrdersCount}
             </motion.span>
@@ -568,15 +556,19 @@ export default function DashboardLayout() {
       return (
         <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>{content}</TooltipTrigger>
-          <TooltipContent side="right" className="text-xs font-medium">
+          <TooltipContent 
+            side="right" 
+            sideOffset={8}
+            className="text-xs font-medium bg-gray-900 text-white border-0 shadow-xl"
+          >
             {item.label}
             {hasSubItems && item.subItems && (
-              <div className="mt-1 pt-1 border-t border-border/50 space-y-0.5">
+              <div className="mt-1.5 pt-1.5 border-t border-white/20 space-y-1">
                 {item.subItems.map(sub => (
                   <Link 
                     key={sub.path} 
                     to={sub.path}
-                    className="block text-muted-foreground hover:text-foreground py-0.5"
+                    className="block text-white/70 hover:text-white py-0.5 transition-colors"
                   >
                     {sub.label}
                   </Link>
@@ -604,29 +596,40 @@ export default function DashboardLayout() {
         "h-screen bg-background flex w-full overflow-hidden",
         showMobileNav && "pb-16" // Padding for bottom nav - increased for better spacing
       )}>
-        {/* Sidebar - Desktop - Yellow macOS style - Hidden on PDV */}
+        {/* Sidebar - Desktop - Premium Amber Design */}
         {!hideSidebar && (
           <motion.aside 
             layout
             initial={false}
-            animate={{ width: sidebarCollapsed ? 56 : 208 }}
+            animate={{ width: sidebarCollapsed ? 64 : 240 }}
             transition={{ 
-              duration: 0.25, 
-              ease: [0.25, 0.1, 0.25, 1] 
+              duration: 0.3, 
+              ease: [0.4, 0, 0.2, 1] 
             }}
             className={cn(
               "hidden md:flex flex-col h-screen flex-shrink-0 relative group/sidebar",
-              "bg-[#FFBE00] border-r border-[#e5a800]"
+              "bg-gradient-to-b from-amber-400 via-amber-400 to-amber-500"
             )}
+            style={{
+              boxShadow: "inset -1px 0 0 rgba(0,0,0,0.08)"
+            }}
           >
+          {/* Subtle pattern overlay */}
+          <div 
+            className="absolute inset-0 opacity-[0.03] pointer-events-none"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+            }}
+          />
+
           {/* Collapse Toggle Button */}
           <button
             onClick={toggleSidebar}
             className={cn(
-              "absolute -right-2.5 top-14 z-50 flex h-5 w-5 items-center justify-center",
-              "rounded-full bg-white border border-gray-200 shadow-md",
-              "text-gray-600 hover:bg-gray-50",
-              "transition-all duration-150 opacity-0 group-hover/sidebar:opacity-100",
+              "absolute -right-3 top-16 z-50 flex h-6 w-6 items-center justify-center",
+              "rounded-full bg-white border border-gray-200 shadow-lg",
+              "text-gray-600 hover:bg-gray-50 hover:scale-110",
+              "transition-all duration-200 opacity-0 group-hover/sidebar:opacity-100",
               "focus:opacity-100 focus:outline-none"
             )}
             title={sidebarCollapsed ? "Expandir menu" : "Recolher menu"}
@@ -635,34 +638,33 @@ export default function DashboardLayout() {
               animate={{ rotate: sidebarCollapsed ? 0 : 180 }}
               transition={{ duration: 0.2 }}
             >
-              <ChevronRight className="w-3 h-3" />
+              <ChevronRight className="w-3.5 h-3.5" />
             </motion.div>
           </button>
 
-          {/* Logo - Compact */}
+          {/* Logo Section */}
           <div 
             className={cn(
-              "h-12 flex items-center flex-shrink-0 overflow-hidden",
-              "transition-all duration-200",
-              sidebarCollapsed ? "justify-center px-2" : "px-3",
-              "border-b border-[#e5a800]"
+              "flex items-center flex-shrink-0 overflow-hidden relative",
+              "transition-all duration-300",
+              sidebarCollapsed ? "h-16 justify-center px-3" : "h-16 px-4"
             )}
           >
-            <Link to="/dashboard" className="flex items-center gap-2.5 min-w-0">
+            <Link to="/dashboard" className="flex items-center gap-3 min-w-0">
               <motion.div
                 layout
                 transition={{ duration: 0.2 }}
-                className="flex-shrink-0"
+                className="relative"
               >
                 {store?.logo_url ? (
                   <img 
                     src={store.logo_url} 
                     alt={store.name} 
-                    className="w-8 h-8 rounded-md object-cover"
+                    className="w-10 h-10 rounded-xl object-cover shadow-lg ring-2 ring-white/30"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center shadow-sm">
-                    <span className="text-amber-400 font-bold text-sm">
+                  <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center shadow-lg ring-2 ring-white/30">
+                    <span className="text-amber-400 font-bold text-lg">
                       {store?.name?.charAt(0) || "A"}
                     </span>
                   </div>
@@ -670,80 +672,86 @@ export default function DashboardLayout() {
               </motion.div>
               <AnimatePresence mode="wait">
                 {!sidebarCollapsed && (
-                  <motion.span
+                  <motion.div
                     initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -8 }}
-                    transition={{ duration: 0.15 }}
-                    className="font-bold text-[13px] text-gray-900 truncate"
+                    transition={{ duration: 0.2 }}
+                    className="flex flex-col min-w-0"
                   >
-                    {store?.name || "Anotô?"}
-                  </motion.span>
+                    <span className="font-bold text-sm text-gray-900 truncate">
+                      {store?.name || "Anotô?"}
+                    </span>
+                    <span className="text-[10px] text-gray-700/70 font-medium">
+                      Sistema de Delivery
+                    </span>
+                  </motion.div>
                 )}
               </AnimatePresence>
             </Link>
           </div>
 
           {/* Store Status Toggle */}
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => {
-                  if (!store) return;
-                  if (store.is_open_override) {
-                    setShowCloseStoreDialog(true);
-                  } else {
-                    handleToggleStoreStatus(true);
-                  }
-                }}
-                className={cn(
-                  "flex items-center gap-2 w-full",
-                  sidebarCollapsed ? "justify-center p-1.5" : "px-3 py-1.5",
-                store?.is_open_override 
-                    ? "bg-gray-900/80"
-                    : "bg-gray-900/60"
-                )}
-              >
-                <motion.div
-                  animate={{ 
-                    scale: store?.is_open_override ? [1, 1.3, 1] : 1,
-                    opacity: store?.is_open_override ? [1, 0.6, 1] : 1
-                  }}
-                  transition={{ 
-                    duration: 1.5, 
-                    repeat: store?.is_open_override ? Infinity : 0, 
-                    ease: "easeInOut"
+          <div className={cn(
+            "mx-3 mb-3",
+            sidebarCollapsed && "mx-2"
+          )}>
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => {
+                    if (!store) return;
+                    if (store.is_open_override) {
+                      setShowCloseStoreDialog(true);
+                    } else {
+                      handleToggleStoreStatus(true);
+                    }
                   }}
                   className={cn(
-                    "w-2.5 h-2.5 rounded-full flex-shrink-0",
+                    "w-full flex items-center gap-2.5 rounded-xl transition-all duration-200",
+                    sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2.5",
                     store?.is_open_override 
-                      ? "bg-green-500 shadow-[0_0_8px_2px_rgba(34,197,94,0.6)]" 
-                      : "bg-red-500 shadow-[0_0_6px_2px_rgba(239,68,68,0.5)]"
+                      ? "bg-emerald-500 shadow-lg shadow-emerald-500/30"
+                      : "bg-gray-900/90 shadow-lg"
                   )}
-                />
-                <AnimatePresence mode="wait">
-                  {!sidebarCollapsed && (
-                    <motion.span
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className={cn(
-                        "text-[11px] font-semibold",
-                        store?.is_open_override ? "text-white" : "text-white/80"
-                      )}
-                    >
-                      {store?.is_open_override ? "Loja Aberta" : "Loja Fechada"}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </button>
-            </TooltipTrigger>
-            {sidebarCollapsed && (
-              <TooltipContent side="right" className="text-xs font-medium">
-                {store?.is_open_override ? "Loja Aberta - Clique para fechar" : "Loja Fechada - Clique para abrir"}
-              </TooltipContent>
-            )}
-          </Tooltip>
+                >
+                  <motion.div
+                    animate={{ 
+                      scale: store?.is_open_override ? [1, 1.2, 1] : 1,
+                    }}
+                    transition={{ 
+                      duration: 2, 
+                      repeat: store?.is_open_override ? Infinity : 0, 
+                      ease: "easeInOut"
+                    }}
+                    className={cn(
+                      "w-2 h-2 rounded-full flex-shrink-0",
+                      store?.is_open_override 
+                        ? "bg-white" 
+                        : "bg-red-400"
+                    )}
+                  />
+                  <AnimatePresence mode="wait">
+                    {!sidebarCollapsed && (
+                      <motion.span
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="text-[12px] font-semibold text-white"
+                      >
+                        {store?.is_open_override ? "Loja Aberta" : "Loja Fechada"}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </button>
+              </TooltipTrigger>
+              {sidebarCollapsed && (
+                <TooltipContent side="right" sideOffset={8} className="text-xs font-medium bg-gray-900 text-white border-0">
+                  {store?.is_open_override ? "Loja Aberta" : "Loja Fechada"}
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </div>
 
           <AlertDialog open={showCloseStoreDialog} onOpenChange={setShowCloseStoreDialog}>
             <AlertDialogContent className="max-w-sm">
@@ -765,26 +773,33 @@ export default function DashboardLayout() {
             </AlertDialogContent>
           </AlertDialog>
 
-          {/* Menu - Scrollable */}
-          <nav className="flex-1 px-2 py-3 space-y-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          {/* Menu Navigation */}
+          <nav className={cn(
+            "flex-1 py-2 space-y-1 overflow-y-auto overflow-x-hidden",
+            "[&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-gray-900/10 [&::-webkit-scrollbar-thumb]:rounded-full",
+            sidebarCollapsed ? "px-2" : "px-3"
+          )}>
             {menuItems.map(item => (
               <NavItem key={item.path} item={item} />
             ))}
           </nav>
 
-          {/* Footer - Fixed Bottom - Compact */}
+          {/* Footer - Elegant Compact */}
           <div 
             className={cn(
-              "flex-shrink-0 overflow-hidden border-t border-gray-900/10",
-              sidebarCollapsed ? "px-2 py-2" : "px-3 py-2"
+              "flex-shrink-0 overflow-hidden",
+              sidebarCollapsed ? "px-2 py-3" : "px-3 py-3"
             )}
           >
-            {/* Compact Footer Actions Row */}
+            {/* Divider */}
+            <div className="h-px bg-gray-900/10 mb-3" />
+            
+            {/* Compact Footer Actions */}
             <div className={cn(
               "flex items-center",
               sidebarCollapsed ? "flex-col gap-2" : "justify-between"
             )}>
-              {/* Theme Toggle - Compact */}
+              {/* Theme Toggle */}
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
                   <div>
@@ -792,11 +807,13 @@ export default function DashboardLayout() {
                   </div>
                 </TooltipTrigger>
                 {sidebarCollapsed && (
-                  <TooltipContent side="right" className="text-xs font-medium">Tema</TooltipContent>
+                  <TooltipContent side="right" sideOffset={8} className="text-xs font-medium bg-gray-900 text-white border-0">
+                    Tema
+                  </TooltipContent>
                 )}
               </Tooltip>
 
-              {/* Store Link - Compact */}
+              {/* Store Link */}
               {store && !sidebarCollapsed && (
                 <Tooltip delayDuration={0}>
                   <TooltipTrigger asChild>
@@ -804,13 +821,15 @@ export default function DashboardLayout() {
                       href={`/cardapio/${store.slug}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-[11px] font-medium text-gray-600 hover:text-gray-800 transition-colors"
+                      className="flex items-center gap-1.5 text-[11px] font-medium text-gray-700 hover:text-gray-900 transition-colors"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                       <span>Cardápio</span>
                     </a>
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="text-xs font-medium">Ver cardápio</TooltipContent>
+                  <TooltipContent side="top" className="text-xs font-medium bg-gray-900 text-white border-0">
+                    Abrir cardápio
+                  </TooltipContent>
                 </Tooltip>
               )}
 
@@ -822,16 +841,18 @@ export default function DashboardLayout() {
                       href={`/cardapio/${store.slug}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center w-8 h-8 rounded-md text-gray-600 hover:text-gray-800 hover:bg-black/5 transition-all"
+                      className="flex items-center justify-center w-9 h-9 rounded-xl text-gray-700 hover:text-gray-900 hover:bg-white/40 transition-all"
                     >
                       <ExternalLink className="w-4 h-4" />
                     </a>
                   </TooltipTrigger>
-                  <TooltipContent side="right" className="text-xs font-medium">Ver cardápio</TooltipContent>
+                  <TooltipContent side="right" sideOffset={8} className="text-xs font-medium bg-gray-900 text-white border-0">
+                    Ver cardápio
+                  </TooltipContent>
                 </Tooltip>
               )}
 
-              {/* Logout - Compact */}
+              {/* Logout */}
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
                   <button
@@ -839,15 +860,21 @@ export default function DashboardLayout() {
                     className={cn(
                       "flex items-center transition-all",
                       sidebarCollapsed 
-                        ? "justify-center w-8 h-8 rounded-md text-red-500 hover:text-red-600 hover:bg-red-500/10" 
-                        : "gap-1.5 text-[11px] font-medium text-red-500 hover:text-red-600"
+                        ? "justify-center w-9 h-9 rounded-xl text-red-600 hover:bg-red-500/20" 
+                        : "gap-1.5 text-[11px] font-medium text-red-600 hover:text-red-700"
                     )}
                   >
                     <LogOut className={sidebarCollapsed ? "w-4 h-4" : "w-3.5 h-3.5"} />
                     {!sidebarCollapsed && <span>Sair</span>}
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side={sidebarCollapsed ? "right" : "top"} className="text-xs font-medium">Sair</TooltipContent>
+                <TooltipContent 
+                  side={sidebarCollapsed ? "right" : "top"} 
+                  sideOffset={8}
+                  className="text-xs font-medium bg-gray-900 text-white border-0"
+                >
+                  Sair
+                </TooltipContent>
               </Tooltip>
             </div>
           </div>
