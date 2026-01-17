@@ -1,4 +1,4 @@
-import { UtensilsCrossed, ClipboardList, Info, ShoppingCart } from "lucide-react";
+import { Home, FileText, Gift, ShoppingCart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -15,10 +15,10 @@ interface BottomNavigationProps {
   hideOrdersTab?: boolean;
 }
 
-const tabs: { id: NavigationTab; label: string; icon: typeof UtensilsCrossed }[] = [
-  { id: "cardapio", label: "Cardápio", icon: UtensilsCrossed },
-  { id: "pedidos", label: "Pedidos", icon: ClipboardList },
-  { id: "sobre", label: "Sobre", icon: Info },
+const tabs: { id: NavigationTab; label: string; icon: typeof Home }[] = [
+  { id: "cardapio", label: "Início", icon: Home },
+  { id: "pedidos", label: "Pedidos", icon: FileText },
+  { id: "sobre", label: "Promos", icon: Gift },
 ];
 
 export default function BottomNavigation({ 
@@ -32,28 +32,15 @@ export default function BottomNavigation({
 }: BottomNavigationProps) {
   // Filtra as tabs baseado no modo
   const visibleTabs = hideOrdersTab ? tabs.filter(t => t.id !== "pedidos") : tabs;
-  const activeIndex = visibleTabs.findIndex(t => t.id === activeTab);
   
   if (hidden) return null;
   
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-t border-border safe-area-bottom" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-      {/* Dot Indicators */}
-      <div className="flex justify-center gap-1.5 pt-2">
-        {visibleTabs.map((tab, index) => (
-          <motion.div
-            key={tab.id}
-            className={cn(
-              "w-1.5 h-1.5 rounded-full transition-colors",
-              index === activeIndex ? "bg-primary" : "bg-muted-foreground/30"
-            )}
-            animate={{ scale: index === activeIndex ? 1.2 : 1 }}
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-          />
-        ))}
-      </div>
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border safe-area-bottom" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+      {/* Blue accent line at bottom - Desktop only */}
+      <div className="hidden lg:block absolute bottom-0 left-0 right-0 h-1 bg-[#3B5998]" />
       
-      <div className="max-w-4xl mx-auto flex items-center justify-around h-14">
+      <div className="max-w-4xl mx-auto flex items-center justify-around h-14 lg:h-16">
         {visibleTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -64,7 +51,7 @@ export default function BottomNavigation({
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className={cn(
-                "relative flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-colors",
+                "relative flex flex-col items-center justify-center flex-1 h-full gap-0.5 lg:gap-1 transition-colors",
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
@@ -72,7 +59,10 @@ export default function BottomNavigation({
               whileTap={{ scale: 0.95 }}
             >
               <div className="relative">
-                <Icon className={cn("h-5 w-5 transition-all", isActive && "stroke-[2.5]")} />
+                <Icon className={cn(
+                  "h-5 w-5 lg:h-6 lg:w-6 transition-all",
+                  isActive ? "stroke-[2]" : "stroke-[1.5]"
+                )} />
                 {showBadge && (
                   <motion.span
                     initial={{ scale: 0 }}
@@ -83,41 +73,58 @@ export default function BottomNavigation({
                   </motion.span>
                 )}
               </div>
-              <span className={cn("text-[10px] font-medium transition-all", isActive && "font-semibold")}>
+              <span className={cn(
+                "text-[10px] lg:text-xs transition-all",
+                isActive ? "font-semibold" : "font-medium"
+              )}>
                 {tab.label}
               </span>
             </motion.button>
           );
         })}
         
-        {/* Cart Button integrated */}
-        {cartItemsCount > 0 && storeSlug && (
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="flex-1"
-            whileTap={{ scale: 0.95 }}
-          >
+        {/* Cart Button */}
+        <motion.div
+          className="flex-1"
+          whileTap={{ scale: 0.95 }}
+        >
+          {storeSlug ? (
             <Link
               to={`/cardapio/${storeSlug}/carrinho`}
-              className="relative flex flex-col items-center justify-center h-full gap-0.5 text-primary"
+              className={cn(
+                "relative flex flex-col items-center justify-center h-full gap-0.5 lg:gap-1 transition-colors",
+                cartItemsCount > 0 ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              )}
             >
               <div className="relative">
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg">
-                  <ShoppingCart className="h-5 w-5 text-primary-foreground" />
-                </div>
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full px-1"
-                >
-                  {cartItemsCount > 99 ? "99+" : cartItemsCount}
-                </motion.span>
+                <ShoppingCart className={cn(
+                  "h-5 w-5 lg:h-6 lg:w-6 transition-all",
+                  cartItemsCount > 0 ? "stroke-[2]" : "stroke-[1.5]"
+                )} />
+                {cartItemsCount > 0 && (
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] flex items-center justify-center bg-destructive text-destructive-foreground text-[9px] font-bold rounded-full px-0.5"
+                  >
+                    {cartItemsCount > 99 ? "99+" : cartItemsCount}
+                  </motion.span>
+                )}
               </div>
-              <span className="text-[10px] font-semibold">Carrinho</span>
+              <span className={cn(
+                "text-[10px] lg:text-xs transition-all",
+                cartItemsCount > 0 ? "font-semibold" : "font-medium"
+              )}>
+                Carrinho
+              </span>
             </Link>
-          </motion.div>
-        )}
+          ) : (
+            <div className="relative flex flex-col items-center justify-center h-full gap-0.5 lg:gap-1 text-muted-foreground">
+              <ShoppingCart className="h-5 w-5 lg:h-6 lg:w-6 stroke-[1.5]" />
+              <span className="text-[10px] lg:text-xs font-medium">Carrinho</span>
+            </div>
+          )}
+        </motion.div>
       </div>
     </nav>
   );
