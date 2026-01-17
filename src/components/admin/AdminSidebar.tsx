@@ -236,8 +236,8 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
       collapsible="icon" 
       className={cn(
         "border-r border-amber-500/30",
-        // Amber yellow background
-        "!bg-[#FFB000] dark:!bg-[#FFB000]"
+        // Amber yellow background #FFBE00
+        "!bg-[#FFBE00] dark:!bg-[#FFBE00]"
       )}
     >
       <SidebarContent className="bg-transparent">
