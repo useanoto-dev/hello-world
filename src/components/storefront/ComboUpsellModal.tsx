@@ -474,7 +474,7 @@ export default function ComboUpsellModal({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="fixed inset-0 z-50 bg-white flex flex-col"
+          className="fixed inset-0 z-[60] bg-white flex flex-col"
         >
           {/* Desktop Header */}
           <header className="hidden lg:flex items-center justify-between px-6 py-4 border-b border-border bg-white sticky top-0 z-20">
