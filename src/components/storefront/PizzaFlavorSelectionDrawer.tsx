@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/formatters";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Check, Star, ChevronDown, Share2 } from "lucide-react";
+import { ArrowLeft, Check, Star, ChevronDown, Share2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -372,10 +372,31 @@ export function PizzaFlavorSelectionDrawer({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="fixed inset-0 z-50 bg-background"
+          className="fixed inset-0 z-50 bg-background flex flex-col"
         >
-          {/* Fixed Header with Back/Share buttons */}
-          <div className="fixed top-0 inset-x-0 z-20 flex items-center justify-between p-4">
+          {/* Desktop Header - Only visible on lg+ */}
+          <header className="hidden lg:flex items-center justify-between px-6 py-4 border-b border-border bg-background sticky top-0 z-20">
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={onClose}
+                className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5 text-foreground" />
+              </button>
+              <span className="text-lg font-semibold text-foreground">Detalhes do produto</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors">
+                <Search className="w-5 h-5 text-foreground" />
+              </button>
+              <button className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors">
+                <Share2 className="w-5 h-5 text-foreground" />
+              </button>
+            </div>
+          </header>
+
+          {/* Mobile Fixed Header with Back/Share buttons */}
+          <div className="fixed top-0 inset-x-0 z-20 flex items-center justify-between p-4 lg:hidden">
             <button 
               onClick={onClose}
               className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
@@ -390,9 +411,9 @@ export function PizzaFlavorSelectionDrawer({
           </div>
 
           {/* Scrollable Content */}
-          <main className="h-full overflow-y-auto pb-32">
-            {/* Hero Image Section */}
-            <div className="relative">
+          <main className="flex-1 overflow-y-auto pb-32 lg:pb-36">
+            {/* Mobile Hero Image Section */}
+            <div className="relative lg:hidden">
               <div className="relative h-56 sm:h-72 bg-gray-900">
                 {sizeImageUrl ? (
                   <img 
@@ -406,10 +427,8 @@ export function PizzaFlavorSelectionDrawer({
                   </div>
                 )}
                 
-                {/* Gradient overlay at bottom */}
                 <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background via-background/80 to-transparent" />
                 
-                {/* Pull indicator */}
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
                   <ChevronDown className="w-6 h-6 text-muted-foreground animate-bounce" />
                 </div>
@@ -417,9 +436,43 @@ export function PizzaFlavorSelectionDrawer({
             </div>
 
             {/* Content */}
-            <div className="px-4 py-4">
-              {/* Product Info */}
-              <div className="mb-5">
+            <div className="px-4 py-4 lg:max-w-2xl lg:mx-auto lg:px-6 lg:py-6">
+              
+              {/* Desktop Product Hero - Horizontal layout */}
+              <div className="hidden lg:flex gap-6 mb-6 p-4 bg-muted/30 rounded-2xl">
+                {/* Product Image */}
+                <div className="w-40 h-28 rounded-xl overflow-hidden bg-gray-900 flex-shrink-0">
+                  {sizeImageUrl ? (
+                    <img 
+                      src={sizeImageUrl} 
+                      alt={sizeName}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-200">
+                      <span className="text-4xl">🍕</span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Product Info */}
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-xl font-bold text-foreground leading-tight uppercase">
+                    Pizza {sizeName}
+                  </h1>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-lg font-bold text-amber-500">
+                      {formatCurrency(basePrice)}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Escolha até {maxFlavors} {maxFlavors === 1 ? 'sabor' : 'sabores'} para sua pizza
+                  </p>
+                </div>
+              </div>
+
+              {/* Mobile Product Info */}
+              <div className="mb-5 lg:hidden">
                 <h1 className="text-2xl font-bold text-foreground leading-tight">
                   Pizza {sizeName}
                 </h1>
@@ -518,29 +571,31 @@ export function PizzaFlavorSelectionDrawer({
             transition={{ delay: 0.2, type: "spring", damping: 25, stiffness: 400 }}
             className="fixed bottom-0 inset-x-0 bg-background border-t border-border p-4 z-10"
           >
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <span className="text-sm text-muted-foreground">Total</span>
-                {selectedFlavors.length > 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    {selectedFlavors.length} {selectedFlavors.length === 1 ? 'sabor' : 'sabores'}
-                  </p>
-                )}
+            <div className="lg:max-w-2xl lg:mx-auto">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <span className="text-sm text-muted-foreground">Total</span>
+                  {selectedFlavors.length > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {selectedFlavors.length} {selectedFlavors.length === 1 ? 'sabor' : 'sabores'}
+                    </p>
+                  )}
+                </div>
+                <span className="text-xl font-bold text-foreground">
+                  {formatCurrency(totalPrice)}
+                </span>
               </div>
-              <span className="text-xl font-bold text-foreground">
-                {formatCurrency(totalPrice)}
-              </span>
+              <Button
+                onClick={handleContinue}
+                disabled={selectedFlavors.length === 0}
+                className="w-full h-12 text-base font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {selectedFlavors.length === 0 
+                  ? `Selecione pelo menos 1 sabor`
+                  : `Continuar`
+                }
+              </Button>
             </div>
-            <Button
-              onClick={handleContinue}
-              disabled={selectedFlavors.length === 0}
-              className="w-full h-12 text-base font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {selectedFlavors.length === 0 
-                ? `Selecione pelo menos 1 sabor`
-                : `Continuar`
-              }
-            </Button>
           </motion.footer>
         </motion.div>
       )}
