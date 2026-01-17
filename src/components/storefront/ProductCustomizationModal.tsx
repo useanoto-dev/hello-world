@@ -368,13 +368,6 @@ export default function ProductCustomizationModal({
     );
   }, [items, searchQuery]);
 
-  if (loading) {
-    return (
-      <div className="fixed inset-0 z-50 bg-background flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
-      </div>
-    );
-  }
 
   return (
     <AnimatePresence mode="wait">
@@ -454,29 +447,41 @@ export default function ProductCustomizationModal({
               )}
             </div>
 
-            {/* Search Bar */}
-            {groups.length > 0 && (
-              <div className="relative mb-4">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Pesquise pelo nome"
-                  className="pl-10 pr-10 h-11 bg-muted/50 border-0 rounded-lg text-sm"
-                />
-                {searchQuery && (
-                  <button 
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                  >
-                    <X className="w-4 h-4 text-muted-foreground" />
-                  </button>
-                )}
+            {/* Loading Skeleton */}
+            {loading ? (
+              <div className="space-y-4">
+                <div className="h-11 bg-muted rounded-lg animate-pulse" />
+                <div className="space-y-2">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="h-16 bg-muted rounded-xl animate-pulse" />
+                  ))}
+                </div>
               </div>
-            )}
+            ) : (
+              <>
+                {/* Search Bar */}
+                {groups.length > 0 && (
+                  <div className="relative mb-4">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Pesquise pelo nome"
+                      className="pl-10 pr-10 h-11 bg-muted/50 border-0 rounded-lg text-sm"
+                    />
+                    {searchQuery && (
+                      <button 
+                        onClick={() => setSearchQuery("")}
+                        className="absolute right-3 top-1/2 -translate-y-1/2"
+                      >
+                        <X className="w-4 h-4 text-muted-foreground" />
+                      </button>
+                    )}
+                  </div>
+                )}
 
-            {/* Option Groups - Collapsible style */}
-            <div className="space-y-2">
+                {/* Option Groups - Collapsible style */}
+                <div className="space-y-2">
               {groups.map((group) => {
                 const groupItems = getFilteredItems(group.id);
                 const isExpanded = expandedGroups.has(group.id);
@@ -637,6 +642,8 @@ export default function ProductCustomizationModal({
                 className="mt-2 min-h-[80px] resize-none border-border bg-muted/30"
               />
             </div>
+              </>
+            )}
           </div>
         </main>
 
