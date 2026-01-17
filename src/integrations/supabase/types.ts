@@ -3224,6 +3224,30 @@ export type Database = {
         Returns: string
       }
       generate_access_code: { Args: never; Returns: string }
+      get_public_store_info: {
+        Args: { p_slug: string }
+        Returns: {
+          about_us: string
+          address: string
+          banner_url: string
+          delivery_fee: number
+          estimated_delivery_time: number
+          estimated_prep_time: number
+          google_maps_link: string
+          id: string
+          instagram: string
+          is_active: boolean
+          logo_url: string
+          min_order_value: number
+          name: string
+          phone: string
+          primary_color: string
+          schedule: Json
+          secondary_color: string
+          slug: string
+          whatsapp: string
+        }[]
+      }
       get_user_store_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
