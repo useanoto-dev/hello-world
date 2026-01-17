@@ -24,6 +24,8 @@ interface UpsellModalConfig {
   button_color: string | null;
   secondary_button_text: string | null;
   icon: string | null;
+  primary_redirect_category_id: string | null;
+  secondary_redirect_category_id: string | null;
 }
 
 interface Product {
@@ -41,6 +43,7 @@ interface DynamicUpsellModalProps {
   triggerCategoryId: string;
   onClose: () => void;
   onSelectProducts?: () => void;
+  onNavigateToCategory?: (categoryId: string) => void;
 }
 
 export default function DynamicUpsellModal({ 
@@ -48,6 +51,7 @@ export default function DynamicUpsellModal({
   triggerCategoryId,
   onClose,
   onSelectProducts,
+  onNavigateToCategory,
 }: DynamicUpsellModalProps) {
   const [loading, setLoading] = useState(true);
   const [modalConfig, setModalConfig] = useState<UpsellModalConfig | null>(null);
@@ -184,6 +188,13 @@ export default function DynamicUpsellModal({
   };
 
   const handlePrimaryAction = () => {
+    // If redirect category is configured, navigate to it
+    if (modalConfig?.primary_redirect_category_id && onNavigateToCategory) {
+      onNavigateToCategory(modalConfig.primary_redirect_category_id);
+      onClose();
+      return;
+    }
+    
     if (modalConfig?.show_quick_add && products.length > 0) {
       setShowProducts(true);
     } else if (onSelectProducts) {
@@ -191,6 +202,16 @@ export default function DynamicUpsellModal({
     } else {
       onClose();
     }
+  };
+
+  const handleSecondaryAction = () => {
+    // If redirect category is configured for secondary button, navigate to it
+    if (modalConfig?.secondary_redirect_category_id && onNavigateToCategory) {
+      onNavigateToCategory(modalConfig.secondary_redirect_category_id);
+      onClose();
+      return;
+    }
+    onClose();
   };
 
   // Don't render anything until we've confirmed there's a modal configured
@@ -313,7 +334,7 @@ export default function DynamicUpsellModal({
 
               {/* Secondary button */}
               <button
-                onClick={onClose}
+                onClick={handleSecondaryAction}
                 className="w-full h-12 rounded-xl border-2 border-border bg-background hover:bg-muted font-medium text-sm transition-colors"
               >
                 {secondaryText}
