@@ -384,15 +384,15 @@ function SortableSizeItem({
     
     setUploading(true);
     try {
-      const fileName = `sizes/${storeId}/${Date.now()}-${file.name}`;
+      const fileName = `${storeId}/sizes/${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage
-        .from("images")
+        .from("product-images")
         .upload(fileName, file, { contentType: file.type });
       
       if (uploadError) throw uploadError;
       
       const { data: urlData } = supabase.storage
-        .from("images")
+        .from("product-images")
         .getPublicUrl(fileName);
       
       onUpdate(size.id, "imageUrl", urlData.publicUrl);

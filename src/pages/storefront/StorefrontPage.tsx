@@ -204,7 +204,7 @@ function getMorphAnimationEnabled(storeId: string): boolean {
 
 // Fetch categories, products and option groups
 async function fetchStoreContent(storeId: string) {
-  const [categoriesResult, productsResult, optionGroupsResult, reviewsResult, inventoryCategoriesResult, inventoryProductsResult, flowStepsResult] = await Promise.all([
+  const [categoriesResult, productsResult, optionGroupsResult, reviewsResult, inventoryCategoriesResult, inventoryProductsResult, flowStepsResult, standardSizesResult] = await Promise.all([
     supabase
       .from("categories")
       .select("id, name, slug, icon, image_url, use_sequential_flow, has_base_product, category_type, show_flavor_prices")
@@ -246,6 +246,13 @@ async function fetchStoreContent(storeId: string) {
       .from("pizza_flow_steps")
       .select("category_id, step_type, is_enabled, step_order, next_step_id")
       .eq("store_id", storeId),
+    // Fetch standard sizes for standard categories (açaí, hambúrguer, etc.)
+    supabase
+      .from("standard_sizes")
+      .select("id, category_id, name, description, base_price, image_url, is_active")
+      .eq("store_id", storeId)
+      .eq("is_active", true)
+      .order("display_order"),
   ]);
 
   if (categoriesResult.error) throw categoriesResult.error;
@@ -342,15 +349,36 @@ async function fetchStoreContent(storeId: string) {
     };
   });
 
+  // Create virtual products from standard_sizes for standard categories
+  const standardSizeProducts: Product[] = (standardSizesResult.data || []).map((size: any) => ({
+    id: `standard-size-${size.id}`,
+    name: size.name,
+    description: size.description,
+    price: size.base_price || 0,
+    promotional_price: null,
+    image_url: size.image_url,
+    category_id: size.category_id,
+    is_featured: false,
+    stock_quantity: null,
+    min_stock_alert: null,
+    has_stock_control: false,
+  }));
+
+  // Track which categories have standard sizes (so we don't show regular products)
+  const standardCategoryIds = new Set<string>(
+    (standardSizesResult.data || []).map((s: any) => s.category_id)
+  );
+
 
   return {
     categories: [...(categoriesResult.data || []) as Category[], ...inventoryCategories],
-    products: [...(productsResult.data || []) as Product[], ...inventoryProducts],
+    products: [...(productsResult.data || []) as Product[], ...inventoryProducts, ...standardSizeProducts],
     categoryHasOptions,
     primaryGroupItems,
     reviewStats,
     inventoryProductIds: new Set(inventoryProducts.map(p => p.id)),
     flowStepsData,
+    standardCategoryIds,
   };
 }
 
@@ -589,6 +617,7 @@ export default function StorefrontPage() {
   const primaryGroupItems = content?.primaryGroupItems || {};
   const reviewStats = content?.reviewStats;
   const flowStepsData = content?.flowStepsData || {};
+  const standardCategoryIds = content?.standardCategoryIds || new Set<string>();
   const loading = storeLoading || (!!store && contentLoading);
 
   // Use ref to always have latest flowStepsData (avoids stale closure issues)
@@ -748,6 +777,44 @@ export default function StorefrontPage() {
         description: product.description || undefined,
         image_url: product.image_url || undefined,
       });
+      return;
+    }
+
+    // Check if this is a standard size product (from standard categories like açaí, hamburgueria)
+    const isStandardSizeProduct = product.id.startsWith('standard-size-');
+    
+    if (isStandardSizeProduct) {
+      const category = categories.find(c => c.id === product.category_id);
+      
+      // Check if category has option groups for customization
+      if (category && categoryHasOptions.has(category.id)) {
+        // Open customization modal with the size as the base product
+        const productForModal: Product = {
+          id: product.id,
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          promotional_price: product.promotional_price,
+          image_url: product.image_url || category.image_url,
+          category_id: category.id,
+          is_featured: false,
+        };
+        setSelectedProduct(productForModal);
+        setSelectedCategory(category);
+        setPreselectedOptionId(null);
+        setShowCustomizationModal(true);
+      } else {
+        // No customization - add directly to cart
+        addToCart({
+          id: product.id,
+          name: product.name,
+          price: product.promotional_price || product.price,
+          quantity: 1,
+          category: category?.name || "Produto",
+          description: product.description || undefined,
+          image_url: product.image_url || undefined,
+        });
+      }
       return;
     }
 
