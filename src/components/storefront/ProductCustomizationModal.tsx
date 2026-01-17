@@ -1,11 +1,10 @@
-// Product Customization Modal - Fullscreen style like Pizza Flavor Selection
+// Product Customization Modal - Exact style as reference images
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Check, Minus, Plus, Tag } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronUp, Plus, Share2, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
@@ -78,7 +77,9 @@ export default function ProductCustomizationModal({
   const [items, setItems] = useState<Record<string, OptionItem[]>>({});
   const [selections, setSelections] = useState<Record<string, string[]>>({});
   const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const [currentStep, setCurrentStep] = useState(0);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
+  const [notes, setNotes] = useState("");
   const [hasInitializedPreselection, setHasInitializedPreselection] = useState(false);
   const [preselectedGroupId, setPreselectedGroupId] = useState<string | null>(null);
   
@@ -140,6 +141,11 @@ export default function ProductCustomizationModal({
       
       const loadedGroups = (groupsData || []) as (OptionGroup & { is_primary: boolean })[];
       setGroups(loadedGroups);
+      
+      // Expand first group by default
+      if (loadedGroups.length > 0) {
+        setExpandedGroups(new Set([loadedGroups[0].id]));
+      }
 
       if (loadedGroups.length > 0) {
         const groupIds = loadedGroups.map(g => g.id);
@@ -161,32 +167,6 @@ export default function ProductCustomizationModal({
           itemsByGroup[item.group_id].push(item);
         });
 
-        // Check if there's a "Sabor" group without items - load products as items
-        const saborGroup = loadedGroups.find(g => g.name === "Sabor" && !g.is_primary);
-        if (saborGroup && (!itemsByGroup[saborGroup.id] || itemsByGroup[saborGroup.id].length === 0)) {
-          const { data: productsData } = await supabase
-            .from("products")
-            .select("id, name, description, image_url, price, promotional_price")
-            .eq("category_id", category.id)
-            .eq("store_id", storeId)
-            .eq("is_available", true)
-            .order("display_order");
-
-          if (productsData && productsData.length > 0) {
-            itemsByGroup[saborGroup.id] = productsData.map(prod => ({
-              id: `product-${prod.id}`,
-              group_id: saborGroup.id,
-              name: prod.name,
-              description: prod.description,
-              image_url: prod.image_url,
-              additional_price: prod.price,
-              promotional_price: prod.promotional_price,
-              promotion_start_at: null,
-              promotion_end_at: null,
-            }));
-          }
-        }
-
         setItems(itemsByGroup);
         
         if (preselectedOptionId && !hasInitializedPreselection) {
@@ -198,7 +178,6 @@ export default function ProductCustomizationModal({
             }));
             setHasInitializedPreselection(true);
             setPreselectedGroupId(preselectedItem.group_id);
-            setCurrentStep(0);
           }
         }
       }
@@ -257,37 +236,37 @@ export default function ProductCustomizationModal({
     return total;
   }, [basePrice, selections, items, quantities, allowOptionItemQuantity, preselectedOptionId]);
 
-  const handleSingleSelect = useCallback((groupId: string, itemId: string) => {
-    setSelections(prev => ({
-      ...prev,
-      [groupId]: [itemId]
-    }));
-  }, []);
-
-  const handleMultipleSelect = useCallback((groupId: string, itemId: string, checked: boolean) => {
-    const group = groups.find(g => g.id === groupId);
+  const handleItemSelect = useCallback((groupId: string, itemId: string, group: OptionGroup) => {
     const currentSelections = selections[groupId] || [];
+    const isSelected = currentSelections.includes(itemId);
     
-    if (checked) {
-      if (group?.max_selections && currentSelections.length >= group.max_selections) {
-        toast.error(`Máximo de ${group.max_selections} seleções`);
-        return;
+    if (group.selection_type === "single") {
+      setSelections(prev => ({
+        ...prev,
+        [groupId]: isSelected ? [] : [itemId]
+      }));
+      if (!isSelected) {
+        setQuantities(prev => ({ ...prev, [itemId]: 1 }));
       }
-      setSelections(prev => ({
-        ...prev,
-        [groupId]: [...currentSelections, itemId]
-      }));
-      setQuantities(prev => ({
-        ...prev,
-        [itemId]: 1
-      }));
     } else {
-      setSelections(prev => ({
-        ...prev,
-        [groupId]: currentSelections.filter(id => id !== itemId)
-      }));
+      if (isSelected) {
+        setSelections(prev => ({
+          ...prev,
+          [groupId]: currentSelections.filter(id => id !== itemId)
+        }));
+      } else {
+        if (group.max_selections && currentSelections.length >= group.max_selections) {
+          toast.error(`Máximo de ${group.max_selections} seleções`);
+          return;
+        }
+        setSelections(prev => ({
+          ...prev,
+          [groupId]: [...currentSelections, itemId]
+        }));
+        setQuantities(prev => ({ ...prev, [itemId]: 1 }));
+      }
     }
-  }, [groups, selections]);
+  }, [selections]);
 
   const handleQuantityChange = useCallback((itemId: string, delta: number) => {
     if (!allowOptionItemQuantity) return;
@@ -298,12 +277,17 @@ export default function ProductCustomizationModal({
     });
   }, [allowOptionItemQuantity]);
 
-  const sequentialGroups = useMemo(() => {
-    if (preselectedGroupId && category.use_sequential_flow) {
-      return groups.filter(g => g.id !== preselectedGroupId);
-    }
-    return groups;
-  }, [groups, preselectedGroupId, category.use_sequential_flow]);
+  const toggleGroup = useCallback((groupId: string) => {
+    setExpandedGroups(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(groupId)) {
+        newSet.delete(groupId);
+      } else {
+        newSet.add(groupId);
+      }
+      return newSet;
+    });
+  }, []);
 
   const isGroupValid = useCallback((group: OptionGroup): boolean => {
     const selected = selections[group.id] || [];
@@ -322,34 +306,8 @@ export default function ProductCustomizationModal({
   }, [selections]);
 
   const canProceed = useMemo((): boolean => {
-    if (category.use_sequential_flow) {
-      if (sequentialGroups.length === 0) return true;
-      const safeStep = Math.min(currentStep, sequentialGroups.length - 1);
-      const group = sequentialGroups[safeStep];
-      if (group) {
-        return isGroupValid(group);
-      }
-    } else {
-      return groups.every(isGroupValid);
-    }
-    return true;
-  }, [category.use_sequential_flow, sequentialGroups, currentStep, groups, isGroupValid]);
-
-  const handleNext = useCallback(() => {
-    if (category.use_sequential_flow && currentStep < sequentialGroups.length - 1) {
-      setCurrentStep(prev => prev + 1);
-    } else {
-      handleAddToCart();
-    }
-  }, [currentStep, sequentialGroups.length, category.use_sequential_flow]);
-
-  const handleBack = useCallback(() => {
-    if (currentStep > 0) {
-      setCurrentStep(prev => prev - 1);
-    } else {
-      onClose();
-    }
-  }, [currentStep, onClose]);
+    return groups.every(isGroupValid);
+  }, [groups, isGroupValid]);
 
   const handleAddToCart = useCallback(() => {
     const selectedOptions: string[] = [];
@@ -371,6 +329,11 @@ export default function ProductCustomizationModal({
       });
     });
 
+    let description = selectedOptions.length > 0 ? selectedOptions.join(", ") : undefined;
+    if (notes.trim()) {
+      description = description ? `${description} | Obs: ${notes.trim()}` : `Obs: ${notes.trim()}`;
+    }
+
     addToCart({
       id: `${product.id}-${Date.now()}`,
       product_id: product.id,
@@ -378,7 +341,7 @@ export default function ProductCustomizationModal({
       price: totalPrice,
       quantity: 1,
       category: category.name,
-      description: selectedOptions.length > 0 ? selectedOptions.join(", ") : undefined,
+      description,
       image_url: product.image_url || undefined,
     });
 
@@ -389,327 +352,309 @@ export default function ProductCustomizationModal({
     } else {
       onComplete();
     }
-  }, [groups, selections, items, quantities, allowOptionItemQuantity, addToCart, product, totalPrice, category, onShowUpsell, onComplete]);
+  }, [groups, selections, items, quantities, allowOptionItemQuantity, notes, addToCart, product, totalPrice, category, onShowUpsell, onComplete]);
 
-  // Card component for items - same style as pizza flavors
-  const ItemCard = ({ item, group }: { item: OptionItem; group: OptionGroup }) => {
-    const isSelected = (selections[group.id] || []).includes(item.id);
-    const qty = allowOptionItemQuantity ? (quantities[item.id] || 1) : 1;
-    const effectivePrice = getItemEffectivePrice(item);
-    const hasItemPromo = isPromotionActive(item);
-    
-    const handleClick = () => {
-      if (group.selection_type === "single") {
-        handleSingleSelect(group.id, item.id);
-      } else {
-        handleMultipleSelect(group.id, item.id, !isSelected);
-      }
-    };
-
-    return (
-      <button
-        onClick={handleClick}
-        className={cn(
-          "text-left px-3 py-2 rounded-lg border transition-all duration-150 w-full",
-          isSelected 
-            ? "bg-amber-50 border-amber-300" 
-            : "bg-white border-gray-100 hover:border-gray-200"
-        )}
-      >
-            <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5">
-              <p className="font-medium text-sm text-gray-900 leading-tight">{item.name}</p>
-              {hasItemPromo && (
-                <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full bg-green-500/15 text-green-600 text-[9px] font-bold">
-                  <Tag className="w-2 h-2" />
-                  -{Math.round(((item.additional_price - item.promotional_price!) / item.additional_price) * 100)}%
-                </span>
-              )}
-            </div>
-            {item.description && (
-              <p className="text-xs text-gray-500 leading-snug mt-0.5 line-clamp-2">
-                {item.description}
-              </p>
-            )}
-            {effectivePrice > 0 && (
-              <div className="flex items-center gap-1 mt-0.5">
-                {hasItemPromo && (
-                  <span className="text-[10px] text-gray-400 line-through">
-                    +{formatCurrency(item.additional_price)}
-                  </span>
-                )}
-                <span className={cn(
-                  "text-[10px] font-semibold",
-                  hasItemPromo ? "text-green-600" : "text-red-500"
-                )}>
-                  +{formatCurrency(effectivePrice)}
-                </span>
-              </div>
-            )}
-            
-            {/* Quantity controls for multiple selection */}
-            {isSelected && allowOptionItemQuantity && group.selection_type === "multiple" && (
-              <div className="flex items-center gap-1 mt-2" onClick={(e) => e.stopPropagation()}>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-5 w-5 rounded-md"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleQuantityChange(item.id, -1);
-                  }}
-                >
-                  <Minus className="w-2.5 h-2.5" />
-                </Button>
-                <span className="w-5 text-center text-[11px] font-medium">{qty}</span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-5 w-5 rounded-md"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleQuantityChange(item.id, 1);
-                  }}
-                >
-                  <Plus className="w-2.5 h-2.5" />
-                </Button>
-              </div>
-            )}
-          </div>
-          {isSelected && (
-            <Check className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" strokeWidth={2.5} />
-          )}
-        </div>
-      </button>
-    );
-  };
-
-  const safeCurrentStep = Math.min(currentStep, Math.max(0, sequentialGroups.length - 1));
-  const currentGroup = category.use_sequential_flow && sequentialGroups.length > 0 
-    ? sequentialGroups[safeCurrentStep] 
-    : null;
-  const isLastStep = safeCurrentStep === sequentialGroups.length - 1;
-
-  // Total selections count for button
+  // Total selections count
   const totalSelections = useMemo(() => {
     return Object.values(selections).reduce((sum, arr) => sum + arr.length, 0);
   }, [selections]);
 
-  const isInitializing = loading || (preselectedOptionId && !preselectedGroupId && groups.length === 0);
-
-  if (isInitializing) {
-    return null;
-  }
-
-  // Render groups for "all at once" mode
-  const renderAllGroups = () => (
-    <div className="space-y-4">
-      {groups.map((group) => {
-        const groupItems = items[group.id] || [];
-        if (groupItems.length === 0) return null;
-        
-          return (
-            <section key={group.id}>
-              <h3 className="text-sm font-bold text-gray-800 mb-2 flex items-center gap-1.5">
-                <span>📦</span> {group.name}
-                {group.is_required && <span className="text-red-500">*</span>}
-                <span className="text-gray-400 font-normal text-xs ml-1">
-                  {group.selection_type === "single" 
-                    ? "(escolha 1)"
-                    : group.max_selections 
-                      ? `(até ${group.max_selections})`
-                      : "(ilimitado)"
-                  }
-                </span>
-              </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
-              {groupItems.map(item => (
-                <ItemCard key={item.id} item={item} group={group} />
-              ))}
-            </div>
-          </section>
-        );
-      })}
-    </div>
-  );
-
-  // Render sequential mode
-  const renderSequentialGroup = () => {
-    if (!currentGroup) return null;
-    const groupItems = items[currentGroup.id] || [];
-    
-    return (
-      <motion.section
-        key={currentGroup.id}
-        initial={{ opacity: 0, x: 50 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -50 }}
-        transition={{ duration: 0.2, ease: "easeOut" }}
-      >
-        <div className="bg-amber-50 border border-amber-100 rounded-xl py-2.5 px-4 text-center mb-4">
-          <p className="text-sm font-medium text-gray-700">
-            {currentGroup.selection_type === "single" 
-              ? "Escolha 1 opção"
-              : currentGroup.max_selections 
-                ? `Escolha até ${currentGroup.max_selections} opções`
-                : "Escolha quantas opções quiser"
-            }
-            {currentGroup.is_required && " (obrigatório)"}
-          </p>
-        </div>
-        
-        {groupItems.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-3xl mb-1">📦</p>
-            <p className="text-sm text-gray-400">Nenhuma opção disponível</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
-            {groupItems.map(item => (
-              <ItemCard key={item.id} item={item} group={currentGroup} />
-            ))}
-          </div>
-        )}
-      </motion.section>
+  // Filter items by search
+  const getFilteredItems = useCallback((groupId: string) => {
+    const groupItems = items[groupId] || [];
+    if (!searchQuery.trim()) return groupItems;
+    return groupItems.filter(item => 
+      item.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  };
+  }, [items, searchQuery]);
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0 z-50 bg-background flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
 
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-gray-50 flex flex-col"
+        initial={{ opacity: 0, y: "100%" }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: "100%" }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        className="fixed inset-0 z-50 bg-background flex flex-col"
       >
-        {/* Header - Same style as Pizza Flavor */}
-        <header className="flex-shrink-0 bg-white border-b border-gray-100">
-          <div className="max-w-5xl mx-auto px-4 h-12 flex items-center gap-2">
+        {/* Hero Image Section */}
+        <div className="relative flex-shrink-0">
+          {/* Product Image */}
+          <div className="relative h-64 sm:h-72 bg-gray-900">
+            {product.image_url ? (
+              <img 
+                src={product.image_url} 
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                <span className="text-6xl">🍔</span>
+              </div>
+            )}
+            
+            {/* Gradient overlay at bottom */}
+            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white via-white/80 to-transparent" />
+            
+            {/* Back button */}
             <button 
-              onClick={handleBack} 
-              className="p-1 -ml-1 rounded-lg hover:bg-gray-100 transition-colors"
+              onClick={onClose}
+              className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
+              <ArrowLeft className="w-5 h-5 text-gray-700" />
             </button>
-            <div className="flex-1 min-w-0">
-              <span className="font-semibold text-base text-gray-900">
-                {category.use_sequential_flow && currentGroup 
-                  ? currentGroup.name 
-                  : product.name
-                }
-              </span>
-              {category.use_sequential_flow && sequentialGroups.length > 0 && (
-                <span className="text-xs text-gray-400 ml-2">
-                  Passo {safeCurrentStep + 1} de {sequentialGroups.length}
-                </span>
-              )}
+            
+            {/* Share button */}
+            <button 
+              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
+            >
+              <Share2 className="w-5 h-5 text-gray-700" />
+            </button>
+            
+            {/* Pull indicator */}
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
+              <ChevronDown className="w-6 h-6 text-gray-400 animate-bounce" />
             </div>
           </div>
-        </header>
+        </div>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto pb-20">
-          <div className="max-w-5xl mx-auto px-4 py-3 space-y-4">
-            {/* Product info banner */}
-            {!category.use_sequential_flow && (
-              <div className="bg-white rounded-xl border border-gray-100 p-3 flex items-center gap-3">
-                {product.image_url && (
-                  <img 
-                    src={product.image_url} 
-                    alt={product.name}
-                    className="w-14 h-14 rounded-lg object-cover"
-                  />
+        <main className="flex-1 overflow-y-auto pb-24">
+          <div className="px-4 py-4">
+            {/* Product Info */}
+            <div className="mb-4">
+              <h1 className="text-xl font-bold text-foreground leading-tight">
+                {product.name}
+              </h1>
+              <div className="flex items-center gap-2 mt-1">
+                {hasPromotion && (
+                  <span className="text-sm text-muted-foreground line-through">
+                    {formatCurrency(originalPrice!)}
+                  </span>
                 )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-[13px] text-gray-900">{product.name}</p>
-                  {product.description && (
-                    <p className="text-[11px] text-gray-400 line-clamp-1">{product.description}</p>
-                  )}
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    {hasPromotion && (
-                      <span className="text-[11px] text-gray-400 line-through">
-                        {formatCurrency(originalPrice!)}
-                      </span>
-                    )}
-                    <span className={cn(
-                      "text-[12px] font-bold",
-                      hasPromotion ? "text-green-600" : "text-red-500"
-                    )}>
-                      {formatCurrency(basePrice)}
-                    </span>
-                  </div>
-                </div>
+                <span className={cn(
+                  "text-lg font-bold",
+                  hasPromotion ? "text-green-600" : "text-foreground"
+                )}>
+                  {formatCurrency(basePrice)}
+                </span>
+              </div>
+              {product.description && (
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                  {product.description}
+                </p>
+              )}
+            </div>
+
+            {/* Search Bar */}
+            {groups.length > 0 && (
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Pesquise pelo nome"
+                  className="pl-10 pr-10 h-11 bg-muted/50 border-0 rounded-lg text-sm"
+                />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                  >
+                    <X className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                )}
               </div>
             )}
 
-            {groups.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-3xl mb-1">📦</p>
-                <p className="text-[11px] text-gray-400">Nenhuma personalização disponível</p>
-                <p className="text-[13px] font-semibold text-gray-700 mt-2">
-                  {formatCurrency(basePrice)}
-                </p>
-              </div>
-            ) : category.use_sequential_flow && sequentialGroups.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-3xl mb-1">✅</p>
-                <p className="text-[11px] text-gray-400">Produto selecionado!</p>
-              </div>
-            ) : category.use_sequential_flow ? (
-              <AnimatePresence mode="wait">
-                {renderSequentialGroup()}
-              </AnimatePresence>
-            ) : (
-              renderAllGroups()
-            )}
+            {/* Option Groups - Collapsible style */}
+            <div className="space-y-2">
+              {groups.map((group) => {
+                const groupItems = getFilteredItems(group.id);
+                const isExpanded = expandedGroups.has(group.id);
+                const selectedCount = (selections[group.id] || []).length;
+                
+                return (
+                  <div key={group.id} className="border-b border-border/50 last:border-b-0">
+                    {/* Group Header */}
+                    <button
+                      onClick={() => toggleGroup(group.id)}
+                      className="w-full py-3 flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-foreground uppercase tracking-wide">
+                          {group.name}
+                        </span>
+                        {group.is_required && (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-white">
+                            Obrigatório
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          {group.selection_type === "single" 
+                            ? "Escolha 1 item"
+                            : group.max_selections 
+                              ? `Escolha até ${group.max_selections} itens`
+                              : "Escolha os itens"
+                          }
+                        </span>
+                        {isExpanded ? (
+                          <ChevronUp className="w-5 h-5 text-amber-500" />
+                        ) : (
+                          <ChevronDown className="w-5 h-5 text-amber-500" />
+                        )}
+                      </div>
+                    </button>
+                    
+                    {/* Group Items */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="pb-3 space-y-1">
+                            {groupItems.length === 0 ? (
+                              <p className="text-sm text-muted-foreground text-center py-4">
+                                Nenhum item encontrado
+                              </p>
+                            ) : (
+                              groupItems.map((item) => {
+                                const isSelected = (selections[group.id] || []).includes(item.id);
+                                const qty = quantities[item.id] || 1;
+                                const effectivePrice = getItemEffectivePrice(item);
+                                
+                                return (
+                                  <div 
+                                    key={item.id}
+                                    className={cn(
+                                      "flex items-center gap-3 py-2.5 px-2 rounded-lg transition-colors",
+                                      isSelected && "bg-amber-50"
+                                    )}
+                                  >
+                                    {/* Item Image */}
+                                    {item.image_url && (
+                                      <img 
+                                        src={item.image_url}
+                                        alt={item.name}
+                                        className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                                      />
+                                    )}
+                                    
+                                    {/* Item Info */}
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-semibold text-foreground leading-tight">
+                                        {item.name}
+                                      </p>
+                                      {item.description && (
+                                        <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                                          {item.description}
+                                        </p>
+                                      )}
+                                      {effectivePrice > 0 && (
+                                        <p className="text-sm font-bold text-foreground mt-0.5">
+                                          R$ {effectivePrice.toFixed(2).replace('.', ',')}
+                                        </p>
+                                      )}
+                                    </div>
+                                    
+                                    {/* Add/Quantity Button */}
+                                    <div className="flex-shrink-0">
+                                      {isSelected && allowOptionItemQuantity && group.selection_type === "multiple" ? (
+                                        <div className="flex items-center gap-2">
+                                          <button
+                                            onClick={() => {
+                                              if (qty <= 1) {
+                                                handleItemSelect(group.id, item.id, group);
+                                              } else {
+                                                handleQuantityChange(item.id, -1);
+                                              }
+                                            }}
+                                            className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
+                                          >
+                                            <span className="text-lg font-medium text-gray-600">−</span>
+                                          </button>
+                                          <span className="w-5 text-center text-sm font-semibold">{qty}</span>
+                                          <button
+                                            onClick={() => handleQuantityChange(item.id, 1)}
+                                            className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
+                                          >
+                                            <Plus className="w-4 h-4 text-gray-600" />
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <button
+                                          onClick={() => handleItemSelect(group.id, item.id, group)}
+                                          className={cn(
+                                            "w-8 h-8 rounded-full flex items-center justify-center transition-colors",
+                                            isSelected 
+                                              ? "bg-amber-500 text-white" 
+                                              : "text-amber-500 hover:bg-amber-50"
+                                          )}
+                                        >
+                                          <Plus className={cn(
+                                            "w-5 h-5 transition-transform",
+                                            isSelected && "rotate-45"
+                                          )} />
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Observations */}
+            <div className="mt-6">
+              <label className="text-sm font-semibold text-foreground">
+                Observações
+              </label>
+              <Textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Ex: Tirar cebola, ovo, etc."
+                className="mt-2 min-h-[80px] resize-none border-border bg-muted/30"
+              />
+            </div>
           </div>
         </main>
 
-        {/* Footer - Same style as Pizza Flavor - Only shows when something is selected */}
-        <AnimatePresence>
-          {totalSelections > 0 && (
-            <motion.footer
-              initial={{ y: 60, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 60, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 400 }}
-              className="fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 p-3 z-10"
-            >
-              <div className="max-w-5xl mx-auto">
-                {/* Price summary */}
-                <div className="flex items-center justify-between mb-2 text-[12px]">
-                  <span className="text-gray-500">Total</span>
-                  <div className="flex items-center gap-2">
-                    {hasPromotion && (
-                      <span className="text-gray-400 line-through text-[11px]">
-                        {formatCurrency(originalPrice!)}
-                      </span>
-                    )}
-                    <span className="font-bold text-[15px] text-gray-900">
-                      {formatCurrency(totalPrice)}
-                    </span>
-                  </div>
-                </div>
-                
-                <Button
-                  onClick={handleNext}
-                  disabled={!canProceed && groups.length > 0}
-                  className="w-full h-10 text-[13px] font-semibold bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-sm disabled:opacity-50"
-                >
-                  {category.use_sequential_flow && !isLastStep && sequentialGroups.length > 0 ? (
-                    <>Continuar</>
-                  ) : (
-                    <>
-                      Adicionar ao Carrinho
-                      {totalSelections > 0 && ` (${totalSelections} ${totalSelections === 1 ? 'item' : 'itens'})`}
-                    </>
-                  )}
-                </Button>
-              </div>
-            </motion.footer>
-          )}
-        </AnimatePresence>
+        {/* Footer - Fixed bottom button */}
+        <motion.footer
+          initial={{ y: 60, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2, type: "spring", damping: 25, stiffness: 400 }}
+          className="fixed bottom-0 inset-x-0 bg-background border-t border-border p-4 z-10"
+        >
+          <Button
+            onClick={handleAddToCart}
+            disabled={!canProceed && groups.some(g => g.is_required)}
+            className="w-full h-12 text-base font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-lg disabled:opacity-50"
+          >
+            Avançar
+          </Button>
+        </motion.footer>
       </motion.div>
     </AnimatePresence>
   );
