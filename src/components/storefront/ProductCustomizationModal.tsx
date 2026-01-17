@@ -378,9 +378,29 @@ export default function ProductCustomizationModal({
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
         className="fixed inset-0 z-50 bg-background flex flex-col"
       >
-        {/* Hero Image Section */}
-        <div className="relative flex-shrink-0">
-          {/* Product Image */}
+        {/* Desktop Header - Only visible on lg+ */}
+        <header className="hidden lg:flex items-center justify-between px-6 py-4 border-b border-border bg-background sticky top-0 z-20">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={onClose}
+              className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 text-foreground" />
+            </button>
+            <span className="text-lg font-semibold text-foreground">Detalhes do produto</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors">
+              <Search className="w-5 h-5 text-foreground" />
+            </button>
+            <button className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors">
+              <Share2 className="w-5 h-5 text-foreground" />
+            </button>
+          </div>
+        </header>
+
+        {/* Mobile Hero Image Section - Only visible on mobile */}
+        <div className="relative flex-shrink-0 lg:hidden">
           <div className="relative h-64 sm:h-72 bg-gray-900">
             {product.image_url ? (
               <img 
@@ -394,10 +414,8 @@ export default function ProductCustomizationModal({
               </div>
             )}
             
-            {/* Gradient overlay at bottom */}
-            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white via-white/80 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background via-background/80 to-transparent" />
             
-            {/* Back button */}
             <button 
               onClick={onClose}
               className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
@@ -405,25 +423,67 @@ export default function ProductCustomizationModal({
               <ArrowLeft className="w-5 h-5 text-gray-700" />
             </button>
             
-            {/* Share button */}
             <button 
               className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
             >
               <Share2 className="w-5 h-5 text-gray-700" />
             </button>
             
-            {/* Pull indicator */}
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
-              <ChevronDown className="w-6 h-6 text-gray-400 animate-bounce" />
+              <ChevronDown className="w-6 h-6 text-muted-foreground animate-bounce" />
             </div>
           </div>
         </div>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto pb-24">
-          <div className="px-4 py-4">
-            {/* Product Info */}
-            <div className="mb-4">
+        <main className="flex-1 overflow-y-auto pb-24 lg:pb-28">
+          <div className="px-4 py-4 lg:max-w-2xl lg:mx-auto lg:px-6 lg:py-6">
+            
+            {/* Desktop Product Hero - Horizontal layout */}
+            <div className="hidden lg:flex gap-6 mb-6 p-4 bg-muted/30 rounded-2xl">
+              {/* Product Image */}
+              <div className="w-40 h-28 rounded-xl overflow-hidden bg-gray-900 flex-shrink-0">
+                {product.image_url ? (
+                  <img 
+                    src={product.image_url} 
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                    <span className="text-4xl">🍔</span>
+                  </div>
+                )}
+              </div>
+              
+              {/* Product Info */}
+              <div className="flex-1 min-w-0">
+                <h1 className="text-xl font-bold text-foreground leading-tight uppercase">
+                  {product.name}
+                </h1>
+                <div className="flex items-center gap-2 mt-1">
+                  {hasPromotion && (
+                    <span className="text-sm text-muted-foreground line-through">
+                      {formatCurrency(originalPrice!)}
+                    </span>
+                  )}
+                  <span className={cn(
+                    "text-lg font-bold",
+                    hasPromotion ? "text-green-600" : "text-foreground"
+                  )}>
+                    {formatCurrency(basePrice)}
+                  </span>
+                </div>
+                {product.description && (
+                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed line-clamp-2">
+                    {product.description}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Mobile Product Info */}
+            <div className="mb-4 lg:hidden">
               <h1 className="text-xl font-bold text-foreground leading-tight">
                 {product.name}
               </h1>
@@ -654,13 +714,15 @@ export default function ProductCustomizationModal({
           transition={{ delay: 0.2, type: "spring", damping: 25, stiffness: 400 }}
           className="fixed bottom-0 inset-x-0 bg-background border-t border-border p-4 z-10"
         >
-          <Button
-            onClick={handleAddToCart}
-            disabled={!canProceed && groups.some(g => g.is_required)}
-            className="w-full h-12 text-base font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-lg disabled:opacity-50"
-          >
-            Avançar
-          </Button>
+          <div className="lg:max-w-2xl lg:mx-auto">
+            <Button
+              onClick={handleAddToCart}
+              disabled={!canProceed && groups.some(g => g.is_required)}
+              className="w-full h-12 text-base font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-lg disabled:opacity-50"
+            >
+              Avançar
+            </Button>
+          </div>
         </motion.footer>
       </motion.div>
     </AnimatePresence>
