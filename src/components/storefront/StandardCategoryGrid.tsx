@@ -368,28 +368,6 @@ export function StandardCategoryGrid({
                         </p>
                       </div>
 
-                      {/* Quantity selector */}
-                      {allowQuantitySelector && (
-                        <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-border">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8 rounded-full"
-                            onClick={(e) => { e.stopPropagation(); updateQuantity(size.id, -1); }}
-                          >
-                            <Minus className="w-3 h-3" />
-                          </Button>
-                          <span className="w-8 text-center text-sm font-semibold">{quantity}</span>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8 rounded-full"
-                            onClick={(e) => { e.stopPropagation(); updateQuantity(size.id, 1); }}
-                          >
-                            <Plus className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -592,28 +570,6 @@ export function StandardCategoryGrid({
                     </p>
                   </div>
 
-                  {/* Quantity selector */}
-                  {allowQuantitySelector && (
-                    <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-border">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8 rounded-full"
-                        onClick={(e) => { e.stopPropagation(); updateQuantity(item.id, -1); }}
-                      >
-                        <Minus className="w-3 h-3" />
-                      </Button>
-                      <span className="w-8 text-center text-sm font-semibold">{quantity}</span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8 rounded-full"
-                        onClick={(e) => { e.stopPropagation(); updateQuantity(item.id, 1); }}
-                      >
-                        <Plus className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  )}
                 </div>
               </div>
             </motion.div>
