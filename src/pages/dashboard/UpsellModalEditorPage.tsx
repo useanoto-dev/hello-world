@@ -709,8 +709,8 @@ export default function UpsellModalEditorPage() {
                 disabled={isDisabled}
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors whitespace-nowrap border-b-2",
-                  isCurrent ? "text-primary border-primary" 
-                    : isCompleted || editId ? "text-foreground border-transparent cursor-pointer hover:text-primary"
+                  isCurrent ? "text-muted-foreground border-primary" 
+                    : isCompleted || editId ? "text-muted-foreground border-transparent cursor-pointer hover:text-foreground"
                     : "text-muted-foreground border-transparent cursor-not-allowed"
                 )}
               >
