@@ -112,7 +112,7 @@ export default function AboutSection({ store, expanded = false }: AboutSectionPr
 
   // Conteúdo interno da seção "Sobre nós"
   const content = (
-    <div className={`${expanded ? '' : 'mt-3'} p-4 bg-surface rounded-xl border border-border/50 space-y-4`}>
+    <div className={`${expanded ? '' : 'mt-3'} p-4 bg-white rounded-xl border border-border/50 space-y-4`}>
       {/* Status e Horário */}
       <div className="flex flex-wrap gap-3">
         <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
