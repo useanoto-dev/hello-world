@@ -773,14 +773,18 @@ export default function DashboardLayout() {
             </AlertDialogContent>
           </AlertDialog>
 
-          {/* Menu Navigation - Compact */}
+          {/* Menu Navigation - Distributed */}
           <nav className={cn(
-            "flex-1 py-1 space-y-0.5 overflow-y-auto overflow-x-hidden",
+            "flex-1 py-3 space-y-1.5 overflow-y-auto overflow-x-hidden flex flex-col",
             "[&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-gray-900/10 [&::-webkit-scrollbar-thumb]:rounded-full",
             sidebarCollapsed ? "px-1.5" : "px-2"
           )}>
-            {menuItems.map(item => (
-              <NavItem key={item.path} item={item} />
+            {menuItems.map((item, index) => (
+              <div key={item.path} className={cn(
+                index === menuItems.length - 1 && "mt-auto"
+              )}>
+                <NavItem item={item} />
+              </div>
             ))}
           </nav>
 
