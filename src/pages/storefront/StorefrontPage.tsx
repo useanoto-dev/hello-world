@@ -1408,6 +1408,17 @@ export default function StorefrontPage() {
             // Scroll to top when navigating to category
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
+          // Pass pizza size info for edge integration
+          sizeId={selectedPizzaSize?.id}
+          sizeName={selectedPizzaSize?.name}
+          onSelectEdge={(edge) => {
+            if (edge) {
+              setSelectedPizzaEdge(edge);
+              // The edge price will be added to the pizza in the cart
+              toast.success(`Borda ${edge.name} adicionada!`);
+            }
+            handleUpsellClose();
+          }}
         />
       )}
       {/* Pizza Flavor Selection Drawer */}

@@ -8,6 +8,7 @@ import { useCart } from "@/contexts/CartContext";
 import { formatCurrency } from "@/lib/formatters";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import EdgeUpsellModal from "./EdgeUpsellModal";
 
 interface UpsellModalConfig {
   id: string;
@@ -26,6 +27,7 @@ interface UpsellModalConfig {
   icon: string | null;
   primary_redirect_category_id: string | null;
   secondary_redirect_category_id: string | null;
+  content_type: string | null;
 }
 
 interface Product {
@@ -44,6 +46,10 @@ interface DynamicUpsellModalProps {
   onClose: () => void;
   onSelectProducts?: () => void;
   onNavigateToCategory?: (categoryId: string) => void;
+  // For pizza edge integration
+  sizeId?: string;
+  sizeName?: string;
+  onSelectEdge?: (edge: { id: string; name: string; price: number } | null) => void;
 }
 
 export default function DynamicUpsellModal({ 
@@ -52,6 +58,9 @@ export default function DynamicUpsellModal({
   onClose,
   onSelectProducts,
   onNavigateToCategory,
+  sizeId,
+  sizeName,
+  onSelectEdge,
 }: DynamicUpsellModalProps) {
   const [loading, setLoading] = useState(true);
   const [modalConfig, setModalConfig] = useState<UpsellModalConfig | null>(null);
@@ -217,6 +226,26 @@ export default function DynamicUpsellModal({
   // Don't render anything until we've confirmed there's a modal configured
   if (loading || !modalConfig) {
     return null;
+  }
+
+  // If content_type is pizza_edges, render the EdgeUpsellModal instead
+  if (modalConfig.content_type === "pizza_edges" && sizeId && onSelectEdge) {
+    return (
+      <EdgeUpsellModal
+        storeId={storeId}
+        categoryId={triggerCategoryId}
+        sizeId={sizeId}
+        sizeName={sizeName || ""}
+        title={modalConfig.title}
+        description={modalConfig.description || undefined}
+        buttonText={modalConfig.button_text || "Confirmar"}
+        buttonColor={modalConfig.button_color || "#f97316"}
+        secondaryButtonText={modalConfig.secondary_button_text || "Sem Borda"}
+        icon={modalConfig.icon || "🧀"}
+        onClose={onClose}
+        onSelectEdge={onSelectEdge}
+      />
+    );
   }
 
   const buttonColor = modalConfig.button_color || "#22c55e";

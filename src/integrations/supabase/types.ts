@@ -2795,6 +2795,7 @@ export type Database = {
         Row: {
           button_color: string | null
           button_text: string | null
+          content_type: string | null
           created_at: string
           description: string | null
           display_order: number | null
@@ -2817,6 +2818,7 @@ export type Database = {
         Insert: {
           button_color?: string | null
           button_text?: string | null
+          content_type?: string | null
           created_at?: string
           description?: string | null
           display_order?: number | null
@@ -2839,6 +2841,7 @@ export type Database = {
         Update: {
           button_color?: string | null
           button_text?: string | null
+          content_type?: string | null
           created_at?: string
           description?: string | null
           display_order?: number | null
