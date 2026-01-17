@@ -351,7 +351,7 @@ export default function OrderTrackingPage() {
   const isSimpleMode = storeSettings?.use_comanda_mode === false;
   if (loading) {
     return (
-      <div className="min-h-screen bg-background p-4">
+      <div className="min-h-screen bg-white p-4">
         <div className="max-w-lg mx-auto space-y-4">
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-40 w-full rounded-xl" />
@@ -364,7 +364,7 @@ export default function OrderTrackingPage() {
 
   if (error || !order) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
         <XCircle className="w-16 h-16 text-destructive mb-4" />
         <h1 className="text-xl font-bold mb-2">{error || "Pedido não encontrado"}</h1>
         <p className="text-muted-foreground mb-6">
@@ -380,7 +380,7 @@ export default function OrderTrackingPage() {
   // Pedido cancelado
   if (currentStatus === "canceled" || currentStatus === "cancelled") {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
@@ -452,7 +452,7 @@ export default function OrderTrackingPage() {
   // Modo simples: exibe apenas confirmação sem tracking detalhado
   if (isSimpleMode) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
@@ -522,7 +522,7 @@ export default function OrderTrackingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-8">
+    <div className="min-h-screen bg-white pb-8">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm border-b border-border">
         <div className="max-w-lg mx-auto px-4 py-3">

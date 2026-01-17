@@ -4,7 +4,7 @@ import anotoMascot from "@/assets/anoto-mascot.png";
 
 export default function StorefrontSkeleton() {
   return (
-    <div className="min-h-screen bg-background animate-fade-in">
+    <div className="min-h-screen bg-white animate-fade-in">
       {/* Mascot Loading Animation */}
       <div className="flex flex-col items-center justify-center py-12">
         <motion.img
