@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import EdgeUpsellModal from "./EdgeUpsellModal";
 import DoughUpsellModal from "./DoughUpsellModal";
 import AdditionalsUpsellModal from "./AdditionalsUpsellModal";
+import ComboUpsellModal from "./ComboUpsellModal";
 
 interface UpsellModalConfig {
   id: string;
@@ -326,6 +327,37 @@ export default function DynamicUpsellModal({
         onSelectAdditionals={(additionals) => {
           if (additionals.length > 0) {
             toast.success(`${additionals.length} adicional(is) selecionado(s)!`);
+          }
+          goToNextModal();
+        }}
+      />
+    );
+  }
+
+  // If content_type is combo, render the ComboUpsellModal (full screen with edges + doughs + additionals)
+  if (modalConfig.content_type === "combo" && sizeId) {
+    return (
+      <ComboUpsellModal
+        open={true}
+        storeId={storeId}
+        categoryId={triggerCategoryId}
+        sizeId={sizeId}
+        sizeName={sizeName || ""}
+        title={modalConfig.title}
+        description={modalConfig.description || undefined}
+        buttonText={modalConfig.button_text || "Confirmar"}
+        buttonColor={modalConfig.button_color || "#3b82f6"}
+        onClose={goToNextModal}
+        onComplete={(selections, totalPrice) => {
+          // Handle combo selections
+          if (selections.edge) {
+            toast.success(`Borda ${selections.edge.name} selecionada!`);
+          }
+          if (selections.dough) {
+            toast.success(`Massa ${selections.dough.name} selecionada!`);
+          }
+          if (selections.additionals.length > 0) {
+            toast.success(`${selections.additionals.length} adicional(is) selecionado(s)!`);
           }
           goToNextModal();
         }}
