@@ -187,6 +187,12 @@ export default function DynamicUpsellModal({
     }
   };
 
+  // Don't render anything until we've confirmed there's a modal configured
+  // This prevents the brief flash when no modal exists for this category
+  if (loading || !modalConfig) {
+    return null;
+  }
+
   return (
     <AnimatePresence>
       {/* Backdrop overlay - blocks interaction with content behind */}
