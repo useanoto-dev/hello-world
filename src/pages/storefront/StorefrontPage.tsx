@@ -880,6 +880,13 @@ export default function StorefrontPage() {
   const handleUpsellClose = useCallback(() => {
     setShowUpsellModal(false);
     setUpsellTriggerCategoryId(null);
+    // Reset pizza selection state when upsell closes (keeps drawers open until upsell is done)
+    setSelectedPizzaSize(null);
+    setSelectedPizzaFlavors(null);
+    setSelectedPizzaEdge(null);
+    setSelectedPizzaDough(null);
+    // Also close any open product drawer
+    setSelectedProduct(null);
   }, []);
 
   // Pizza size selection handler
@@ -1004,19 +1011,11 @@ export default function StorefrontPage() {
       });
     }
 
-    // Store the category id before resetting state
-    const pizzaCategoryId = selectedPizzaSize.categoryId;
-    
-    // Reset all pizza selection state
-    setSelectedPizzaSize(null);
-    setSelectedPizzaFlavors(null);
-    setSelectedPizzaEdge(null);
-    setSelectedPizzaDough(null);
-    
     toast.success(drink ? "Pizza e bebida adicionadas!" : "Pizza adicionada ao carrinho!");
     
-    // Trigger upsell modal for pizza category
-    setUpsellTriggerCategoryId(pizzaCategoryId);
+    // Trigger upsell modal for pizza category - DON'T reset states yet, keep drawers open
+    // States will be reset when upsell modal closes (in handleUpsellClose)
+    setUpsellTriggerCategoryId(selectedPizzaSize.categoryId);
     setShowUpsellModal(true);
   }, [selectedPizzaSize, activeCategoryData, addToCart]);
 
