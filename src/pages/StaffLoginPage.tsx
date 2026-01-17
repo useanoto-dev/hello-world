@@ -52,68 +52,34 @@ export default function StaffLoginPage() {
     try {
       console.log("Attempting login with CPF:", actualCleanCpf);
       
-      const { data: staff, error } = await (supabase.from("store_staff") as any)
-        .select("id, name, role, is_active, password_hash, locked_until, failed_login_attempts, store_id, cpf")
-        .eq("cpf", actualCleanCpf)
-        .eq("is_deleted", false)
-        .maybeSingle();
+      // Use server-side authentication via edge function
+      const { data, error } = await supabase.functions.invoke('staff-auth', {
+        body: { cpf: actualCleanCpf, password },
+        headers: { 'Content-Type': 'application/json' }
+      });
 
-      console.log("Query result:", { staff, error });
+      console.log("Auth result:", { data, error });
 
       if (error) {
-        console.error("Database error:", error);
-        toast.error("Erro ao buscar funcionário");
+        console.error("Auth error:", error);
+        toast.error("Erro ao fazer login");
         setIsLoading(false);
         return;
       }
 
-      if (!staff) {
-        await logAudit(null, null, "login_failed", "auth", null, { cpf: actualCleanCpf, reason: "user_not_found" });
-        toast.error("CPF não encontrado");
+      if (data?.error) {
+        toast.error(data.error);
         setIsLoading(false);
         return;
       }
 
-      if (!staff.is_active) {
-        await logAudit(staff.store_id, staff.id, "login_failed", "auth", staff.id, { reason: "inactive_user" });
-        toast.error("Usuário desativado. Contate o administrador.");
+      if (!data?.success || !data?.staff) {
+        toast.error("Erro inesperado ao fazer login");
         setIsLoading(false);
         return;
       }
 
-      if (staff.locked_until && new Date(staff.locked_until) > new Date()) {
-        toast.error("Conta bloqueada. Tente novamente mais tarde.");
-        setIsLoading(false);
-        return;
-      }
-
-      // Verify password
-      if (staff.password_hash !== password) {
-        const newAttempts = (staff.failed_login_attempts || 0) + 1;
-        const updates: Record<string, unknown> = { failed_login_attempts: newAttempts };
-        
-        if (newAttempts >= 5) {
-          updates.locked_until = new Date(Date.now() + 30 * 60 * 1000).toISOString();
-        }
-        
-        await (supabase.from("store_staff") as any).update(updates).eq("id", staff.id);
-        await logAudit(staff.store_id, staff.id, "login_failed", "auth", staff.id, { attempts: newAttempts });
-        
-        toast.error(newAttempts >= 5 ? "Conta bloqueada por 30 minutos" : "Senha incorreta");
-        setIsLoading(false);
-        return;
-      }
-
-      // Success - reset attempts and update last login
-      await (supabase.from("store_staff") as any)
-        .update({ 
-          failed_login_attempts: 0, 
-          locked_until: null,
-          last_login_at: new Date().toISOString()
-        })
-        .eq("id", staff.id);
-
-      await logAudit(staff.store_id, staff.id, "login", "auth", staff.id, { role: staff.role });
+      const staff = data.staff;
 
       // Store staff session using shared state
       setStaffSession({
@@ -135,29 +101,7 @@ export default function StaffLoginPage() {
     }
   };
 
-  const logAudit = async (
-    storeId: string | null,
-    staffId: string | null,
-    action: string,
-    module: string,
-    recordId: string | null,
-    details: Record<string, unknown>
-  ) => {
-    try {
-      await (supabase.from("audit_logs") as any).insert({
-        store_id: storeId,
-        staff_id: staffId,
-        action,
-        module,
-        record_id: recordId,
-        details,
-        ip_address: null,
-        user_agent: navigator.userAgent
-      });
-    } catch (e) {
-      console.error("Failed to log audit:", e);
-    }
-  };
+  // Audit logging is now handled server-side in the edge function
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
