@@ -447,14 +447,14 @@ export function UpsellModalWizard({
         <div className="space-y-1.5">
           <Label className="text-xs">Sugerir produtos de</Label>
           <Select
-            value={formData.target_category_id}
-            onValueChange={(v) => setFormData({ ...formData, target_category_id: v })}
+            value={formData.target_category_id || "auto"}
+            onValueChange={(v) => setFormData({ ...formData, target_category_id: v === "auto" ? "" : v })}
           >
             <SelectTrigger>
               <SelectValue placeholder="Sugestões automáticas" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Sugestões automáticas</SelectItem>
+              <SelectItem value="auto">Sugestões automáticas</SelectItem>
               {categories.map((cat) => (
                 <SelectItem key={cat.id} value={cat.id}>
                   <span className="flex items-center gap-2">
