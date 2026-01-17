@@ -1,7 +1,7 @@
 // Product Detail Drawer - For simple products without customization groups
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ChevronDown, Minus, Plus, Share2 } from "lucide-react";
+import { ArrowLeft, ChevronDown, Minus, Plus, Share2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/contexts/CartContext";
@@ -89,8 +89,29 @@ export default function ProductDetailDrawer({
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
         className="fixed inset-0 z-50 bg-background"
       >
-        {/* Fixed Header with Back/Share buttons */}
-        <div className="fixed top-0 inset-x-0 z-20 flex items-center justify-between p-4">
+        {/* Desktop Header - Sticky com fundo branco */}
+        <header className="hidden lg:flex items-center justify-between px-6 py-4 border-b border-border bg-white sticky top-0 z-20">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={onClose}
+              className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 text-foreground" />
+            </button>
+            <span className="text-lg font-semibold text-foreground">Detalhes do produto</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors">
+              <Search className="w-5 h-5 text-foreground" />
+            </button>
+            <button className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors">
+              <Share2 className="w-5 h-5 text-foreground" />
+            </button>
+          </div>
+        </header>
+
+        {/* Mobile Header - Floating buttons over image */}
+        <div className="lg:hidden fixed top-0 inset-x-0 z-20 flex items-center justify-between p-4">
           <button 
             onClick={onClose}
             className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
@@ -105,9 +126,9 @@ export default function ProductDetailDrawer({
         </div>
 
         {/* Scrollable Content */}
-        <main className="h-full overflow-y-auto pb-32">
-          {/* Hero Image Section */}
-          <div className="relative">
+        <main className="h-full overflow-y-auto pb-32 lg:pb-24">
+          {/* Mobile Hero Image Section */}
+          <div className="lg:hidden relative">
             <div className="relative h-64 sm:h-80 bg-gray-900">
               {product.image_url ? (
                 <img 
@@ -132,9 +153,52 @@ export default function ProductDetailDrawer({
           </div>
 
           {/* Content */}
-          <div className="px-4 py-4">
-            {/* Product Info */}
-            <div className="mb-6">
+          <div className="px-4 py-4 lg:max-w-2xl lg:mx-auto lg:px-6 lg:py-6">
+            {/* Desktop Hero - Horizontal layout com imagem quadrada */}
+            <div className="hidden lg:flex gap-6 mb-6 items-start">
+              {/* Product Image - Square with rounded corners */}
+              <div className="w-44 h-44 rounded-2xl overflow-hidden flex-shrink-0">
+                {product.image_url ? (
+                  <img 
+                    src={product.image_url} 
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                    <span className="text-5xl">🍽️</span>
+                  </div>
+                )}
+              </div>
+              
+              {/* Product Info */}
+              <div className="flex-1 min-w-0 pt-2">
+                <h1 className="text-xl font-bold text-foreground leading-tight uppercase">
+                  {product.name}
+                </h1>
+                <div className="flex items-center gap-2 mt-2">
+                  {hasPromotion && (
+                    <span className="text-base text-muted-foreground line-through">
+                      {formatCurrency(originalPrice!)}
+                    </span>
+                  )}
+                  <span className={cn(
+                    "text-xl font-bold",
+                    hasPromotion ? "text-green-600" : "text-amber-500"
+                  )}>
+                    {formatCurrency(basePrice)}
+                  </span>
+                </div>
+                {product.description && (
+                  <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
+                    {product.description}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Mobile Product Info */}
+            <div className="lg:hidden mb-6">
               <h1 className="text-2xl font-bold text-foreground leading-tight">
                 {product.name}
               </h1>
@@ -201,20 +265,22 @@ export default function ProductDetailDrawer({
           initial={{ y: 60, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, type: "spring", damping: 25, stiffness: 400 }}
-          className="fixed bottom-0 inset-x-0 bg-background border-t border-border p-4 z-10"
+          className="fixed bottom-0 inset-x-0 bg-white border-t border-border p-4 z-10"
         >
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-muted-foreground">Total</span>
-            <span className="text-xl font-bold text-foreground">
-              {formatCurrency(totalPrice)}
-            </span>
+          <div className="lg:max-w-2xl lg:mx-auto lg:px-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-muted-foreground">Total</span>
+              <span className="text-xl font-bold text-foreground">
+                {formatCurrency(totalPrice)}
+              </span>
+            </div>
+            <Button
+              onClick={handleAddToCart}
+              className="w-full h-12 text-base font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-lg"
+            >
+              Adicionar ao Carrinho
+            </Button>
           </div>
-          <Button
-            onClick={handleAddToCart}
-            className="w-full h-12 text-base font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-lg"
-          >
-            Adicionar ao Carrinho
-          </Button>
         </motion.footer>
       </motion.div>
     </AnimatePresence>
