@@ -291,45 +291,33 @@ export function UpsellModalEditor({
             />
           </div>
 
+          {/* Name */}
+          <div className="space-y-1.5">
+            <Label htmlFor="name" className="text-xs">Nome do Modal</Label>
+            <Input
+              id="name"
+              placeholder="Ex: Bebidas após Pizza"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            />
+          </div>
+
           {/* Settings */}
           <div className="space-y-3 pt-2 border-t">
-            {formData.modal_type !== "edge" && (
-              <>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-xs">Mostrar botão de adicionar rápido</Label>
-                    <p className="text-[10px] text-muted-foreground">
-                      Permite adicionar produtos direto do modal
-                    </p>
-                  </div>
-                  <Switch
-                    checked={formData.show_quick_add}
-                    onCheckedChange={(checked) => 
-                      setFormData({ ...formData, show_quick_add: checked })
-                    }
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Máximo de produtos exibidos</Label>
-                  <Select
-                    value={formData.max_products.toString()}
-                    onValueChange={(v) => setFormData({ ...formData, max_products: parseInt(v) })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="2">2 produtos</SelectItem>
-                      <SelectItem value="4">4 produtos</SelectItem>
-                      <SelectItem value="6">6 produtos</SelectItem>
-                      <SelectItem value="8">8 produtos</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
-            )}
-
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-xs">Modal ativo</Label>
+                <p className="text-[10px] text-muted-foreground">
+                  Desative para pausar sem excluir
+                </p>
+              </div>
+              <Switch
+                checked={formData.is_active}
+                onCheckedChange={(checked) => 
+                  setFormData({ ...formData, is_active: checked })
+                }
+              />
+            </div>
           </div>
 
           {/* Info */}
