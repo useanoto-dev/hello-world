@@ -38,6 +38,8 @@ interface Category {
   has_base_product: boolean | null;
   category_type: string | null;
   show_flavor_prices?: boolean;
+  display_mode?: "cards" | "list" | null;
+  allow_quantity_selector?: boolean | null;
 }
 
 interface Product {
@@ -130,7 +132,7 @@ async function fetchStoreContent(storeId: string) {
   ] = await Promise.all([
     supabase
       .from("categories")
-      .select("id, name, slug, icon, image_url, use_sequential_flow, has_base_product, category_type, show_flavor_prices")
+      .select("id, name, slug, icon, image_url, use_sequential_flow, has_base_product, category_type, show_flavor_prices, display_mode, allow_quantity_selector")
       .eq("store_id", storeId)
       .eq("is_active", true)
       .order("display_order"),

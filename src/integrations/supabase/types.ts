@@ -175,9 +175,11 @@ export type Database = {
       }
       categories: {
         Row: {
+          allow_quantity_selector: boolean | null
           category_type: string | null
           created_at: string | null
           description: string | null
+          display_mode: string | null
           display_order: number | null
           has_base_product: boolean | null
           icon: string | null
@@ -191,9 +193,11 @@ export type Database = {
           use_sequential_flow: boolean | null
         }
         Insert: {
+          allow_quantity_selector?: boolean | null
           category_type?: string | null
           created_at?: string | null
           description?: string | null
+          display_mode?: string | null
           display_order?: number | null
           has_base_product?: boolean | null
           icon?: string | null
@@ -207,9 +211,11 @@ export type Database = {
           use_sequential_flow?: boolean | null
         }
         Update: {
+          allow_quantity_selector?: boolean | null
           category_type?: string | null
           created_at?: string | null
           description?: string | null
+          display_mode?: string | null
           display_order?: number | null
           has_base_product?: boolean | null
           icon?: string | null

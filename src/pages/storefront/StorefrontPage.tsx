@@ -207,7 +207,7 @@ async function fetchStoreContent(storeId: string) {
   const [categoriesResult, productsResult, optionGroupsResult, reviewsResult, inventoryCategoriesResult, inventoryProductsResult, flowStepsResult, standardSizesResult] = await Promise.all([
     supabase
       .from("categories")
-      .select("id, name, slug, icon, image_url, use_sequential_flow, has_base_product, category_type, show_flavor_prices")
+      .select("id, name, slug, icon, image_url, use_sequential_flow, has_base_product, category_type, show_flavor_prices, display_mode, allow_quantity_selector")
       .eq("store_id", storeId)
       .eq("is_active", true)
       .order("display_order"),
