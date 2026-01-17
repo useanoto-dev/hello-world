@@ -371,11 +371,11 @@ export default function DashboardLayout() {
   if (loading || staffLoading) {
     return (
       <div className="min-h-screen bg-background flex">
-        <div className="w-14 bg-amber-400 border-r border-amber-500 p-2 space-y-2">
-          <Skeleton className="h-8 w-8 rounded-md bg-amber-300" />
-          <Skeleton className="h-7 w-7 rounded-md bg-amber-300" />
-          <Skeleton className="h-7 w-7 rounded-md bg-amber-300" />
-          <Skeleton className="h-7 w-7 rounded-md bg-amber-300" />
+        <div className="w-14 bg-[#FFBE00] border-r border-[#e5a800] p-2 space-y-2">
+          <Skeleton className="h-8 w-8 rounded-md bg-amber-600/30" />
+          <Skeleton className="h-7 w-7 rounded-md bg-amber-600/30" />
+          <Skeleton className="h-7 w-7 rounded-md bg-amber-600/30" />
+          <Skeleton className="h-7 w-7 rounded-md bg-amber-600/30" />
         </div>
         <div className="flex-1 p-5">
           <Skeleton className="h-5 w-40 mb-3" />
@@ -629,7 +629,7 @@ export default function DashboardLayout() {
             }}
             className={cn(
               "hidden md:flex flex-col h-screen flex-shrink-0 relative group/sidebar",
-              "bg-[#FEDE01] border-r border-[#e5c801]"
+              "bg-[#FFBE00] border-r border-[#e5a800]"
             )}
           >
           {/* Collapse Toggle Button */}
@@ -658,7 +658,7 @@ export default function DashboardLayout() {
               "h-12 flex items-center flex-shrink-0 overflow-hidden",
               "transition-all duration-200",
               sidebarCollapsed ? "justify-center px-2" : "px-3",
-              "border-b border-[#e5c801]"
+              "border-b border-[#e5a800]"
             )}
           >
             <Link to="/dashboard" className="flex items-center gap-2.5 min-w-0">
