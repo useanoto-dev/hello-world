@@ -191,80 +191,83 @@ export default function DynamicUpsellModal({
 
   return (
     <Drawer open onOpenChange={(open) => !open && onClose()}>
-      <DrawerContent className="max-h-[85vh]">
-        <DrawerHeader className="border-b pb-4">
+      <DrawerContent className="max-h-[60vh] bg-white dark:bg-zinc-900 rounded-t-2xl border-t border-x border-border/30 shadow-xl">
+        {/* Header minimalista */}
+        <div className="px-5 pt-2 pb-4">
+          <div className="w-10 h-1 bg-zinc-300 dark:bg-zinc-600 rounded-full mx-auto mb-4" />
           <div className="flex items-center justify-between">
             <div>
-              <DrawerTitle className="text-lg flex items-center gap-2">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
                 {getIcon()}
                 {modalConfig.title}
-              </DrawerTitle>
+              </h3>
               {modalConfig.description && (
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {modalConfig.description}
                 </p>
               )}
             </div>
-            <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="w-5 h-5" />
-            </Button>
+            <button 
+              onClick={onClose}
+              className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            >
+              <X className="w-4 h-4 text-muted-foreground" />
+            </button>
           </div>
-        </DrawerHeader>
+        </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Conteúdo */}
+        <div className="flex-1 overflow-y-auto px-5 pb-2">
           {loading ? (
-            <div className="space-y-4">
-              <Skeleton className="h-24 w-full rounded-xl" />
-              <Skeleton className="h-24 w-full rounded-xl" />
+            <div className="flex gap-3">
+              <Skeleton className="h-28 flex-1 rounded-xl" />
+              <Skeleton className="h-28 flex-1 rounded-xl" />
             </div>
           ) : products.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-4xl mb-2">{getIcon()}</p>
-              <p className="text-muted-foreground">Nenhum produto disponível</p>
+            <div className="text-center py-6">
+              <p className="text-3xl mb-2">{getIcon()}</p>
+              <p className="text-sm text-muted-foreground">Nenhum produto disponível</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
               {products.map((product) => (
                 <motion.div
                   key={product.id}
-                  className="p-3 rounded-xl border border-border bg-card"
-                  whileTap={{ scale: 0.98 }}
+                  className="flex-shrink-0 w-32 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-700/50"
+                  whileTap={{ scale: 0.97 }}
                 >
                   {product.image_url && (
                     <img 
                       src={product.image_url} 
                       alt={product.name}
-                      className="w-full h-24 rounded-lg object-cover mb-2"
+                      className="w-full h-20 rounded-lg object-cover mb-2"
                     />
                   )}
-                  <p className="font-medium text-sm line-clamp-2">{product.name}</p>
-                  <p className="text-sm text-primary font-semibold mt-1">
+                  <p className="font-medium text-xs line-clamp-2 text-foreground">{product.name}</p>
+                  <p className="text-xs text-primary font-semibold mt-1">
                     {formatCurrency(product.promotional_price || product.price)}
                   </p>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="w-full mt-2 h-9 text-xs gap-1"
+                  <button
                     onClick={() => handleQuickAdd(product)}
+                    className="w-full mt-2 h-7 text-[10px] font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center justify-center gap-1"
                   >
                     <Plus className="w-3 h-3" />
                     Adicionar
-                  </Button>
+                  </button>
                 </motion.div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="border-t p-4 bg-background">
-          <Button 
-            className="w-full"
+        {/* Footer minimalista */}
+        <div className="px-5 pb-5 pt-3">
+          <button 
             onClick={onClose}
+            className="w-full h-11 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-foreground font-medium text-sm transition-colors"
           >
-            <Check className="w-4 h-4 mr-2" />
             Continuar
-          </Button>
+          </button>
         </div>
       </DrawerContent>
     </Drawer>
