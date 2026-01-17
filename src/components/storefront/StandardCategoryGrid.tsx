@@ -185,15 +185,15 @@ export function StandardCategoryGrid({
 
   if (isLoading) {
     return (
-      <div className="px-3 sm:px-4 space-y-4">
+      <div className="px-3 sm:px-4 lg:px-6 space-y-4">
         <div className="flex gap-2 overflow-x-auto pb-2">
           {[1, 2, 3].map(i => (
             <Skeleton key={i} className="h-10 w-24 shrink-0 rounded-full" />
           ))}
         </div>
-        <div className={displayMode === "list" ? "space-y-3" : "grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4"}>
-          {[1, 2, 3, 4].map(i => (
-            <Skeleton key={i} className={displayMode === "list" ? "h-24 rounded-xl" : "aspect-[4/3] rounded-xl"} />
+        <div className={displayMode === "list" ? "space-y-3" : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5"}>
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <Skeleton key={i} className={displayMode === "list" ? "h-24 rounded-xl" : "aspect-[4/3] rounded-xl lg:rounded-2xl"} />
           ))}
         </div>
       </div>
@@ -204,8 +204,8 @@ export function StandardCategoryGrid({
   if (!items || items.length === 0) {
     if (sizes && sizes.length > 0) {
       return (
-        <div className="px-3 sm:px-4 pb-6">
-          <div className={displayMode === "list" ? "space-y-3" : "grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4"}>
+        <div className="px-3 sm:px-4 lg:px-6 pb-6">
+          <div className={displayMode === "list" ? "space-y-3 max-w-4xl mx-auto" : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5"}>
             {sizes.map((size, index) => {
               const badge = getBadgeForIndex(index);
               const quantity = getQuantity(size.id);
@@ -316,7 +316,7 @@ export function StandardCategoryGrid({
                         }, size, size.base_price, allowQuantitySelector ? quantity : 1);
                       }
                     }}
-                    className="w-full text-left bg-card rounded-xl overflow-hidden border border-border transition-all duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary group hover:shadow-lg hover:border-primary/30 active:scale-[0.98]"
+                    className="w-full text-left bg-card rounded-xl lg:rounded-2xl overflow-hidden border border-border transition-all duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary group hover:shadow-lg hover:border-primary/30 active:scale-[0.98]"
                   >
                     {/* Image - Aspect 4/3 */}
                     <div className="relative aspect-[4/3] overflow-hidden bg-muted">
@@ -349,21 +349,21 @@ export function StandardCategoryGrid({
                     </div>
 
                     {/* Info - Compact */}
-                    <div className="p-3">
-                      <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-2 min-h-[2.5rem]">
+                    <div className="p-3 lg:p-4">
+                      <h3 className="font-semibold text-foreground text-sm lg:text-base leading-tight line-clamp-2 min-h-[2.5rem]">
                         {size.name}
                       </h3>
                       
                       {size.description && (
-                        <p className="text-muted-foreground text-xs line-clamp-1 mt-1">
+                        <p className="text-muted-foreground text-xs lg:text-sm line-clamp-1 mt-1">
                           {size.description}
                         </p>
                       )}
                       
                       {/* Price */}
                       <div className="mt-2">
-                        <span className="text-xs text-muted-foreground">A partir de</span>
-                        <p className="text-sm font-bold text-primary">
+                        <span className="text-xs lg:text-sm text-muted-foreground">A partir de</span>
+                        <p className="text-sm lg:text-base font-bold text-primary">
                           {formatCurrency(size.base_price)}
                         </p>
                       </div>
@@ -388,22 +388,22 @@ export function StandardCategoryGrid({
   }
 
   return (
-    <div className="px-3 sm:px-4 pb-6 space-y-4">
+    <div className="px-3 sm:px-4 lg:px-6 pb-6 space-y-4">
       {/* Size selector */}
       {sizes && sizes.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-2 -mx-3 sm:-mx-4 px-3 sm:px-4 scrollbar-hide">
+        <div className="flex gap-2 overflow-x-auto pb-2 -mx-3 sm:-mx-4 lg:-mx-6 px-3 sm:px-4 lg:px-6 scrollbar-hide">
           {sizes.map(size => (
             <button
               key={size.id}
               onClick={() => setSelectedSizeId(size.id)}
-              className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              className={`shrink-0 px-4 py-2 lg:px-5 lg:py-2.5 rounded-full text-sm lg:text-base font-medium transition-colors ${
                 effectiveSize === size.id
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
             >
               {size.name}
-              <span className="ml-1 text-xs opacity-75">
+              <span className="ml-1 text-xs lg:text-sm opacity-75">
                 {formatCurrency(size.base_price)}
               </span>
             </button>
@@ -412,7 +412,7 @@ export function StandardCategoryGrid({
       )}
 
       {/* Items grid/list */}
-      <div className={displayMode === "list" ? "space-y-3" : "grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4"}>
+      <div className={displayMode === "list" ? "space-y-3 max-w-4xl mx-auto" : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5"}>
         {items.map((item, index) => {
           const selectedSize = sizes?.find(s => s.id === effectiveSize);
           const itemPrice = priceMap.get(item.id)?.get(effectiveSize || '');
@@ -510,7 +510,7 @@ export function StandardCategoryGrid({
                     handleItemClick(item);
                   }
                 }}
-                className="w-full text-left bg-card rounded-xl overflow-hidden border border-border transition-all duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary group hover:shadow-lg hover:border-primary/30 active:scale-[0.98]"
+                className="w-full text-left bg-card rounded-xl lg:rounded-2xl overflow-hidden border border-border transition-all duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary group hover:shadow-lg hover:border-primary/30 active:scale-[0.98]"
               >
                 {/* Image - Aspect 4/3 */}
                 <div className="relative aspect-[4/3] overflow-hidden bg-muted">
@@ -551,21 +551,21 @@ export function StandardCategoryGrid({
                 </div>
 
                 {/* Info - Compact */}
-                <div className="p-3">
-                  <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-2 min-h-[2.5rem]">
+                <div className="p-3 lg:p-4">
+                  <h3 className="font-semibold text-foreground text-sm lg:text-base leading-tight line-clamp-2 min-h-[2.5rem]">
                     {item.name}
                   </h3>
                   
                   {item.description && (
-                    <p className="text-muted-foreground text-xs line-clamp-1 mt-1">
+                    <p className="text-muted-foreground text-xs lg:text-sm line-clamp-1 mt-1">
                       {item.description}
                     </p>
                   )}
                   
                   {/* Price */}
                   <div className="mt-2">
-                    <span className="text-xs text-muted-foreground">A partir de</span>
-                    <p className="text-sm font-bold text-primary">
+                    <span className="text-xs lg:text-sm text-muted-foreground">A partir de</span>
+                    <p className="text-sm lg:text-base font-bold text-primary">
                       {formatCurrency(displayPrice)}
                     </p>
                   </div>
