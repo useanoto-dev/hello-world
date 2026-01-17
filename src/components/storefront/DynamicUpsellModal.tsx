@@ -8,6 +8,8 @@ import { useCart } from "@/contexts/CartContext";
 import { formatCurrency } from "@/lib/formatters";
 import { toast } from "sonner";
 import EdgeUpsellModal from "./EdgeUpsellModal";
+import DoughUpsellModal from "./DoughUpsellModal";
+import AdditionalsUpsellModal from "./AdditionalsUpsellModal";
 
 interface UpsellModalConfig {
   id: string;
@@ -277,6 +279,56 @@ export default function DynamicUpsellModal({
         icon={modalConfig.icon || "🧀"}
         onClose={goToNextModal}
         onSelectEdge={handleEdgeSelection}
+      />
+    );
+  }
+
+  // If content_type is pizza_doughs, render the DoughUpsellModal
+  if (modalConfig.content_type === "pizza_doughs" && sizeId) {
+    return (
+      <DoughUpsellModal
+        storeId={storeId}
+        categoryId={triggerCategoryId}
+        sizeId={sizeId}
+        sizeName={sizeName || ""}
+        title={modalConfig.title}
+        description={modalConfig.description || undefined}
+        buttonText={modalConfig.button_text || "Continuar"}
+        buttonColor={modalConfig.button_color || "#a855f7"}
+        secondaryButtonText={modalConfig.secondary_button_text || "Massa Tradicional"}
+        icon={modalConfig.icon || "🥖"}
+        onClose={goToNextModal}
+        onSelectDough={(dough) => {
+          // Handle dough selection - could add to cart or state
+          if (dough) {
+            toast.success(`Massa ${dough.name} selecionada!`);
+          }
+          goToNextModal();
+        }}
+      />
+    );
+  }
+
+  // If content_type is additionals, render the AdditionalsUpsellModal
+  if (modalConfig.content_type === "additionals") {
+    return (
+      <AdditionalsUpsellModal
+        storeId={storeId}
+        categoryId={triggerCategoryId}
+        title={modalConfig.title}
+        description={modalConfig.description || undefined}
+        buttonText={modalConfig.button_text || "Confirmar"}
+        buttonColor={modalConfig.button_color || "#3b82f6"}
+        secondaryButtonText={modalConfig.secondary_button_text || "Não, obrigado"}
+        icon={modalConfig.icon || "➕"}
+        maxItems={modalConfig.max_products || 10}
+        onClose={goToNextModal}
+        onSelectAdditionals={(additionals) => {
+          if (additionals.length > 0) {
+            toast.success(`${additionals.length} adicional(is) selecionado(s)!`);
+          }
+          goToNextModal();
+        }}
       />
     );
   }

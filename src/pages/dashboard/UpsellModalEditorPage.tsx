@@ -33,8 +33,78 @@ interface Category {
   category_type: string | null;
 }
 
-// Templates pré-definidos com configurações completas
-const MODAL_TEMPLATES = [
+// Modelo types
+type ModelType = "pizza" | "padrao";
+
+// Templates organizados por modelo
+const PIZZA_TEMPLATES = [
+  { 
+    id: "drink", 
+    label: "Bebidas", 
+    icon: "🥤", 
+    color: "bg-red-500",
+    bgLight: "bg-red-50 border-red-200 hover:bg-red-100",
+    bgSelected: "bg-red-100 border-red-400",
+    description: "Sugere bebidas após adicionar pizza",
+    defaultTitle: "Que tal uma bebida gelada? 😎",
+    defaultDescription: "Complete sua experiência com uma bebida refrescante!",
+    defaultButtonText: "Escolher Bebida",
+    defaultButtonColor: "#22c55e",
+    defaultSecondaryText: "Sem Bebida",
+    defaultIcon: "🥤",
+    contentType: "products",
+  },
+  { 
+    id: "edge", 
+    label: "Bordas (Integrado)", 
+    icon: "🧀", 
+    color: "bg-yellow-500",
+    bgLight: "bg-yellow-50 border-yellow-200 hover:bg-yellow-100",
+    bgSelected: "bg-yellow-100 border-yellow-400",
+    description: "Puxa bordas cadastradas na categoria pizza",
+    defaultTitle: "Escolha a Borda",
+    defaultDescription: "Turbine sua pizza com uma borda recheada!",
+    defaultButtonText: "Confirmar",
+    defaultButtonColor: "#f97316",
+    defaultSecondaryText: "Sem Borda",
+    defaultIcon: "🧀",
+    contentType: "pizza_edges",
+  },
+  { 
+    id: "dough", 
+    label: "Massas (Integrado)", 
+    icon: "🥖", 
+    color: "bg-amber-500",
+    bgLight: "bg-amber-50 border-amber-200 hover:bg-amber-100",
+    bgSelected: "bg-amber-100 border-amber-400",
+    description: "Puxa massas cadastradas na categoria pizza",
+    defaultTitle: "Escolha a Massa",
+    defaultDescription: "Personalize sua pizza com uma massa especial!",
+    defaultButtonText: "Confirmar",
+    defaultButtonColor: "#a855f7",
+    defaultSecondaryText: "Massa Tradicional",
+    defaultIcon: "🥖",
+    contentType: "pizza_doughs",
+  },
+  { 
+    id: "additional_pizza", 
+    label: "Adicionais (Integrado)", 
+    icon: "➕", 
+    color: "bg-teal-500",
+    bgLight: "bg-teal-50 border-teal-200 hover:bg-teal-100",
+    bgSelected: "bg-teal-100 border-teal-400",
+    description: "Puxa adicionais cadastrados na categoria pizza",
+    defaultTitle: "Deseja adicionar algo? ✨",
+    defaultDescription: "Turbine sua pizza com ingredientes extras!",
+    defaultButtonText: "Confirmar",
+    defaultButtonColor: "#3b82f6",
+    defaultSecondaryText: "Não, obrigado",
+    defaultIcon: "➕",
+    contentType: "additionals",
+  },
+];
+
+const PADRAO_TEMPLATES = [
   { 
     id: "drink", 
     label: "Bebidas", 
@@ -49,37 +119,7 @@ const MODAL_TEMPLATES = [
     defaultButtonColor: "#22c55e",
     defaultSecondaryText: "Sem Bebida",
     defaultIcon: "🥤",
-  },
-  { 
-    id: "edge", 
-    label: "Bordas (Integrado)", 
-    icon: "🍕", 
-    color: "bg-yellow-500",
-    bgLight: "bg-yellow-50 border-yellow-200 hover:bg-yellow-100",
-    bgSelected: "bg-yellow-100 border-yellow-400",
-    description: "Puxa bordas cadastradas com preços por tamanho",
-    defaultTitle: "Escolha a Borda",
-    defaultDescription: "Turbine sua pizza com uma borda recheada!",
-    defaultButtonText: "Confirmar",
-    defaultButtonColor: "#f97316",
-    defaultSecondaryText: "Sem Borda",
-    defaultIcon: "🧀",
-    contentType: "pizza_edges",
-  },
-  { 
-    id: "additional", 
-    label: "Adicionais", 
-    icon: "➕", 
-    color: "bg-teal-500",
-    bgLight: "bg-teal-50 border-teal-200 hover:bg-teal-100",
-    bgSelected: "bg-teal-100 border-teal-400",
-    description: "Sugere itens adicionais ao produto",
-    defaultTitle: "Deseja adicionar algo mais? ✨",
-    defaultDescription: "Turbine seu pedido com ingredientes extras!",
-    defaultButtonText: "Ver Adicionais",
-    defaultButtonColor: "#3b82f6",
-    defaultSecondaryText: "Não, obrigado",
-    defaultIcon: "➕",
+    contentType: "products",
   },
   { 
     id: "accompaniment", 
@@ -95,6 +135,23 @@ const MODAL_TEMPLATES = [
     defaultButtonColor: "#eab308",
     defaultSecondaryText: "Sem Acompanhamento",
     defaultIcon: "🍟",
+    contentType: "products",
+  },
+  { 
+    id: "additional", 
+    label: "Adicionais (Integrado)", 
+    icon: "➕", 
+    color: "bg-teal-500",
+    bgLight: "bg-teal-50 border-teal-200 hover:bg-teal-100",
+    bgSelected: "bg-teal-100 border-teal-400",
+    description: "Puxa adicionais cadastrados na categoria",
+    defaultTitle: "Deseja adicionar algo? ✨",
+    defaultDescription: "Turbine seu pedido com ingredientes extras!",
+    defaultButtonText: "Confirmar",
+    defaultButtonColor: "#3b82f6",
+    defaultSecondaryText: "Não, obrigado",
+    defaultIcon: "➕",
+    contentType: "additionals",
   },
   { 
     id: "custom", 
@@ -110,8 +167,12 @@ const MODAL_TEMPLATES = [
     defaultButtonColor: "#a855f7",
     defaultSecondaryText: "Não, obrigado",
     defaultIcon: "✨",
+    contentType: "products",
   },
 ];
+
+// All templates for lookup
+const ALL_TEMPLATES = [...PIZZA_TEMPLATES, ...PADRAO_TEMPLATES];
 
 // Cores pré-definidas para seleção rápida
 const BUTTON_COLORS = [
@@ -144,6 +205,7 @@ export default function UpsellModalEditorPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   
   // Form state
+  const [selectedModel, setSelectedModel] = useState<ModelType | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [formData, setFormData] = useState({
@@ -161,6 +223,10 @@ export default function UpsellModalEditorPage() {
     secondary_button_text: "",
     icon: "✨",
   });
+  
+  // Get templates based on selected model
+  const currentTemplates = selectedModel === "pizza" ? PIZZA_TEMPLATES : 
+                          selectedModel === "padrao" ? PADRAO_TEMPLATES : [];
 
   useEffect(() => {
     if (restaurantId) {
@@ -227,9 +293,14 @@ export default function UpsellModalEditorPage() {
     navigate("/dashboard/upsell-modals");
   };
 
+  const handleModelSelect = (model: ModelType) => {
+    setSelectedModel(model);
+    setSelectedTemplate(null); // Reset template when model changes
+  };
+
   const handleTemplateSelect = (templateId: string) => {
     setSelectedTemplate(templateId);
-    const template = MODAL_TEMPLATES.find(t => t.id === templateId);
+    const template = currentTemplates.find(t => t.id === templateId);
     if (template) {
       setFormData(prev => ({
         ...prev,
@@ -266,7 +337,7 @@ export default function UpsellModalEditorPage() {
 
   const canProceed = () => {
     switch (currentStep) {
-      case 1: return selectedTemplate !== null;
+      case 1: return selectedModel !== null && selectedTemplate !== null;
       case 2: return selectedCategories.length > 0;
       case 3: return formData.title.trim() && formData.button_text.trim();
       case 4: return formData.name.trim();
@@ -288,8 +359,9 @@ export default function UpsellModalEditorPage() {
     setSaving(true);
     try {
       // Determine content_type based on template
-      const template = MODAL_TEMPLATES.find(t => t.id === selectedTemplate);
-      const contentType = (template as any)?.contentType || "products";
+      const template = currentTemplates.find(t => t.id === selectedTemplate) || 
+                       ALL_TEMPLATES.find(t => t.id === selectedTemplate);
+      const contentType = template?.contentType || "products";
 
       const data = {
         store_id: restaurantId,
@@ -347,46 +419,101 @@ export default function UpsellModalEditorPage() {
     }
   };
 
-  const currentTemplate = MODAL_TEMPLATES.find(t => t.id === selectedTemplate);
+  const currentTemplate = currentTemplates.find(t => t.id === selectedTemplate) || 
+                         ALL_TEMPLATES.find(t => t.id === selectedTemplate);
 
-  // Step 1: Template selection
+  // Step 1: Model and Template selection
   const renderTemplateStep = () => (
     <div className="max-w-xl mx-auto">
-      <div className="mb-8">
+      {/* Model Selection */}
+      <div className="mb-6">
         <h2 className="text-xl font-semibold text-foreground mb-1">
-          Tipo de modal
+          Escolha o modelo
         </h2>
         <p className="text-sm text-muted-foreground">
-          Escolha um modelo para começar
+          Primeiro, selecione o tipo de categoria
         </p>
       </div>
 
-      <div className="space-y-1.5">
-        {MODAL_TEMPLATES.map((template) => (
-          <button
-            key={template.id}
-            type="button"
-            onClick={() => handleTemplateSelect(template.id)}
-            className={cn(
-              "w-full px-3 py-2.5 rounded-md border transition-all text-left flex items-center gap-3",
-              selectedTemplate === template.id
-                ? template.bgSelected
-                : template.bgLight
-            )}
-          >
-            <span className="text-lg">{template.icon}</span>
-            <div className="flex-1 min-w-0">
-              <span className="font-medium text-xs text-foreground">{template.label}</span>
-              <p className="text-[11px] text-muted-foreground truncate">
-                {template.description}
-              </p>
-            </div>
-            {selectedTemplate === template.id && (
-              <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-            )}
-          </button>
-        ))}
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <button
+          type="button"
+          onClick={() => handleModelSelect("pizza")}
+          className={cn(
+            "p-4 rounded-xl border-2 transition-all text-center",
+            selectedModel === "pizza"
+              ? "border-orange-400 bg-orange-50"
+              : "border-border hover:border-orange-200 hover:bg-orange-50/50"
+          )}
+        >
+          <span className="text-3xl mb-2 block">🍕</span>
+          <span className="font-semibold text-sm block">Modelo Pizza</span>
+          <p className="text-[10px] text-muted-foreground mt-1">
+            Bordas, massas, adicionais integrados
+          </p>
+        </button>
+        
+        <button
+          type="button"
+          onClick={() => handleModelSelect("padrao")}
+          className={cn(
+            "p-4 rounded-xl border-2 transition-all text-center",
+            selectedModel === "padrao"
+              ? "border-blue-400 bg-blue-50"
+              : "border-border hover:border-blue-200 hover:bg-blue-50/50"
+          )}
+        >
+          <span className="text-3xl mb-2 block">🍔</span>
+          <span className="font-semibold text-sm block">Modelo Padrão</span>
+          <p className="text-[10px] text-muted-foreground mt-1">
+            Bebidas, acompanhamentos, adicionais
+          </p>
+        </button>
       </div>
+
+      {/* Template Selection - Only show after model is selected */}
+      {selectedModel && (
+        <>
+          <div className="mb-4">
+            <h3 className="font-medium text-sm text-foreground mb-1">
+              Escolha o tipo de modal
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              {selectedModel === "pizza" 
+                ? "Opções integradas com dados da categoria pizza"
+                : "Opções para categorias padrão"
+              }
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            {currentTemplates.map((template) => (
+              <button
+                key={template.id}
+                type="button"
+                onClick={() => handleTemplateSelect(template.id)}
+                className={cn(
+                  "w-full px-3 py-2.5 rounded-md border transition-all text-left flex items-center gap-3",
+                  selectedTemplate === template.id
+                    ? template.bgSelected
+                    : template.bgLight
+                )}
+              >
+                <span className="text-lg">{template.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <span className="font-medium text-xs text-foreground">{template.label}</span>
+                  <p className="text-[11px] text-muted-foreground truncate">
+                    {template.description}
+                  </p>
+                </div>
+                {selectedTemplate === template.id && (
+                  <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                )}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 
