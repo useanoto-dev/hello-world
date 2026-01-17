@@ -476,94 +476,43 @@ export default function ComboUpsellModal({
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
           className="fixed inset-0 z-[60] bg-white flex flex-col"
         >
-          {/* Desktop Header */}
-          <header className="hidden lg:flex items-center justify-between px-6 py-4 border-b border-border bg-white sticky top-0 z-20">
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={onClose}
-                className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5 text-foreground" />
-              </button>
-              <span className="text-lg font-semibold text-foreground">{title}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={handleShare}
-                className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
-              >
-                <Share2 className="w-5 h-5 text-foreground" />
-              </button>
-            </div>
-          </header>
-
-          {/* Mobile Fixed Header */}
-          <div className="fixed top-0 inset-x-0 z-20 flex items-center justify-between p-4 lg:hidden">
+          {/* Simple Header - Both Desktop and Mobile */}
+          <header className="flex items-center justify-between px-4 py-3 border-b border-border bg-white sticky top-0 z-20">
             <button 
               onClick={onClose}
-              className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
+              className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-700" />
+              <ArrowLeft className="w-5 h-5 text-foreground" />
             </button>
+            <span className="text-base font-semibold text-foreground">{title}</span>
             <button 
               onClick={handleShare}
-              className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
+              className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
             >
-              <Share2 className="w-5 h-5 text-gray-700" />
+              <Share2 className="w-5 h-5 text-foreground" />
             </button>
-          </div>
+          </header>
 
-          {/* Scrollable Content */}
+          {/* Scrollable Content - Minimalist design without banner */}
           <main className="flex-1 overflow-y-auto pb-32 lg:pb-36">
-            {/* Mobile Hero Image Section */}
-            <div className="relative lg:hidden">
-              <div className="relative h-56 sm:h-72 bg-gray-900">
-                {sizeImageUrl ? (
-                  <img 
-                    src={sizeImageUrl} 
-                    alt={sizeName}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-200">
-                    <span className="text-8xl">🍕</span>
-                  </div>
-                )}
-                <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white via-white/80 to-transparent" />
-              </div>
-            </div>
-
             {/* Content */}
-            <div className="px-4 py-4 lg:max-w-2xl lg:mx-auto lg:px-8 lg:py-8">
+            <div className="px-4 py-4 lg:max-w-2xl lg:mx-auto lg:px-8">
               
-              {/* Desktop Product Hero */}
-              <div className="hidden lg:flex gap-6 mb-6 items-start">
-                <div className="w-44 h-44 rounded-2xl overflow-hidden flex-shrink-0">
-                  {sizeImageUrl ? (
-                    <img src={sizeImageUrl} alt={sizeName} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-200">
-                      <span className="text-5xl">🍕</span>
-                    </div>
+              {/* Description and size info */}
+              {(description || sizeName) && (
+                <div className="mb-4 text-center">
+                  {description && (
+                    <p className="text-sm text-muted-foreground">{description}</p>
+                  )}
+                  {sizeName && (
+                    <p className="text-xs text-muted-foreground mt-1">Tamanho {sizeName}</p>
                   )}
                 </div>
-                <div className="flex-1 min-w-0 pt-2">
-                  <h1 className="text-xl font-bold text-foreground leading-tight uppercase">{title}</h1>
-                  <p className="text-sm text-muted-foreground mt-2">{description}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Tamanho {sizeName}</p>
-                </div>
-              </div>
-
-              {/* Mobile Product Info */}
-              <div className="mb-5 lg:hidden">
-                <h1 className="text-2xl font-bold text-foreground leading-tight">{title}</h1>
-                <p className="text-sm text-muted-foreground mt-1">{description}</p>
-                <p className="text-xs text-muted-foreground mt-1">Tamanho {sizeName}</p>
-              </div>
+              )}
 
               {loading ? (
-                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {Array.from({ length: 8 }).map((_, i) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {Array.from({ length: 6 }).map((_, i) => (
                     <div key={i} className="h-14 bg-muted rounded-xl animate-pulse" />
                   ))}
                 </div>
@@ -573,7 +522,7 @@ export default function ComboUpsellModal({
                   <p className="text-sm text-muted-foreground">Nenhum item disponível</p>
                 </div>
               ) : (
-                <div className="mt-5 space-y-5">
+                <div className="space-y-5">
                   {/* Doughs Section */}
                   {showDoughs && doughs.length > 0 && (
                     <section>

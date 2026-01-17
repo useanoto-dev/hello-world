@@ -1017,11 +1017,8 @@ export default function StorefrontPage() {
 
     toast.success(drink ? "Pizza e bebida adicionadas!" : "Pizza adicionada ao carrinho!");
     
-    // IMPORTANT: Close the flavor drawer BEFORE opening the upsell modal
-    // Both use z-50, so we need to close the drawer first to see the modal
-    setShowPizzaFlavorDrawer(false);
-    
-    // Trigger upsell modal for pizza category
+    // Trigger upsell modal for pizza category - DON'T reset states yet, keep drawers open
+    // The combo modal opens ON TOP with higher z-index
     // States will be reset when upsell modal closes (in handleUpsellClose)
     setUpsellTriggerCategoryId(selectedPizzaSize.categoryId);
     setShowUpsellModal(true);
