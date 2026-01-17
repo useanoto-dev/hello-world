@@ -440,9 +440,9 @@ export default function ProductCustomizationModal({
           <div className="px-4 py-4 lg:max-w-2xl lg:mx-auto lg:px-8 lg:py-8">
             
             {/* Desktop Product Hero - Horizontal layout */}
-            <div className="hidden lg:flex gap-5 mb-6 p-5 bg-muted/30 rounded-2xl">
+            <div className="hidden lg:flex gap-5 mb-6">
               {/* Product Image */}
-              <div className="w-36 h-24 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+              <div className="w-40 h-28 rounded-xl overflow-hidden flex-shrink-0">
                 {product.image_url ? (
                   <img 
                     src={product.image_url} 
@@ -450,14 +450,14 @@ export default function ProductCustomizationModal({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                    <span className="text-3xl">🍔</span>
+                  <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-xl">
+                    <span className="text-4xl">🍔</span>
                   </div>
                 )}
               </div>
               
               {/* Product Info */}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 py-1">
                 <h1 className="text-lg font-bold text-foreground leading-tight uppercase">
                   {product.name}
                 </h1>
