@@ -335,7 +335,7 @@ export default function DynamicUpsellModal({
   }
 
   // If content_type is combo, render the ComboUpsellModal (full screen with edges + doughs + additionals)
-  if (modalConfig.content_type === "combo" && sizeId) {
+  if (modalConfig.content_type === "combo") {
     // Decode combo settings from secondary_button_text
     // Format: "text|edges:1|doughs:1|additionals:1"
     let showEdges = true, showDoughs = true, showAdditionals = true;
@@ -355,7 +355,7 @@ export default function DynamicUpsellModal({
         open={true}
         storeId={storeId}
         categoryId={triggerCategoryId}
-        sizeId={sizeId}
+        sizeId={sizeId || ""}
         sizeName={sizeName || ""}
         title={modalConfig.title}
         description={modalConfig.description || undefined}
