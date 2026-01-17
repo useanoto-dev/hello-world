@@ -1323,6 +1323,7 @@ export default function StorefrontPage() {
                               description: item.description || undefined,
                               image_url: item.image_url || size.image_url || undefined,
                             });
+                            toast.success("Adicionado ao carrinho!");
                           }
                         }}
                       />

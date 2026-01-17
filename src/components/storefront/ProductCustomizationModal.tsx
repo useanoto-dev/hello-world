@@ -416,10 +416,10 @@ export default function ProductCustomizationModal({
             : "bg-white border-gray-100 hover:border-gray-200"
         )}
       >
-        <div className="flex items-start justify-between gap-2">
+            <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <p className="font-semibold text-[12px] text-gray-900 leading-tight">{item.name}</p>
+              <p className="font-medium text-sm text-gray-900 leading-tight">{item.name}</p>
               {hasItemPromo && (
                 <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full bg-green-500/15 text-green-600 text-[9px] font-bold">
                   <Tag className="w-2 h-2" />
@@ -428,7 +428,7 @@ export default function ProductCustomizationModal({
               )}
             </div>
             {item.description && (
-              <p className="text-[10px] text-gray-400 leading-snug mt-0.5 line-clamp-2">
+              <p className="text-xs text-gray-500 leading-snug mt-0.5 line-clamp-2">
                 {item.description}
               </p>
             )}
@@ -509,20 +509,20 @@ export default function ProductCustomizationModal({
         const groupItems = items[group.id] || [];
         if (groupItems.length === 0) return null;
         
-        return (
-          <section key={group.id}>
-            <h3 className="text-[11px] font-bold text-gray-700 mb-1.5 flex items-center gap-1">
-              <span>📦</span> {group.name}
-              {group.is_required && <span className="text-red-500">*</span>}
-              <span className="text-gray-400 font-normal ml-1">
-                {group.selection_type === "single" 
-                  ? "(escolha 1)"
-                  : group.max_selections 
-                    ? `(até ${group.max_selections})`
-                    : "(ilimitado)"
-                }
-              </span>
-            </h3>
+          return (
+            <section key={group.id}>
+              <h3 className="text-sm font-bold text-gray-800 mb-2 flex items-center gap-1.5">
+                <span>📦</span> {group.name}
+                {group.is_required && <span className="text-red-500">*</span>}
+                <span className="text-gray-400 font-normal text-xs ml-1">
+                  {group.selection_type === "single" 
+                    ? "(escolha 1)"
+                    : group.max_selections 
+                      ? `(até ${group.max_selections})`
+                      : "(ilimitado)"
+                  }
+                </span>
+              </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
               {groupItems.map(item => (
                 <ItemCard key={item.id} item={item} group={group} />
@@ -547,8 +547,8 @@ export default function ProductCustomizationModal({
         exit={{ opacity: 0, x: -50 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
       >
-        <div className="bg-amber-50 border border-amber-100 rounded-xl py-2 px-4 text-center mb-4">
-          <p className="text-[11px] font-medium text-gray-600">
+        <div className="bg-amber-50 border border-amber-100 rounded-xl py-2.5 px-4 text-center mb-4">
+          <p className="text-sm font-medium text-gray-700">
             {currentGroup.selection_type === "single" 
               ? "Escolha 1 opção"
               : currentGroup.max_selections 
@@ -562,7 +562,7 @@ export default function ProductCustomizationModal({
         {groupItems.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-3xl mb-1">📦</p>
-            <p className="text-[11px] text-gray-400">Nenhuma opção disponível</p>
+            <p className="text-sm text-gray-400">Nenhuma opção disponível</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
@@ -585,22 +585,22 @@ export default function ProductCustomizationModal({
       >
         {/* Header - Same style as Pizza Flavor */}
         <header className="flex-shrink-0 bg-white border-b border-gray-100">
-          <div className="max-w-5xl mx-auto px-4 h-11 flex items-center gap-2">
+          <div className="max-w-5xl mx-auto px-4 h-12 flex items-center gap-2">
             <button 
               onClick={handleBack} 
               className="p-1 -ml-1 rounded-lg hover:bg-gray-100 transition-colors"
             >
-              <ArrowLeft className="w-4 h-4 text-gray-600" />
+              <ArrowLeft className="w-5 h-5 text-gray-600" />
             </button>
             <div className="flex-1 min-w-0">
-              <span className="font-semibold text-[13px] text-gray-900">
+              <span className="font-semibold text-base text-gray-900">
                 {category.use_sequential_flow && currentGroup 
                   ? currentGroup.name 
                   : product.name
                 }
               </span>
               {category.use_sequential_flow && sequentialGroups.length > 0 && (
-                <span className="text-[11px] text-gray-400 ml-2">
+                <span className="text-xs text-gray-400 ml-2">
                   Passo {safeCurrentStep + 1} de {sequentialGroups.length}
                 </span>
               )}
@@ -666,9 +666,9 @@ export default function ProductCustomizationModal({
           </div>
         </main>
 
-        {/* Footer - Same style as Pizza Flavor */}
+        {/* Footer - Same style as Pizza Flavor - Only shows when something is selected */}
         <AnimatePresence>
-          {(canProceed || groups.length === 0) && (
+          {totalSelections > 0 && (
             <motion.footer
               initial={{ y: 60, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
