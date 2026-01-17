@@ -1,6 +1,6 @@
 // Standard Category Editor - Universal model for any business type
 import { useState, useEffect } from "react";
-import { ArrowLeft, Plus, Trash2, AlertCircle, GripVertical, ChevronDown, ChevronUp, Layers, IceCream, Sandwich, UtensilsCrossed, Coffee, Sparkles, Check, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, AlertCircle, GripVertical, ChevronDown, ChevronUp, Layers, IceCream, Sandwich, UtensilsCrossed, Coffee, Sparkles, Check, Image as ImageIcon, GlassWater, LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -258,6 +258,50 @@ const BUSINESS_TEMPLATES: BusinessTemplate[] = [
           { name: "Chantilly", price: 2 },
           { name: "Canela", price: 1 },
           { name: "Chocolate extra", price: 3 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "bebidas",
+    name: "Bebidas",
+    icon: <GlassWater className="w-6 h-6" />,
+    description: "Refrigerantes, sucos, água e drinks",
+    color: "bg-cyan-500/10 border-cyan-500/30 text-cyan-600",
+    exampleCategories: ["Refrigerantes", "Sucos", "Água", "Cervejas", "Drinks"],
+    hasSizes: true,
+    sizes: [
+      { name: "Lata 350ml", price: 6 },
+      { name: "600ml", price: 8 },
+      { name: "1 Litro", price: 10 },
+      { name: "2 Litros", price: 14 },
+    ],
+    optionGroups: [
+      {
+        name: "Temperatura",
+        description: "Como prefere sua bebida?",
+        isRequired: false,
+        minSelections: 0,
+        maxSelections: 1,
+        selectionType: "single",
+        freeItems: true,
+        items: [
+          { name: "Gelada", price: 0 },
+          { name: "Natural", price: 0 },
+        ],
+      },
+      {
+        name: "Adicionais",
+        description: "Quer algo mais?",
+        isRequired: false,
+        minSelections: 0,
+        maxSelections: 3,
+        selectionType: "multiple",
+        freeItems: false,
+        items: [
+          { name: "Gelo extra", price: 0 },
+          { name: "Limão", price: 1 },
+          { name: "Canudo biodegradável", price: 0.5 },
         ],
       },
     ],
@@ -875,6 +919,10 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
   const [hasOptionGroups, setHasOptionGroups] = useState<"yes" | "no">("no");
   const [optionGroups, setOptionGroups] = useState<OptionGroup[]>([]);
 
+  // Display settings
+  const [displayMode, setDisplayMode] = useState<"cards" | "list">("cards");
+  const [allowQuantitySelector, setAllowQuantitySelector] = useState(true);
+
   // Sensors for drag and drop
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -894,7 +942,7 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
 
         const { data: categoryData, error: categoryError } = await supabase
           .from("categories")
-          .select("id, name, description, is_active")
+          .select("id, name, description, is_active, display_mode, allow_quantity_selector")
           .eq("id", editId)
           .single();
 
@@ -905,6 +953,8 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
         setIsPromotion(!!categoryData.description);
         setPromotionMessage(categoryData.description ?? "");
         setAvailability(categoryData.is_active ? "always" : "paused");
+        setDisplayMode((categoryData.display_mode as "cards" | "list") ?? "cards");
+        setAllowQuantitySelector(categoryData.allow_quantity_selector ?? true);
 
         const [{ data: sizesData, error: sizesError }, { data: groupsData, error: groupsError }] = await Promise.all([
           supabase
@@ -1188,6 +1238,8 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
         description: isPromotion ? promotionMessage : null,
         is_active: availability !== "paused",
         category_type: "standard" as const,
+        display_mode: displayMode,
+        allow_quantity_selector: allowQuantitySelector,
       };
 
       let categoryId = editId ?? null;
@@ -1589,6 +1641,56 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
                     </button>
                   </div>
                 )}
+              </div>
+
+              {/* Display Mode */}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold text-foreground">Modo de exibição no cardápio</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setDisplayMode("cards")}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
+                      displayMode === "cards"
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:border-primary/50"
+                    )}
+                  >
+                    <LayoutGrid className={cn("w-8 h-8", displayMode === "cards" ? "text-primary" : "text-muted-foreground")} />
+                    <span className={cn("text-sm font-medium", displayMode === "cards" ? "text-primary" : "text-foreground")}>Cards (Grade)</span>
+                    <span className="text-xs text-muted-foreground text-center">Itens em formato de cards lado a lado</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDisplayMode("list")}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
+                      displayMode === "list"
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:border-primary/50"
+                    )}
+                  >
+                    <List className={cn("w-8 h-8", displayMode === "list" ? "text-primary" : "text-muted-foreground")} />
+                    <span className={cn("text-sm font-medium", displayMode === "list" ? "text-primary" : "text-foreground")}>Lista</span>
+                    <span className="text-xs text-muted-foreground text-center">Itens empilhados verticalmente</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Quantity Selector Option */}
+              <div className="flex items-center justify-between p-3 bg-muted rounded-lg border border-border">
+                <div>
+                  <Label className="text-sm font-medium text-foreground">Permitir seleção de quantidade</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Exibir botões +/- para o cliente ajustar a quantidade ao adicionar
+                  </p>
+                </div>
+                <Switch
+                  checked={allowQuantitySelector}
+                  onCheckedChange={setAllowQuantitySelector}
+                  className="data-[state=checked]:bg-primary"
+                />
               </div>
             </div>
           )}
