@@ -772,98 +772,84 @@ export default function DashboardLayout() {
             ))}
           </nav>
 
-          {/* Footer - Fixed Bottom */}
+          {/* Footer - Fixed Bottom - Compact */}
           <div 
             className={cn(
-              "px-2 py-3 space-y-1 flex-shrink-0 overflow-hidden",
-              sidebarCollapsed && "flex flex-col items-center",
-              "border-t border-gray-900/10"
+              "flex-shrink-0 overflow-hidden border-t border-gray-900/10",
+              sidebarCollapsed ? "px-2 py-2" : "px-3 py-2"
             )}
           >
-            {/* Theme Toggle */}
-            <Tooltip delayDuration={0}>
-              <TooltipTrigger asChild>
-                <div>
-                  <ThemeToggle variant="sidebar" collapsed={sidebarCollapsed} />
-                </div>
-              </TooltipTrigger>
-              {sidebarCollapsed && (
-                <TooltipContent side="right" className="text-xs font-medium">Tema</TooltipContent>
-              )}
-            </Tooltip>
-
-            {/* Store Link */}
-            {store && (
+            {/* Compact Footer Actions Row */}
+            <div className={cn(
+              "flex items-center",
+              sidebarCollapsed ? "flex-col gap-2" : "justify-between"
+            )}>
+              {/* Theme Toggle - Compact */}
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
-                  <a
-                    href={`/cardapio/${store.slug}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cn(
-                      "flex items-center gap-3 text-[13px] font-medium text-gray-800 rounded-lg hover:bg-black/5 transition-all",
-                      sidebarCollapsed ? "p-2 justify-center" : "px-3 py-2.5"
-                    )}
-                  >
-                    <div className={cn(
-                      "flex items-center justify-center rounded-lg bg-white/70 text-gray-700",
-                      sidebarCollapsed ? "w-9 h-9" : "w-8 h-8"
-                    )}>
-                      <ExternalLink className="w-4 h-4" />
-                    </div>
-                    <AnimatePresence mode="wait">
-                      {!sidebarCollapsed && (
-                        <motion.span
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                        >
-                          Ver cardápio
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                  </a>
+                  <div>
+                    <ThemeToggle variant="sidebar" collapsed={sidebarCollapsed} compact />
+                  </div>
                 </TooltipTrigger>
                 {sidebarCollapsed && (
-                  <TooltipContent side="right" className="text-xs font-medium">Ver cardápio</TooltipContent>
+                  <TooltipContent side="right" className="text-xs font-medium">Tema</TooltipContent>
                 )}
               </Tooltip>
-            )}
 
-            {/* Logout */}
-            <Tooltip delayDuration={0}>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={handleLogout}
-                  className={cn(
-                    "flex items-center gap-3 text-[13px] font-medium text-gray-800 w-full rounded-lg hover:bg-black/5 transition-all",
-                    sidebarCollapsed ? "p-2 justify-center" : "px-3 py-2.5"
-                  )}
-                >
-                  <div className={cn(
-                    "flex items-center justify-center rounded-lg bg-red-500/20 text-red-600",
-                    sidebarCollapsed ? "w-9 h-9" : "w-8 h-8"
-                  )}>
-                    <LogOut className="w-4 h-4" />
-                  </div>
-                  <AnimatePresence mode="wait">
-                    {!sidebarCollapsed && (
-                      <motion.span
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="text-red-600"
-                      >
-                        Sair
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </button>
-              </TooltipTrigger>
-              {sidebarCollapsed && (
-                <TooltipContent side="right" className="text-xs font-medium">Sair</TooltipContent>
+              {/* Store Link - Compact */}
+              {store && !sidebarCollapsed && (
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <a
+                      href={`/cardapio/${store.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-[11px] font-medium text-gray-600 hover:text-gray-800 transition-colors"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Cardápio</span>
+                    </a>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs font-medium">Ver cardápio</TooltipContent>
+                </Tooltip>
               )}
-            </Tooltip>
+
+              {/* Store Link - Collapsed */}
+              {store && sidebarCollapsed && (
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <a
+                      href={`/cardapio/${store.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center w-8 h-8 rounded-md text-gray-600 hover:text-gray-800 hover:bg-black/5 transition-all"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="text-xs font-medium">Ver cardápio</TooltipContent>
+                </Tooltip>
+              )}
+
+              {/* Logout - Compact */}
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleLogout}
+                    className={cn(
+                      "flex items-center transition-all",
+                      sidebarCollapsed 
+                        ? "justify-center w-8 h-8 rounded-md text-red-500 hover:text-red-600 hover:bg-red-500/10" 
+                        : "gap-1.5 text-[11px] font-medium text-red-500 hover:text-red-600"
+                    )}
+                  >
+                    <LogOut className={sidebarCollapsed ? "w-4 h-4" : "w-3.5 h-3.5"} />
+                    {!sidebarCollapsed && <span>Sair</span>}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side={sidebarCollapsed ? "right" : "top"} className="text-xs font-medium">Sair</TooltipContent>
+              </Tooltip>
+            </div>
           </div>
         </motion.aside>
         )}
