@@ -123,6 +123,15 @@ async function fetchDoughsWithPrices(categoryId: string, sizeId: string) {
 }
 
 async function fetchAdditionals(storeId: string, categoryId: string) {
+  // Fetch groups, filtering out "Borda", "Bordas", "Massa", "Massas", "Sabor", "Sabores"
+  // since those are handled by pizza_edges/pizza_doughs/pizza_flavors tables
+  const EXCLUDED_GROUP_NAMES = [
+    "borda", "bordas", 
+    "massa", "massas", 
+    "sabor", "sabores",
+    "tamanho", "tamanhos"
+  ];
+
   const { data: groups, error: groupsError } = await supabase
     .from("category_option_groups")
     .select("id, name")
@@ -135,8 +144,15 @@ async function fetchAdditionals(storeId: string, categoryId: string) {
   if (groupsError) throw groupsError;
   if (!groups || groups.length === 0) return [];
 
-  const groupIds = groups.map(g => g.id);
-  const groupMap = new Map(groups.map(g => [g.id, g.name]));
+  // Filter out groups that are handled by dedicated pizza tables
+  const filteredGroups = groups.filter(g => 
+    !EXCLUDED_GROUP_NAMES.includes(g.name.toLowerCase().trim())
+  );
+
+  if (filteredGroups.length === 0) return [];
+
+  const groupIds = filteredGroups.map(g => g.id);
+  const groupMap = new Map(filteredGroups.map(g => [g.id, g.name]));
 
   const { data: items, error: itemsError } = await supabase
     .from("category_option_items")
