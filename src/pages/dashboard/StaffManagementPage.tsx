@@ -66,7 +66,6 @@ interface StaffMember {
   created_at: string;
   last_login_at: string | null;
   created_by: string | null;
-  password_hash?: string | null;
   permissions?: StaffPermissions;
 }
 
@@ -128,7 +127,7 @@ export default function StaffManagementPage() {
       const { data, error } = await supabase
         .from("store_staff")
         .select(`
-          *,
+          id, name, cpf, role, is_active, is_deleted, created_at, last_login_at, created_by,
           permissions:staff_permissions(*)
         `)
         .eq("store_id", restaurantId)
@@ -145,36 +144,27 @@ export default function StaffManagementPage() {
     enabled: !!restaurantId,
   });
 
-  // Create staff mutation
+  // Create staff mutation - uses edge function for secure password hashing
   const createStaffMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       if (!restaurantId) throw new Error("Restaurante não encontrado");
       
-      // Create staff member with password
-      const { data: newStaff, error } = await supabase
-        .from("store_staff")
-        .insert({
+      // Use edge function for secure password hashing
+      const { data: result, error } = await supabase.functions.invoke('staff-auth', {
+        body: { 
           store_id: restaurantId,
           name: data.name,
           cpf: data.cpf.replace(/\D/g, ""),
           role: data.role,
-          password_hash: data.password, // In production, hash this server-side
-        })
-        .select()
-        .single();
-      
-      if (error) throw error;
-      
-      // Log audit
-      await supabase.from("audit_logs").insert({
-        store_id: restaurantId,
-        action: "CREATE_USER",
-        module: "staff",
-        record_id: newStaff.id,
-        details: { name: data.name, role: data.role },
+          password: data.password
+        },
+        headers: { 'Content-Type': 'application/json' }
       });
+
+      if (error) throw error;
+      if (result?.error) throw new Error(result.error);
       
-      return { staff: newStaff };
+      return { staff: result.staff };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["store-staff"] });
@@ -183,32 +173,50 @@ export default function StaffManagementPage() {
       toast.success("Usuário criado com sucesso!");
     },
     onError: (error: any) => {
-      if (error.message?.includes("duplicate")) {
+      if (error.message?.includes("duplicate") || error.message?.includes("CPF já cadastrado")) {
         toast.error("CPF já cadastrado para esta loja");
       } else {
-        toast.error("Erro ao criar usuário");
+        toast.error(error.message || "Erro ao criar usuário");
       }
     },
   });
 
-  // Update staff mutation
+  // Update staff mutation - uses edge function for password updates
   const updateStaffMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<StaffMember> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Partial<StaffMember> & { password?: string } }) => {
       if (!restaurantId) throw new Error("Restaurante não encontrado");
       
-      const { error } = await supabase
-        .from("store_staff")
-        .update(data)
-        .eq("id", id);
+      // If password is being updated, use edge function
+      if (data.password && data.password.length >= 6) {
+        const { data: result, error: pwError } = await supabase.functions.invoke('staff-auth', {
+          body: { staff_id: id, password: data.password },
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (pwError) throw pwError;
+        if (result?.error) throw new Error(result.error);
+      }
       
-      if (error) throw error;
+      // Update other fields (name, role) directly
+      const updateData: Record<string, unknown> = {};
+      if (data.name) updateData.name = data.name;
+      if (data.role) updateData.role = data.role;
+      
+      if (Object.keys(updateData).length > 0) {
+        const { error } = await supabase
+          .from("store_staff")
+          .update(updateData)
+          .eq("id", id);
+        
+        if (error) throw error;
+      }
       
       await (supabase.from("audit_logs") as any).insert({
         store_id: restaurantId,
         action: "UPDATE_USER",
         module: "staff",
         record_id: id,
-        details: data as Record<string, unknown>,
+        details: { name: data.name, role: data.role, password_changed: !!data.password },
       });
     },
     onSuccess: () => {
@@ -217,8 +225,8 @@ export default function StaffManagementPage() {
       setSelectedStaff(null);
       toast.success("Usuário atualizado!");
     },
-    onError: () => {
-      toast.error("Erro ao atualizar usuário");
+    onError: (error: any) => {
+      toast.error(error.message || "Erro ao atualizar usuário");
     },
   });
 
@@ -435,8 +443,8 @@ export default function StaffManagementPage() {
                       {formatCPF(staff.cpf)}
                     </TableCell>
                     <TableCell className="font-mono text-sm">
-                      <span className="bg-muted px-2 py-1 rounded text-xs">
-                        {staff.password_hash || "Não definida"}
+                      <span className="bg-muted px-2 py-1 rounded text-xs text-muted-foreground">
+                        ••••••
                       </span>
                     </TableCell>
                     <TableCell>
@@ -663,11 +671,11 @@ export default function StaffManagementPage() {
                   role: formData.role 
                 };
                 if (formData.password && formData.password.length >= 6) {
-                  updateData.password_hash = formData.password;
+                  updateData.password = formData.password;
                 }
                 updateStaffMutation.mutate({
                   id: selectedStaff.id,
-                  data: updateData as Partial<StaffMember>
+                  data: updateData as Partial<StaffMember> & { password?: string }
                 });
               }}
               disabled={updateStaffMutation.isPending || (formData.password.length > 0 && formData.password.length < 6)}
