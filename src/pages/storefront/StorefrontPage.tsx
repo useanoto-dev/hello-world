@@ -28,6 +28,7 @@ import { LoyaltyWidget } from "@/components/storefront/LoyaltyWidget";
 import { PizzaSizeGrid } from "@/components/storefront/PizzaSizeGrid";
 import { PizzaFlavorSelectionDrawer } from "@/components/storefront/PizzaFlavorSelectionDrawer";
 import { PizzaDoughSelectionDrawer } from "@/components/storefront/PizzaDoughSelectionDrawer";
+import { StandardCategoryGrid } from "@/components/storefront/StandardCategoryGrid";
 import { useFavorites } from "@/hooks/useFavorites";
 import { parseSchedule, isStoreOpenNow, getNextOpeningTime } from "@/lib/scheduleUtils";
 import { toast } from "sonner";
@@ -144,6 +145,8 @@ interface Category {
   has_base_product: boolean | null;
   category_type: string | null;
   show_flavor_prices?: boolean;
+  display_mode?: "cards" | "list";
+  allow_quantity_selector?: boolean;
 }
 
 interface Product {
@@ -746,6 +749,9 @@ export default function StorefrontPage() {
   }, [categories, effectiveCategory]);
 
   const isPizzaCategory = activeCategoryData?.category_type === "pizza";
+  
+  // Check if current category is a standard category (has standard_sizes)
+  const isStandardCategory = effectiveCategory ? standardCategoryIds.has(effectiveCategory) : false;
 
   // Define handleSearch before early returns to avoid hook issues
   const handleSearch = useCallback((query: string) => {
@@ -1273,6 +1279,52 @@ export default function StorefrontPage() {
                         categoryId={effectiveCategory}
                         storeId={store.id}
                         onSizeSelect={handlePizzaSizeSelect}
+                      />
+                    ) : isStandardCategory && !searchQuery && effectiveCategory && store ? (
+                      <StandardCategoryGrid
+                        categoryId={effectiveCategory}
+                        storeId={store.id}
+                        displayMode={activeCategoryData?.display_mode}
+                        allowQuantitySelector={activeCategoryData?.allow_quantity_selector}
+                        onItemSelect={(item, size, price, quantity) => {
+                          // Check if category has option groups for customization
+                          const category = categories.find(c => c.id === effectiveCategory);
+                          if (category && categoryHasOptions.has(category.id)) {
+                            // Open customization modal
+                            const productForModal: Product = {
+                              id: `${item.id}-${size.id}`,
+                              name: `${size.name} - ${item.name}`,
+                              description: item.description,
+                              price: price,
+                              promotional_price: null,
+                              image_url: item.image_url || size.image_url || category.image_url,
+                              category_id: category.id,
+                              is_featured: false,
+                            };
+                            setSelectedProduct(productForModal);
+                            setSelectedCategory(category);
+                            setPreselectedOptionId(null);
+                            setShowCustomizationModal(true);
+                          } else {
+                            // No customization - add directly to cart
+                            if (!isStoreOpen) {
+                              toast.error("Estabelecimento fechado", {
+                                description: "Não é possível adicionar itens ao carrinho no momento.",
+                              });
+                              return;
+                            }
+                            const category = categories.find(c => c.id === effectiveCategory);
+                            addToCart({
+                              id: `${item.id}-${size.id}-${Date.now()}`,
+                              name: `${size.name}${item.name !== size.name ? ` - ${item.name}` : ''}`,
+                              price: price,
+                              quantity: quantity || 1,
+                              category: category?.name || "Produto",
+                              description: item.description || undefined,
+                              image_url: item.image_url || size.image_url || undefined,
+                            });
+                          }
+                        }}
                       />
                     ) : (
                       <ProductGrid
