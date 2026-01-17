@@ -380,34 +380,34 @@ export default function UpsellModalEditorPage() {
 
   // Step 2: Category selection
   const renderCategoriesStep = () => (
-    <div className="max-w-2xl mx-auto">
-      <div className="text-center mb-6">
-        <h2 className="text-lg font-semibold text-foreground mb-1">
+    <div className="max-w-xl mx-auto">
+      <div className="mb-4">
+        <h2 className="text-sm font-semibold text-foreground mb-0.5">
           Onde o modal aparece?
         </h2>
-        <p className="text-sm text-muted-foreground">
-          Selecione as categorias que disparam este modal após adicionar um item
+        <p className="text-xs text-muted-foreground">
+          Selecione as categorias que disparam este modal
         </p>
       </div>
 
       {currentTemplate && (
-        <div className="p-4 rounded-xl bg-muted/50 border border-border/50 flex items-center gap-3 mb-6">
+        <div className="p-2.5 rounded-lg bg-muted/40 border border-border/40 flex items-center gap-2.5 mb-4">
           <div className={cn(
-            "w-10 h-10 rounded-xl flex items-center justify-center text-white text-xl",
+            "w-8 h-8 rounded-lg flex items-center justify-center text-white text-base",
             currentTemplate.color
           )}>
             {currentTemplate.icon}
           </div>
-          <div>
-            <span className="text-sm font-semibold">{currentTemplate.label}</span>
-            <p className="text-xs text-muted-foreground">{currentTemplate.description}</p>
+          <div className="min-w-0">
+            <span className="text-xs font-semibold block">{currentTemplate.label}</span>
+            <p className="text-[10px] text-muted-foreground truncate">{currentTemplate.description}</p>
           </div>
         </div>
       )}
 
-      <div className="space-y-2 max-h-[400px] overflow-y-auto">
+      <div className="space-y-1.5 max-h-[320px] overflow-y-auto pr-1">
         {categories.length === 0 ? (
-          <div className="text-center py-10 text-muted-foreground text-sm">
+          <div className="text-center py-8 text-muted-foreground text-xs">
             Nenhuma categoria ativa no cardápio
           </div>
         ) : (
@@ -415,21 +415,22 @@ export default function UpsellModalEditorPage() {
             <label
               key={category.id}
               className={cn(
-                "flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all",
+                "flex items-center gap-3 px-3 py-2 rounded-lg border cursor-pointer transition-all",
                 selectedCategories.includes(category.id)
                   ? "border-primary bg-primary/5"
-                  : "border-border hover:border-muted-foreground/30"
+                  : "border-border/60 hover:border-muted-foreground/40 hover:bg-muted/30"
               )}
             >
               <Checkbox
                 checked={selectedCategories.includes(category.id)}
                 onCheckedChange={() => toggleCategory(category.id)}
+                className="h-4 w-4"
               />
-              <span className="text-2xl">{category.icon || "📦"}</span>
+              <span className="text-lg">{category.icon || "📦"}</span>
               <div className="flex-1 min-w-0">
-                <span className="text-sm font-medium block truncate">{category.name}</span>
+                <span className="text-xs font-medium block truncate">{category.name}</span>
                 {category.category_type && (
-                  <span className="text-xs text-muted-foreground capitalize">
+                  <span className="text-[10px] text-muted-foreground capitalize">
                     {category.category_type === "pizza" ? "Pizza" : "Padrão"}
                   </span>
                 )}
@@ -440,7 +441,7 @@ export default function UpsellModalEditorPage() {
       </div>
 
       {selectedCategories.length > 0 && (
-        <p className="text-sm text-muted-foreground text-center mt-4">
+        <p className="text-[11px] text-muted-foreground text-center mt-3">
           {selectedCategories.length} categoria{selectedCategories.length > 1 ? 's' : ''} selecionada{selectedCategories.length > 1 ? 's' : ''}
         </p>
       )}
@@ -449,32 +450,32 @@ export default function UpsellModalEditorPage() {
 
   // Step 3: Appearance
   const renderAppearanceStep = () => (
-    <div className="max-w-3xl mx-auto">
-      <div className="text-center mb-6">
-        <h2 className="text-lg font-semibold text-foreground mb-1">
+    <div className="max-w-2xl mx-auto">
+      <div className="mb-4">
+        <h2 className="text-sm font-semibold text-foreground mb-0.5">
           Personalize a aparência
         </h2>
-        <p className="text-sm text-muted-foreground">
-          Configure como o modal será exibido para o cliente
+        <p className="text-xs text-muted-foreground">
+          Configure como o modal será exibido
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Preview */}
-        <div className="bg-gradient-to-b from-muted/30 to-muted/50 rounded-2xl p-6 border border-border/50">
-          <p className="text-xs text-muted-foreground mb-4 text-center">Prévia do modal</p>
-          <div className="bg-background rounded-xl shadow-lg p-6 text-center">
-            <span className="text-5xl mb-4 block">{formData.icon}</span>
-            <h4 className="font-bold text-base mb-2">{formData.title || "Título do modal"}</h4>
-            <p className="text-xs text-muted-foreground mb-4">{formData.description || "Descrição"}</p>
-            <div className="space-y-2">
+        <div className="bg-gradient-to-b from-muted/20 to-muted/40 rounded-lg p-4 border border-border/40">
+          <p className="text-[10px] text-muted-foreground mb-3 text-center uppercase tracking-wide">Prévia</p>
+          <div className="bg-background rounded-lg shadow-md p-4 text-center">
+            <span className="text-3xl mb-2 block">{formData.icon}</span>
+            <h4 className="font-semibold text-sm mb-1">{formData.title || "Título do modal"}</h4>
+            <p className="text-[11px] text-muted-foreground mb-3">{formData.description || "Descrição"}</p>
+            <div className="space-y-1.5">
               <button 
-                className="w-full py-3 rounded-xl text-white text-sm font-semibold"
+                className="w-full py-2 rounded-lg text-white text-xs font-semibold"
                 style={{ backgroundColor: formData.button_color }}
               >
                 + {formData.button_text || "Botão principal"}
               </button>
-              <button className="w-full py-2.5 rounded-xl border-2 border-border text-sm font-medium">
+              <button className="w-full py-1.5 rounded-lg border border-border text-xs font-medium">
                 {formData.secondary_button_text || "Botão secundário"}
               </button>
             </div>
@@ -482,67 +483,70 @@ export default function UpsellModalEditorPage() {
         </div>
 
         {/* Form */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Icon */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Ícone (emoji)</Label>
+          <div className="space-y-1">
+            <Label className="text-xs font-medium">Ícone (emoji)</Label>
             <Input
               placeholder="🥤"
               value={formData.icon}
               onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-              className="text-2xl h-12"
+              className="text-xl h-9"
               maxLength={4}
             />
           </div>
 
           {/* Title */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Título</Label>
+          <div className="space-y-1">
+            <Label className="text-xs font-medium">Título</Label>
             <Input
               placeholder="Que tal uma bebida gelada? 😎"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="h-8 text-sm"
             />
           </div>
 
           {/* Description */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Descrição</Label>
+          <div className="space-y-1">
+            <Label className="text-xs font-medium">Descrição</Label>
             <Textarea
               placeholder="Complete sua experiência com uma bebida refrescante!"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={2}
+              className="text-sm resize-none"
             />
           </div>
 
           {/* Button Text */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Texto do botão principal</Label>
+          <div className="space-y-1">
+            <Label className="text-xs font-medium">Texto do botão principal</Label>
             <Input
               placeholder="Escolher Bebida"
               value={formData.button_text}
               onChange={(e) => setFormData({ ...formData, button_text: e.target.value })}
+              className="h-8 text-sm"
             />
           </div>
 
           {/* Button Color */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium flex items-center gap-2">
-              <Palette className="w-4 h-4" />
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium flex items-center gap-1.5">
+              <Palette className="w-3 h-3" />
               Cor do botão
             </Label>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {BUTTON_COLORS.map((color) => (
                 <button
                   key={color.value}
                   type="button"
                   onClick={() => setFormData({ ...formData, button_color: color.value })}
                   className={cn(
-                    "w-10 h-10 rounded-full border-2 transition-all",
+                    "w-7 h-7 rounded-full border-2 transition-all",
                     color.class,
                     formData.button_color === color.value
-                      ? "border-foreground scale-110 ring-2 ring-primary/30"
+                      ? "border-foreground scale-110 ring-2 ring-primary/20"
                       : "border-transparent hover:scale-105"
                   )}
                   title={color.label}
@@ -552,12 +556,13 @@ export default function UpsellModalEditorPage() {
           </div>
 
           {/* Secondary Button Text */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Texto do botão secundário</Label>
+          <div className="space-y-1">
+            <Label className="text-xs font-medium">Texto do botão secundário</Label>
             <Input
               placeholder="Sem Bebida"
               value={formData.secondary_button_text}
               onChange={(e) => setFormData({ ...formData, secondary_button_text: e.target.value })}
+              className="h-8 text-sm"
             />
           </div>
         </div>
@@ -567,39 +572,40 @@ export default function UpsellModalEditorPage() {
 
   // Step 4: Settings
   const renderSettingsStep = () => (
-    <div className="max-w-2xl mx-auto">
-      <div className="text-center mb-6">
-        <h2 className="text-lg font-semibold text-foreground mb-1">
+    <div className="max-w-xl mx-auto">
+      <div className="mb-4">
+        <h2 className="text-sm font-semibold text-foreground mb-0.5">
           Configurações finais
         </h2>
-        <p className="text-sm text-muted-foreground">
-          Defina o comportamento e opções adicionais
+        <p className="text-xs text-muted-foreground">
+          Defina o comportamento do modal
         </p>
       </div>
 
-      <div className="bg-card rounded-xl border border-border p-6 space-y-6">
+      <div className="bg-card rounded-lg border border-border/60 p-4 space-y-4">
         {/* Name */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">Nome do modal (interno)</Label>
+        <div className="space-y-1">
+          <Label className="text-xs font-medium">Nome do modal (interno)</Label>
           <Input
             placeholder="Ex: Bebidas após Pizza"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            className="h-8 text-sm"
           />
-          <p className="text-xs text-muted-foreground">
-            Usado apenas para identificação no painel administrativo
+          <p className="text-[10px] text-muted-foreground">
+            Usado apenas para identificação no painel
           </p>
         </div>
 
         {/* Target Category */}
         {(selectedTemplate === "drink" || selectedTemplate === "custom" || selectedTemplate === "accompaniment") && (
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Sugerir produtos de qual categoria?</Label>
+          <div className="space-y-1">
+            <Label className="text-xs font-medium">Sugerir produtos de qual categoria?</Label>
             <Select
               value={formData.target_category_id || "auto"}
               onValueChange={(v) => setFormData({ ...formData, target_category_id: v === "auto" ? "" : v })}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-8 text-sm">
                 <SelectValue placeholder="Sugestões automáticas" />
               </SelectTrigger>
               <SelectContent>
@@ -618,14 +624,14 @@ export default function UpsellModalEditorPage() {
         )}
 
         {/* Toggle options */}
-        <div className="space-y-4 pt-4 border-t">
+        <div className="space-y-3 pt-3 border-t border-border/40">
           {selectedTemplate !== "edge" && (
             <>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-sm font-medium">Adicionar rápido</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Permite adicionar produtos diretamente do modal
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <Label className="text-xs font-medium">Adicionar rápido</Label>
+                  <p className="text-[10px] text-muted-foreground">
+                    Adicionar produtos diretamente do modal
                   </p>
                 </div>
                 <Switch
@@ -633,16 +639,17 @@ export default function UpsellModalEditorPage() {
                   onCheckedChange={(checked) => 
                     setFormData({ ...formData, show_quick_add: checked })
                   }
+                  className="scale-90"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Máximo de produtos a exibir</Label>
+              <div className="flex items-center justify-between gap-4">
+                <Label className="text-xs font-medium">Máximo de produtos</Label>
                 <Select
                   value={formData.max_products.toString()}
                   onValueChange={(v) => setFormData({ ...formData, max_products: parseInt(v) })}
                 >
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger className="w-28 h-7 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -656,10 +663,10 @@ export default function UpsellModalEditorPage() {
             </>
           )}
 
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-sm font-medium">Modal ativo</Label>
-              <p className="text-xs text-muted-foreground">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <Label className="text-xs font-medium">Modal ativo</Label>
+              <p className="text-[10px] text-muted-foreground">
                 Desative para pausar temporariamente
               </p>
             </div>
@@ -668,6 +675,7 @@ export default function UpsellModalEditorPage() {
               onCheckedChange={(checked) => 
                 setFormData({ ...formData, is_active: checked })
               }
+              className="scale-90"
             />
           </div>
         </div>
