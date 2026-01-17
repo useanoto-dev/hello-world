@@ -205,7 +205,7 @@ export function StandardCategoryGrid({
     if (sizes && sizes.length > 0) {
       return (
         <div className="px-3 sm:px-4 lg:px-6 pb-6">
-          <div className={displayMode === "list" ? "space-y-3 max-w-4xl mx-auto" : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5"}>
+        <div className={displayMode === "list" ? "grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5" : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5"}>
             {sizes.map((size, index) => {
               const badge = getBadgeForIndex(index);
               const quantity = getQuantity(size.id);
@@ -216,68 +216,42 @@ export function StandardCategoryGrid({
                     key={size.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.03, duration: 0.2 }}
+                    transition={{ delay: index * 0.02, duration: 0.2 }}
+                    onClick={() => onItemSelect({ 
+                      id: size.id, 
+                      name: size.name, 
+                      description: size.description,
+                      image_url: size.image_url,
+                      item_type: 'standard',
+                      is_premium: false 
+                    }, size, size.base_price, allowQuantitySelector ? quantity : 1)}
+                    className="cursor-pointer"
                   >
-                    <div className="flex items-center gap-3 bg-card rounded-xl overflow-hidden border border-border p-3 hover:shadow-md transition-shadow">
-                      {/* Image */}
-                      <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-muted shrink-0">
-                        <OptimizedImage
-                          src={size.image_url}
-                          alt={size.name}
-                          aspectRatio="auto"
-                          className="w-full h-full"
-                          fallbackIcon={<span className="text-2xl opacity-50">🍽️</span>}
-                        />
-                      </div>
-                      
-                      {/* Info */}
+                    <div className="flex gap-4 py-4 border-b border-border hover:bg-muted/30 transition-colors">
+                      {/* Info - Left side */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-foreground text-sm line-clamp-1">{size.name}</h3>
+                        <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-2">
+                          {size.name}
+                        </h3>
                         {size.description && (
-                          <p className="text-muted-foreground text-xs line-clamp-2 mt-0.5">{size.description}</p>
+                          <p className="text-muted-foreground text-xs leading-relaxed mt-1 line-clamp-2">
+                            {size.description}
+                          </p>
                         )}
-                        <p className="text-sm font-bold text-primary mt-1">
+                        <p className="text-sm font-semibold text-foreground mt-2">
                           {formatCurrency(size.base_price)}
                         </p>
                       </div>
 
-                      {/* Quantity & Add */}
-                      <div className="flex items-center gap-2">
-                        {allowQuantitySelector && (
-                          <div className="flex items-center gap-1 bg-muted rounded-full p-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 rounded-full"
-                              onClick={(e) => { e.stopPropagation(); updateQuantity(size.id, -1); }}
-                            >
-                              <Minus className="w-3 h-3" />
-                            </Button>
-                            <span className="w-6 text-center text-sm font-medium">{quantity}</span>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 rounded-full"
-                              onClick={(e) => { e.stopPropagation(); updateQuantity(size.id, 1); }}
-                            >
-                              <Plus className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        )}
-                        <Button
-                          size="sm"
-                          onClick={() => onItemSelect({ 
-                            id: size.id, 
-                            name: size.name, 
-                            description: size.description,
-                            image_url: size.image_url,
-                            item_type: 'standard',
-                            is_premium: false 
-                          }, size, size.base_price, allowQuantitySelector ? quantity : 1)}
-                          className="h-9 px-4"
-                        >
-                          Adicionar
-                        </Button>
+                      {/* Image - Right side */}
+                      <div className="relative w-24 h-24 lg:w-28 lg:h-28 rounded-lg overflow-hidden bg-muted shrink-0">
+                        <OptimizedImage
+                          src={size.image_url}
+                          alt={size.name}
+                          aspectRatio="auto"
+                          className="w-full h-full object-cover"
+                          fallbackIcon={<span className="text-2xl opacity-50">🍽️</span>}
+                        />
                       </div>
                     </div>
                   </motion.div>
@@ -412,7 +386,7 @@ export function StandardCategoryGrid({
       )}
 
       {/* Items grid/list */}
-      <div className={displayMode === "list" ? "space-y-3 max-w-4xl mx-auto" : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5"}>
+      <div className={displayMode === "list" ? "grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5" : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5"}>
         {items.map((item, index) => {
           const selectedSize = sizes?.find(s => s.id === effectiveSize);
           const itemPrice = priceMap.get(item.id)?.get(effectiveSize || '');
@@ -426,66 +400,38 @@ export function StandardCategoryGrid({
                 key={item.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.03, duration: 0.2 }}
+                transition={{ delay: index * 0.02, duration: 0.2 }}
+                onClick={() => handleItemClick(item)}
+                className="cursor-pointer"
               >
-                <div className="flex items-center gap-3 bg-card rounded-xl overflow-hidden border border-border p-3 hover:shadow-md transition-shadow">
-                  {/* Image */}
-                  <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-muted shrink-0">
-                    <OptimizedImage
-                      src={item.image_url}
-                      alt={item.name}
-                      aspectRatio="auto"
-                      className="w-full h-full"
-                      fallbackIcon={<span className="text-2xl opacity-50">🍽️</span>}
-                    />
-                    {item.is_premium && (
-                      <div className="absolute top-1 left-1 flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-white">
-                        <Crown className="w-2.5 h-2.5" />
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Info */}
+                <div className="flex gap-4 py-4 border-b border-border hover:bg-muted/30 transition-colors">
+                  {/* Info - Left side */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-foreground text-sm line-clamp-1">{item.name}</h3>
+                    <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-2">
+                      {item.name}
+                      {item.is_premium && (
+                        <Crown className="w-3.5 h-3.5 inline-block ml-1.5 text-amber-500" />
+                      )}
+                    </h3>
                     {item.description && (
-                      <p className="text-muted-foreground text-xs line-clamp-2 mt-0.5">{item.description}</p>
+                      <p className="text-muted-foreground text-xs leading-relaxed mt-1 line-clamp-2">
+                        {item.description}
+                      </p>
                     )}
-                    <p className="text-sm font-bold text-primary mt-1">
+                    <p className="text-sm font-semibold text-foreground mt-2">
                       {formatCurrency(displayPrice)}
                     </p>
                   </div>
 
-                  {/* Quantity & Add */}
-                  <div className="flex items-center gap-2">
-                    {allowQuantitySelector && (
-                      <div className="flex items-center gap-1 bg-muted rounded-full p-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 rounded-full"
-                          onClick={(e) => { e.stopPropagation(); updateQuantity(item.id, -1); }}
-                        >
-                          <Minus className="w-3 h-3" />
-                        </Button>
-                        <span className="w-6 text-center text-sm font-medium">{quantity}</span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 rounded-full"
-                          onClick={(e) => { e.stopPropagation(); updateQuantity(item.id, 1); }}
-                        >
-                          <Plus className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    )}
-                    <Button
-                      size="sm"
-                      onClick={() => handleItemClick(item)}
-                      className="h-9 px-4"
-                    >
-                      Adicionar
-                    </Button>
+                  {/* Image - Right side */}
+                  <div className="relative w-24 h-24 lg:w-28 lg:h-28 rounded-lg overflow-hidden bg-muted shrink-0">
+                    <OptimizedImage
+                      src={item.image_url}
+                      alt={item.name}
+                      aspectRatio="auto"
+                      className="w-full h-full object-cover"
+                      fallbackIcon={<span className="text-2xl opacity-50">🍽️</span>}
+                    />
                   </div>
                 </div>
               </motion.div>
