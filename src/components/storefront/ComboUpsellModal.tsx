@@ -64,6 +64,9 @@ interface ComboUpsellModalProps {
 
 // Fetch functions
 async function fetchEdgesWithPrices(categoryId: string, sizeId: string) {
+  // If no sizeId, we can't fetch prices - return empty
+  if (!sizeId) return [];
+  
   const { data, error } = await supabase
     .from("pizza_edges")
     .select(`
@@ -90,6 +93,9 @@ async function fetchEdgesWithPrices(categoryId: string, sizeId: string) {
 }
 
 async function fetchDoughsWithPrices(categoryId: string, sizeId: string) {
+  // If no sizeId, we can't fetch prices - return empty
+  if (!sizeId) return [];
+  
   const { data, error } = await supabase
     .from("pizza_doughs")
     .select(`
@@ -211,10 +217,8 @@ export default function ComboUpsellModal({
       setDoughs(doughsData);
       setAdditionals(additionalsData);
       
-      // Auto-close if nothing to show
-      if (edgesData.length === 0 && doughsData.length === 0 && additionalsData.length === 0) {
-        onComplete({ edge: null, dough: null, additionals: [] }, 0);
-      }
+      // Don't auto-close - always show the modal even if empty
+      // The user can still skip/confirm manually
     } catch (error) {
       console.error("Error loading combo data:", error);
       onComplete({ edge: null, dough: null, additionals: [] }, 0);
