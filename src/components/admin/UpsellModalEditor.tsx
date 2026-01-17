@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Sparkles, Info } from "lucide-react";
+import { Sparkles, Info } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +30,7 @@ interface Category {
 interface UpsellModal {
   id: string;
   name: string;
+  modal_type: string;
   trigger_category_id: string | null;
   target_category_id: string | null;
   title: string;
@@ -48,6 +49,12 @@ interface UpsellModalEditorProps {
   storeId: string;
 }
 
+const MODAL_TYPES = [
+  { value: "upsell", label: "Venda adicional", icon: "✨", description: "Sugere produtos de outras categorias" },
+  { value: "drink", label: "Sugestão de bebida", icon: "🥤", description: "Oferece bebidas após um item" },
+  { value: "edge", label: "Borda de pizza", icon: "🍕", description: "Oferece bordas recheadas" },
+];
+
 export function UpsellModalEditor({
   open,
   onClose,
@@ -58,6 +65,7 @@ export function UpsellModalEditor({
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
+    modal_type: "upsell",
     trigger_category_id: "",
     target_category_id: "",
     title: "Deseja mais alguma coisa?",
@@ -71,6 +79,7 @@ export function UpsellModalEditor({
     if (modal) {
       setFormData({
         name: modal.name,
+        modal_type: modal.modal_type || "upsell",
         trigger_category_id: modal.trigger_category_id || "",
         target_category_id: modal.target_category_id || "",
         title: modal.title,
@@ -82,6 +91,7 @@ export function UpsellModalEditor({
     } else {
       setFormData({
         name: "",
+        modal_type: "upsell",
         trigger_category_id: "",
         target_category_id: "",
         title: "Deseja mais alguma coisa?",
@@ -92,6 +102,29 @@ export function UpsellModalEditor({
       });
     }
   }, [modal]);
+
+  // Auto-update title when type changes
+  const handleTypeChange = (type: string) => {
+    const typeConfig = MODAL_TYPES.find(t => t.value === type);
+    let title = formData.title;
+    let description = formData.description;
+
+    if (!modal) {
+      // Only auto-fill for new modals
+      if (type === "drink") {
+        title = "Que tal uma bebida?";
+        description = "Complete seu pedido!";
+      } else if (type === "edge") {
+        title = "Escolha a Borda";
+        description = "Deixe sua pizza ainda mais gostosa";
+      } else {
+        title = "Deseja mais alguma coisa?";
+        description = "Aproveite para completar seu pedido";
+      }
+    }
+
+    setFormData({ ...formData, modal_type: type, title, description });
+  };
 
   const handleSave = async () => {
     if (!formData.name.trim()) {
@@ -105,6 +138,7 @@ export function UpsellModalEditor({
       const data = {
         store_id: storeId,
         name: formData.name.trim(),
+        modal_type: formData.modal_type,
         trigger_category_id: formData.trigger_category_id || null,
         target_category_id: formData.target_category_id || null,
         title: formData.title.trim(),
@@ -140,9 +174,11 @@ export function UpsellModalEditor({
     }
   };
 
+  const selectedType = MODAL_TYPES.find(t => t.value === formData.modal_type);
+
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
@@ -151,6 +187,31 @@ export function UpsellModalEditor({
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Modal Type */}
+          <div className="space-y-1.5">
+            <Label className="text-xs">Tipo de Modal</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {MODAL_TYPES.map((type) => (
+                <button
+                  key={type.value}
+                  type="button"
+                  onClick={() => handleTypeChange(type.value)}
+                  className={`p-3 rounded-xl border-2 transition-all text-center ${
+                    formData.modal_type === type.value
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-muted-foreground/30"
+                  }`}
+                >
+                  <span className="text-2xl block mb-1">{type.icon}</span>
+                  <span className="text-xs font-medium">{type.label}</span>
+                </button>
+              ))}
+            </div>
+            {selectedType && (
+              <p className="text-[10px] text-muted-foreground">{selectedType.description}</p>
+            )}
+          </div>
+
           {/* Name */}
           <div className="space-y-1.5">
             <Label htmlFor="name" className="text-xs">Nome do Modal</Label>
@@ -189,32 +250,34 @@ export function UpsellModalEditor({
             </p>
           </div>
 
-          {/* Target Category */}
-          <div className="space-y-1.5">
-            <Label className="text-xs">Sugerir produtos de</Label>
-            <Select
-              value={formData.target_category_id}
-              onValueChange={(v) => setFormData({ ...formData, target_category_id: v })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Sugestões automáticas" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Sugestões automáticas</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    <span className="flex items-center gap-2">
-                      <span>{cat.icon || "📦"}</span>
-                      {cat.name}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-[10px] text-muted-foreground">
-              Produtos desta categoria serão sugeridos no modal
-            </p>
-          </div>
+          {/* Target Category - only show for upsell and drink types */}
+          {formData.modal_type !== "edge" && (
+            <div className="space-y-1.5">
+              <Label className="text-xs">Sugerir produtos de</Label>
+              <Select
+                value={formData.target_category_id}
+                onValueChange={(v) => setFormData({ ...formData, target_category_id: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sugestões automáticas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Sugestões automáticas</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      <span className="flex items-center gap-2">
+                        <span>{cat.icon || "📦"}</span>
+                        {cat.name}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[10px] text-muted-foreground">
+                Produtos desta categoria serão sugeridos no modal
+              </p>
+            </div>
+          )}
 
           {/* Title */}
           <div className="space-y-1.5">
@@ -241,38 +304,42 @@ export function UpsellModalEditor({
 
           {/* Settings */}
           <div className="space-y-3 pt-2 border-t">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-xs">Mostrar botão de adicionar rápido</Label>
-                <p className="text-[10px] text-muted-foreground">
-                  Permite adicionar produtos direto do modal
-                </p>
-              </div>
-              <Switch
-                checked={formData.show_quick_add}
-                onCheckedChange={(checked) => 
-                  setFormData({ ...formData, show_quick_add: checked })
-                }
-              />
-            </div>
+            {formData.modal_type !== "edge" && (
+              <>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-xs">Mostrar botão de adicionar rápido</Label>
+                    <p className="text-[10px] text-muted-foreground">
+                      Permite adicionar produtos direto do modal
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.show_quick_add}
+                    onCheckedChange={(checked) => 
+                      setFormData({ ...formData, show_quick_add: checked })
+                    }
+                  />
+                </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs">Máximo de produtos exibidos</Label>
-              <Select
-                value={formData.max_products.toString()}
-                onValueChange={(v) => setFormData({ ...formData, max_products: parseInt(v) })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="2">2 produtos</SelectItem>
-                  <SelectItem value="4">4 produtos</SelectItem>
-                  <SelectItem value="6">6 produtos</SelectItem>
-                  <SelectItem value="8">8 produtos</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Máximo de produtos exibidos</Label>
+                  <Select
+                    value={formData.max_products.toString()}
+                    onValueChange={(v) => setFormData({ ...formData, max_products: parseInt(v) })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="2">2 produtos</SelectItem>
+                      <SelectItem value="4">4 produtos</SelectItem>
+                      <SelectItem value="6">6 produtos</SelectItem>
+                      <SelectItem value="8">8 produtos</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
 
             <div className="flex items-center justify-between">
               <div>
