@@ -770,72 +770,35 @@ export default function UpsellModalEditorPage() {
       </div>
 
       <div className="bg-card rounded-lg border border-border/60 p-4 space-y-4">
-        {/* Target Category */}
-        {(selectedTemplate === "drink" || selectedTemplate === "custom" || selectedTemplate === "accompaniment") && (
-          <div className="space-y-1">
-            <Label className="text-xs font-medium">Sugerir produtos de qual categoria?</Label>
-            <Select
-              value={formData.target_category_id || "auto"}
-              onValueChange={(v) => setFormData({ ...formData, target_category_id: v === "auto" ? "" : v })}
-            >
-              <SelectTrigger className="h-8 text-sm">
-                <SelectValue placeholder="Sugestões automáticas" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="auto">🔮 Sugestões automáticas</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    <span className="flex items-center gap-2">
-                      <span>{cat.icon || "📦"}</span>
-                      {cat.name}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        {/* Name */}
+        <div className="space-y-1">
+          <Label className="text-xs font-medium">Nome do modal (interno)</Label>
+          <Input
+            placeholder="Ex: Bebidas após Pizza"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            className="h-8 text-sm"
+          />
+          <p className="text-[10px] text-muted-foreground">
+            Usado apenas para identificação no painel
+          </p>
+        </div>
+
+        {/* Active Toggle */}
+        <div className="flex items-center justify-between gap-4 pt-3 border-t border-border/40">
+          <div className="min-w-0">
+            <Label className="text-xs font-medium">Modal ativo</Label>
+            <p className="text-[10px] text-muted-foreground">
+              Desative para pausar temporariamente
+            </p>
           </div>
-        )}
-
-        {/* Toggle options */}
-        <div className="space-y-3 pt-3 border-t border-border/40">
-          {selectedTemplate !== "edge" && (
-            <>
-              <div className="flex items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <Label className="text-xs font-medium">Adicionar rápido</Label>
-                  <p className="text-[10px] text-muted-foreground">
-                    Adicionar produtos diretamente do modal
-                  </p>
-                </div>
-                <Switch
-                  checked={formData.show_quick_add}
-                  onCheckedChange={(checked) => 
-                    setFormData({ ...formData, show_quick_add: checked })
-                  }
-                  className="scale-90"
-                />
-              </div>
-
-              <div className="flex items-center justify-between gap-4">
-                <Label className="text-xs font-medium">Máximo de produtos</Label>
-                <Select
-                  value={formData.max_products.toString()}
-                  onValueChange={(v) => setFormData({ ...formData, max_products: parseInt(v) })}
-                >
-                  <SelectTrigger className="w-28 h-7 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="2">2 produtos</SelectItem>
-                    <SelectItem value="4">4 produtos</SelectItem>
-                    <SelectItem value="6">6 produtos</SelectItem>
-                    <SelectItem value="8">8 produtos</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </>
-          )}
-
+          <Switch
+            checked={formData.is_active}
+            onCheckedChange={(checked) => 
+              setFormData({ ...formData, is_active: checked })
+            }
+            className="scale-90"
+          />
         </div>
       </div>
     </div>
