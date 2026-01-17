@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Image, ShoppingBag,
   Settings, CreditCard, LogOut, Menu, X, ExternalLink, Package,
   ChefHat, TicketPercent, Users, ChevronLeft, ChevronRight, TrendingUp,
-  Monitor, UtensilsCrossed, ChevronDown, Workflow, Warehouse, Plug, Maximize, Minimize, DollarSign,
+  Monitor, UtensilsCrossed, ChevronDown, Warehouse, Plug, Maximize, Minimize, DollarSign,
   ClipboardList, UserCircle
 } from "lucide-react";
 import { QuickActionButtons } from "@/components/admin/QuickActionButtons";
@@ -83,7 +83,6 @@ const allMenuItems: MenuItem[] = [
     showAlways: true,
     allowedRoles: ['admin'],
     subItems: [
-      { icon: Workflow, label: "Fluxos", path: "/dashboard/flows" },
       { icon: Image, label: "Modais", path: "/dashboard/menu-images" }
     ]
   },

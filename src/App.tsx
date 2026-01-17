@@ -40,7 +40,7 @@ const PizzaFlavorWizard = lazy(() => import("@/pages/dashboard/PizzaFlavorWizard
 const PizzaFlavorsListPage = lazy(() => import("@/pages/dashboard/PizzaFlavorsListPage"));
 const MenuImagesPage = lazy(() => import("@/pages/dashboard/MenuImagesPage"));
 const MenuBulkEditPage = lazy(() => import("@/pages/dashboard/MenuBulkEditPage"));
-const FlowsPage = lazy(() => import("@/pages/dashboard/FlowsPage"));
+
 const SettingsPage = lazy(() => import("@/pages/dashboard/SettingsPage"));
 const AnalyticsPage = lazy(() => import("@/pages/dashboard/AnalyticsPage"));
 const FinancialPage = lazy(() => import("@/pages/dashboard/FinancialPage"));
@@ -135,7 +135,7 @@ function AnimatedRoutes() {
             <Route path="menu-manager" element={<MenuManagerPage />} />
             <Route path="menu-images" element={<MenuImagesPage />} />
             <Route path="menu-bulk-edit" element={<MenuBulkEditPage />} />
-            <Route path="flows" element={<FlowsPage />} />
+            
             <Route path="orders" element={<OrdersPage />} />
             <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="financeiro" element={<FinancialPage />} />
