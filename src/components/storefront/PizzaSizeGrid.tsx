@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface PizzaSizeGridProps {
   categoryId: string;
   storeId: string;
-  onSizeSelect: (sizeId: string, sizeName: string, maxFlavors: number, basePrice: number) => void;
+  onSizeSelect: (sizeId: string, sizeName: string, maxFlavors: number, basePrice: number, imageUrl: string | null) => void;
 }
 
 async function fetchPizzaSizes(categoryId: string) {
@@ -65,7 +65,7 @@ export function PizzaSizeGrid({ categoryId, storeId, onSizeSelect }: PizzaSizeGr
             key={size.id}
             size={size}
             index={index}
-            onClick={() => onSizeSelect(size.id, size.name, size.max_flavors, size.base_price)}
+            onClick={() => onSizeSelect(size.id, size.name, size.max_flavors, size.base_price, size.image_url)}
           />
         ))}
       </div>
