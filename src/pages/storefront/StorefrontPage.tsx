@@ -1388,6 +1388,7 @@ export default function StorefrontPage() {
           category={selectedCategory}
           storeId={store.id}
           preselectedOptionId={preselectedOptionId}
+          allowOptionItemQuantity={selectedCategory.allow_quantity_selector !== false}
           onClose={() => setShowCustomizationModal(false)}
           onComplete={handleCustomizationComplete}
           onShowUpsell={handleShowUpsell}
