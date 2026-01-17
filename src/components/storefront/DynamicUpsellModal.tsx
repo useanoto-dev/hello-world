@@ -336,6 +336,20 @@ export default function DynamicUpsellModal({
 
   // If content_type is combo, render the ComboUpsellModal (full screen with edges + doughs + additionals)
   if (modalConfig.content_type === "combo" && sizeId) {
+    // Decode combo settings from secondary_button_text
+    // Format: "text|edges:1|doughs:1|additionals:1"
+    let showEdges = true, showDoughs = true, showAdditionals = true;
+    const secondaryBtnText = modalConfig.secondary_button_text || "Não, obrigado";
+    
+    if (secondaryBtnText.includes("|")) {
+      const parts = secondaryBtnText.split("|");
+      parts.slice(1).forEach(part => {
+        if (part.startsWith("edges:")) showEdges = part === "edges:1";
+        if (part.startsWith("doughs:")) showDoughs = part === "doughs:1";
+        if (part.startsWith("additionals:")) showAdditionals = part === "additionals:1";
+      });
+    }
+
     return (
       <ComboUpsellModal
         open={true}
@@ -346,7 +360,10 @@ export default function DynamicUpsellModal({
         title={modalConfig.title}
         description={modalConfig.description || undefined}
         buttonText={modalConfig.button_text || "Confirmar"}
-        buttonColor={modalConfig.button_color || "#3b82f6"}
+        buttonColor={modalConfig.button_color || "#f59e0b"}
+        showEdges={showEdges}
+        showDoughs={showDoughs}
+        showAdditionals={showAdditionals}
         onClose={goToNextModal}
         onComplete={(selections, totalPrice) => {
           // Handle combo selections
