@@ -702,7 +702,7 @@ export default function UpsellModalEditorPage() {
           <p className="text-[10px] text-muted-foreground mb-2 text-center uppercase tracking-wide">Prévia</p>
           
           {isCombo ? (
-            // Combo Modal Preview - Full screen style like PizzaFlavorSelectionDrawer
+            // Combo Modal Preview - Full screen style like ComboUpsellModal
             <div className="bg-background rounded-lg shadow-md overflow-hidden">
               {/* Hero area */}
               <div className="relative h-20 bg-gradient-to-br from-amber-100 to-orange-200 flex items-center justify-center">
@@ -722,15 +722,21 @@ export default function UpsellModalEditorPage() {
                       <p className="text-[8px] font-semibold text-foreground flex items-center gap-1 mb-1">
                         <span>🥖</span> Escolha a Massa
                       </p>
-                      <div className="grid grid-cols-2 gap-1">
-                        <div className="px-1.5 py-1 rounded-md border border-purple-300 bg-purple-50 text-[8px] flex items-center justify-between">
-                          <span>Tradicional</span>
-                          <div className="w-3 h-3 rounded-full bg-purple-500 flex items-center justify-center">
+                      <div className="space-y-1">
+                        <div className="px-2 py-1.5 rounded-xl border border-primary/50 bg-primary/10 text-[8px] flex items-center justify-between">
+                          <div className="flex items-center gap-1">
+                            <span className="font-medium">Tradicional</span>
+                            <span className="text-muted-foreground">Incluso</span>
+                          </div>
+                          <div className="w-3.5 h-3.5 rounded-full bg-primary flex items-center justify-center">
                             <Check className="w-2 h-2 text-white" />
                           </div>
                         </div>
-                        <div className="px-1.5 py-1 rounded-md border border-gray-100 bg-white text-[8px]">
-                          Integral
+                        <div className="px-2 py-1.5 rounded-xl border border-gray-100 bg-white text-[8px] flex items-center justify-between">
+                          <div className="flex items-center gap-1">
+                            <span className="font-medium">Integral</span>
+                            <span className="text-gray-500">+R$ 5,00</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -741,15 +747,21 @@ export default function UpsellModalEditorPage() {
                       <p className="text-[8px] font-semibold text-foreground flex items-center gap-1 mb-1">
                         <span>🧀</span> Escolha a Borda
                       </p>
-                      <div className="grid grid-cols-2 gap-1">
-                        <div className="px-1.5 py-1 rounded-md border border-orange-300 bg-orange-50 text-[8px] flex items-center justify-between">
-                          <span>Catupiry</span>
-                          <div className="w-3 h-3 rounded-full bg-orange-500 flex items-center justify-center">
+                      <div className="space-y-1">
+                        <div className="px-2 py-1.5 rounded-xl border border-primary/50 bg-primary/10 text-[8px] flex items-center justify-between">
+                          <div className="flex items-center gap-1">
+                            <span className="font-medium">Sem Borda</span>
+                            <span className="text-muted-foreground">Grátis</span>
+                          </div>
+                          <div className="w-3.5 h-3.5 rounded-full bg-primary flex items-center justify-center">
                             <Check className="w-2 h-2 text-white" />
                           </div>
                         </div>
-                        <div className="px-1.5 py-1 rounded-md border border-gray-100 bg-white text-[8px]">
-                          Cheddar
+                        <div className="px-2 py-1.5 rounded-xl border border-gray-100 bg-white text-[8px] flex items-center justify-between">
+                          <div className="flex items-center gap-1">
+                            <span className="font-medium">Catupiry</span>
+                            <span className="text-gray-500">+R$ 8,00</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -760,13 +772,23 @@ export default function UpsellModalEditorPage() {
                       <p className="text-[8px] font-semibold text-foreground flex items-center gap-1 mb-1">
                         <span>➕</span> Adicionais
                       </p>
-                      <div className="grid grid-cols-2 gap-1">
-                        <div className="px-1.5 py-1 rounded-md border border-blue-300 bg-blue-50 text-[8px] flex items-center justify-between">
-                          <span>Bacon</span>
-                          <div className="w-3 h-3 rounded-full bg-blue-500 flex items-center justify-center text-white text-[6px] font-bold">1</div>
+                      <div className="space-y-1">
+                        <div className="px-2 py-1.5 rounded-xl border border-primary/50 bg-primary/10 text-[8px] flex items-center justify-between">
+                          <div className="flex items-center gap-1">
+                            <span className="font-medium">Bacon</span>
+                            <span className="text-gray-500">+R$ 6,00</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className="w-4 h-4 rounded-full bg-gray-100 flex items-center justify-center text-[8px]">-</div>
+                            <span className="font-bold text-[9px]">1</span>
+                            <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center text-white text-[8px]">+</div>
+                          </div>
                         </div>
-                        <div className="px-1.5 py-1 rounded-md border border-gray-100 bg-white text-[8px]">
-                          Queijo extra
+                        <div className="px-2 py-1.5 rounded-xl border border-gray-100 bg-white text-[8px] flex items-center justify-between">
+                          <div className="flex items-center gap-1">
+                            <span className="font-medium">Queijo extra</span>
+                            <span className="text-gray-500">+R$ 4,00</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -774,20 +796,13 @@ export default function UpsellModalEditorPage() {
                 </div>
               </div>
               
-              {/* Footer */}
+              {/* Footer - No total display, just button */}
               <div className="px-3 py-2 border-t border-border/50 bg-muted/20">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[8px] text-muted-foreground">Extras</span>
-                  <span className="text-[10px] font-bold">+R$ 12,00</span>
-                </div>
                 <button 
                   className="w-full py-1.5 rounded-lg text-white text-[10px] font-semibold"
                   style={{ backgroundColor: formData.button_color }}
                 >
                   {formData.button_text || "Confirmar"}
-                </button>
-                <button className="w-full py-1 text-[9px] text-muted-foreground mt-1">
-                  {formData.secondary_button_text || "Não, obrigado"}
                 </button>
               </div>
             </div>
