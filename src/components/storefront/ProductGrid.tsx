@@ -191,7 +191,7 @@ const ProductCard = memo(function ProductCard({
                 {formatCurrency(product.price)}
               </span>
             )}
-            <span className={`text-sm font-bold ${hasPromo ? 'text-green-600' : 'text-primary'}`}>
+            <span className={`text-sm font-normal ${hasPromo ? 'text-green-600' : 'text-gray-500'}`}>
               {formatCurrency(displayPrice)}
             </span>
           </div>
