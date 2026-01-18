@@ -180,10 +180,10 @@ export default function EdgeUpsellModal({
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-lg">🧀</span>
-                    <span className="font-medium text-sm text-foreground">{edge.name}</span>
+                    <span className="font-medium text-[15px] text-gray-800">{edge.name}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-primary">
+                    <span className="text-sm font-normal text-gray-500">
                       +{formatCurrency(edge.price)}
                     </span>
                     <ChevronRight className="w-4 h-4 text-muted-foreground" />

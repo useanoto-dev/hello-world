@@ -486,18 +486,18 @@ export default function ProductCustomizationModal({
               
               {/* Product Info */}
               <div className="flex-1 min-w-0 pt-2">
-                <h1 className="text-xl font-bold text-foreground leading-tight uppercase">
+                <h1 className="text-xl font-medium text-gray-800 leading-tight">
                   {product.name}
                 </h1>
                 <div className="flex items-center gap-2 mt-2">
                   {hasPromotion && (
-                    <span className="text-sm text-muted-foreground line-through">
+                    <span className="text-sm text-gray-400 line-through">
                       {formatCurrency(originalPrice!)}
                     </span>
                   )}
                   <span className={cn(
-                    "text-lg font-bold",
-                    hasPromotion ? "text-green-600" : "text-foreground"
+                    "text-lg font-normal",
+                    hasPromotion ? "text-green-600" : "text-gray-500"
                   )}>
                     {formatCurrency(basePrice)}
                   </span>
@@ -512,18 +512,18 @@ export default function ProductCustomizationModal({
 
             {/* Mobile Product Info */}
             <div className="mb-4 lg:hidden">
-              <h1 className="text-xl font-bold text-foreground leading-tight">
+              <h1 className="text-xl font-medium text-gray-800 leading-tight">
                 {product.name}
               </h1>
               <div className="flex items-center gap-2 mt-1">
                 {hasPromotion && (
-                  <span className="text-sm text-muted-foreground line-through">
+                  <span className="text-sm text-gray-400 line-through">
                     {formatCurrency(originalPrice!)}
                   </span>
                 )}
                 <span className={cn(
-                  "text-lg font-bold",
-                  hasPromotion ? "text-green-600" : "text-foreground"
+                  "text-lg font-normal",
+                  hasPromotion ? "text-green-600" : "text-gray-500"
                 )}>
                   {formatCurrency(basePrice)}
                 </span>
@@ -658,8 +658,8 @@ export default function ProductCustomizationModal({
                                         </p>
                                       )}
                                       {effectivePrice > 0 && (
-                                        <p className="text-sm font-bold text-foreground mt-0.5">
-                                          R$ {effectivePrice.toFixed(2).replace('.', ',')}
+                                        <p className="text-sm font-normal text-gray-500 mt-0.5">
+                                          +{formatCurrency(effectivePrice)}
                                         </p>
                                       )}
                                     </div>
