@@ -173,7 +173,7 @@ const ProductCard = memo(function ProductCard({
 
       {/* Product Info */}
       <div className="p-3">
-        <h3 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2 min-h-[2.5rem]">
+        <h3 className="font-medium text-gray-800 text-[15px] leading-snug line-clamp-2 min-h-[2.5rem]">
           {product.name}
         </h3>
         
@@ -185,15 +185,16 @@ const ProductCard = memo(function ProductCard({
         
         {/* Price */}
         <div className="mt-2">
+          <span className="text-[11px] text-gray-400">A partir de</span>
           <div className="flex items-baseline gap-2">
             {hasPromo && (
               <span className="text-xs text-gray-400 line-through">
                 {formatCurrency(product.price)}
               </span>
             )}
-            <span className={`text-sm font-normal ${hasPromo ? 'text-green-600' : 'text-gray-500'}`}>
+            <p className={`text-sm font-normal ${hasPromo ? 'text-green-600' : 'text-gray-500'}`}>
               {formatCurrency(displayPrice)}
-            </span>
+            </p>
           </div>
         </div>
       </div>

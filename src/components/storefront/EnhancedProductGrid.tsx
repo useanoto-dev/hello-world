@@ -221,15 +221,16 @@ export default function EnhancedProductGrid({
                   )}
                   
                   <div className="mt-2">
+                    <span className="text-[11px] text-gray-400">A partir de</span>
                     <div className="flex items-baseline gap-2">
                       {hasPromo && (
                         <span className="text-xs text-gray-400 line-through">
                           {formatCurrency(product.price)}
                         </span>
                       )}
-                      <span className={`text-sm font-normal ${hasPromo ? 'text-green-600' : 'text-gray-500'}`}>
+                      <p className={`text-sm font-normal ${hasPromo ? 'text-green-600' : 'text-gray-500'}`}>
                         {formatCurrency(displayPrice)}
-                      </span>
+                      </p>
                     </div>
                   </div>
                 </div>
