@@ -509,8 +509,8 @@ export default function ComboUpsellModal({
               </button>
             </header>
 
-            {/* Scrollable Content - Minimalist design without banner */}
-            <main className="flex-1 overflow-y-auto pb-32 lg:pb-36">
+            {/* Scrollable Content */}
+            <main className="flex-1 overflow-y-auto">
               {/* Content */}
               <div className="px-4 py-4 lg:max-w-2xl lg:mx-auto lg:px-8">
               
