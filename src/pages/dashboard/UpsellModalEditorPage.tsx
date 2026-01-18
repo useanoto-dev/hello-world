@@ -200,11 +200,17 @@ const ALL_TEMPLATES = [...PIZZA_TEMPLATES, ...PADRAO_TEMPLATES];
 // Removed BUTTON_COLORS - using brand identity (primary color) instead
 
 const STEPS = [
-  { id: 1, label: "Modelo" },
-  { id: 2, label: "Categorias" },
+  { id: 1, label: "Categoria" },
+  { id: 2, label: "Tipo" },
   { id: 3, label: "Aparência" },
   { id: 4, label: "Configurações" },
 ];
+
+interface CategoryItemsCount {
+  edges: number;
+  doughs: number;
+  additionals: number;
+}
 
 export default function UpsellModalEditorPage() {
   const navigate = useNavigate();
@@ -220,7 +226,10 @@ export default function UpsellModalEditorPage() {
   // Form state
   const [selectedModel, setSelectedModel] = useState<ModelType | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [categoryItemsCount, setCategoryItemsCount] = useState<CategoryItemsCount>({ edges: 0, doughs: 0, additionals: 0 });
+  const [loadingCategoryItems, setLoadingCategoryItems] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     title: "",
@@ -245,6 +254,51 @@ export default function UpsellModalEditorPage() {
   const [fullscreenPreviewOpen, setFullscreenPreviewOpen] = useState(false);
   const [previewSize, setPreviewSize] = useState<PreviewPizzaSize | null>(null);
   const [previewSizeLoading, setPreviewSizeLoading] = useState(false);
+
+  // Load category items count when category is selected
+  useEffect(() => {
+    if (!selectedCategoryId || !restaurantId) {
+      setCategoryItemsCount({ edges: 0, doughs: 0, additionals: 0 });
+      return;
+    }
+    
+    const loadCategoryItems = async () => {
+      setLoadingCategoryItems(true);
+      try {
+        const [edgesResult, doughsResult, additionalsResult] = await Promise.all([
+          supabase.from("pizza_edges").select("id", { count: "exact", head: true }).eq("category_id", selectedCategoryId),
+          supabase.from("pizza_doughs").select("id", { count: "exact", head: true }).eq("category_id", selectedCategoryId),
+          supabase.from("category_option_groups").select("id", { count: "exact", head: true }).eq("category_id", selectedCategoryId).eq("name", "Adicionais"),
+        ]);
+        
+        setCategoryItemsCount({
+          edges: edgesResult.count || 0,
+          doughs: doughsResult.count || 0,
+          additionals: additionalsResult.count || 0,
+        });
+      } catch (error) {
+        console.error("Error loading category items:", error);
+      } finally {
+        setLoadingCategoryItems(false);
+      }
+    };
+    
+    loadCategoryItems();
+  }, [selectedCategoryId, restaurantId]);
+
+  // Auto-set model based on selected category
+  useEffect(() => {
+    if (selectedCategoryId && categories.length > 0) {
+      const category = categories.find(c => c.id === selectedCategoryId);
+      if (category) {
+        setSelectedModel(category.category_type === "pizza" ? "pizza" : "padrao");
+        // Add category to selectedCategories for the trigger
+        if (!selectedCategories.includes(selectedCategoryId)) {
+          setSelectedCategories([selectedCategoryId]);
+        }
+      }
+    }
+  }, [selectedCategoryId, categories]);
 
   useEffect(() => {
     // Se sair do template combo, fecha a prévia
@@ -330,6 +384,8 @@ export default function UpsellModalEditorPage() {
       if (error) throw error;
       if (!data) return;
 
+      // Set category ID and let the effect handle the model
+      setSelectedCategoryId(data.trigger_category_id);
       setSelectedTemplate(data.modal_type);
       setSelectedCategories(data.trigger_category_id ? [data.trigger_category_id] : []);
       
@@ -424,12 +480,36 @@ export default function UpsellModalEditorPage() {
 
   const canProceed = () => {
     switch (currentStep) {
-      case 1: return selectedModel !== null && selectedTemplate !== null;
-      case 2: return selectedCategories.length > 0;
+      case 1: return selectedCategoryId !== null;
+      case 2: return selectedTemplate !== null;
       case 3: return formData.title.trim() && formData.button_text.trim();
       case 4: return formData.name.trim();
       default: return false;
     }
+  };
+
+  // Check if selected template has items in the category
+  const getTemplateItemCount = (templateId: string): number => {
+    if (templateId === "edge") return categoryItemsCount.edges;
+    if (templateId === "dough") return categoryItemsCount.doughs;
+    if (templateId === "additional") return categoryItemsCount.additionals;
+    if (templateId === "combo") {
+      return categoryItemsCount.edges + categoryItemsCount.doughs + categoryItemsCount.additionals;
+    }
+    return -1; // -1 means "not applicable" (products category)
+  };
+
+  const handleGoToCategoryEditor = (itemType: string) => {
+    if (!selectedCategoryId) return;
+    // Navigate to category editor with the specific step
+    const stepMap: Record<string, number> = {
+      edge: 3,      // Step 3: Bordas
+      dough: 4,     // Step 4: Massas
+      additional: 5, // Step 5: Adicionais
+      combo: 3,     // Start at Bordas
+    };
+    const step = stepMap[itemType] || 3;
+    navigate(`/dashboard/category/edit?edit=${selectedCategoryId}&step=${step}`);
   };
 
   const handleSave = async () => {
@@ -515,170 +595,153 @@ export default function UpsellModalEditorPage() {
   const currentTemplate = currentTemplates.find(t => t.id === selectedTemplate) || 
                          ALL_TEMPLATES.find(t => t.id === selectedTemplate);
 
-  // Step 1: Model and Template selection
-  const renderTemplateStep = () => (
+  // Step 1: Category selection (NEW - first step asks which category)
+  const renderCategoryStep = () => (
     <div className="max-w-xl mx-auto">
-      {/* Model Selection */}
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-foreground mb-1">
-          Escolha o modelo
+          A qual categoria este modal pertence?
         </h2>
         <p className="text-sm text-muted-foreground">
-          Primeiro, selecione o tipo de categoria
+          O modal será vinculado a esta categoria e usará seus dados
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        <button
-          type="button"
-          onClick={() => handleModelSelect("pizza")}
-          className={cn(
-            "p-4 rounded-xl border-2 transition-all text-center",
-            selectedModel === "pizza"
-              ? "border-orange-400 bg-orange-50"
-              : "border-border hover:border-orange-200 hover:bg-orange-50/50"
-          )}
-        >
-          <span className="text-3xl mb-2 block">🍕</span>
-          <span className="font-semibold text-sm block">Modelo Pizza</span>
-          <p className="text-[10px] text-muted-foreground mt-1">
-            Bordas, massas, adicionais integrados
-          </p>
-        </button>
-        
-        <button
-          type="button"
-          onClick={() => handleModelSelect("padrao")}
-          className={cn(
-            "p-4 rounded-xl border-2 transition-all text-center",
-            selectedModel === "padrao"
-              ? "border-blue-400 bg-blue-50"
-              : "border-border hover:border-blue-200 hover:bg-blue-50/50"
-          )}
-        >
-          <span className="text-3xl mb-2 block">🍔</span>
-          <span className="font-semibold text-sm block">Modelo Padrão</span>
-          <p className="text-[10px] text-muted-foreground mt-1">
-            Bebidas, acompanhamentos, adicionais
-          </p>
-        </button>
-      </div>
-
-      {/* Template Selection - Only show after model is selected */}
-      {selectedModel && (
-        <>
-          <div className="mb-4">
-            <h3 className="font-medium text-sm text-foreground mb-1">
-              Escolha o tipo de modal
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              {selectedModel === "pizza" 
-                ? "Opções integradas com dados da categoria pizza"
-                : "Opções para categorias padrão"
-              }
-            </p>
-          </div>
-
-          <div className="space-y-1.5">
-            {currentTemplates.map((template) => (
-              <button
-                key={template.id}
-                type="button"
-                onClick={() => handleTemplateSelect(template.id)}
-                className={cn(
-                  "w-full px-3 py-2.5 rounded-md border transition-all text-left flex items-center gap-3",
-                  selectedTemplate === template.id
-                    ? template.bgSelected
-                    : template.bgLight
-                )}
-              >
-                <span className="text-lg">{template.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <span className="font-medium text-xs text-foreground">{template.label}</span>
-                  <p className="text-[11px] text-muted-foreground truncate">
-                    {template.description}
-                  </p>
-                </div>
-                {selectedTemplate === template.id && (
-                  <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                )}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-
-  // Step 2: Category selection
-  const renderCategoriesStep = () => (
-    <div className="max-w-xl mx-auto">
-      <div className="mb-4">
-        <h2 className="text-sm font-semibold text-foreground mb-0.5">
-          Onde o modal aparece?
-        </h2>
-        <p className="text-xs text-muted-foreground">
-          Selecione as categorias que disparam este modal
-        </p>
-      </div>
-
-      {currentTemplate && (
-        <div className="p-2.5 rounded-lg bg-muted/40 border border-border/40 flex items-center gap-2.5 mb-4">
-          <div className={cn(
-            "w-8 h-8 rounded-lg flex items-center justify-center text-white text-base",
-            currentTemplate.color
-          )}>
-            {currentTemplate.icon}
-          </div>
-          <div className="min-w-0">
-            <span className="text-xs font-semibold block">{currentTemplate.label}</span>
-            <p className="text-[10px] text-muted-foreground truncate">{currentTemplate.description}</p>
-          </div>
-        </div>
-      )}
-
-      <div className="space-y-1.5 max-h-[320px] overflow-y-auto pr-1">
+      <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
         {categories.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground text-xs">
+          <div className="text-center py-8 text-muted-foreground text-sm">
             Nenhuma categoria ativa no cardápio
           </div>
         ) : (
           categories.map((category) => (
-            <label
+            <button
               key={category.id}
+              type="button"
+              onClick={() => setSelectedCategoryId(category.id)}
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg border cursor-pointer transition-all",
-                selectedCategories.includes(category.id)
+                "w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 cursor-pointer transition-all text-left",
+                selectedCategoryId === category.id
                   ? "border-primary bg-primary/5"
-                  : "border-border/60 hover:border-muted-foreground/40 hover:bg-muted/30"
+                  : "border-border hover:border-primary/30 hover:bg-muted/30"
               )}
             >
-              <Checkbox
-                checked={selectedCategories.includes(category.id)}
-                onCheckedChange={() => toggleCategory(category.id)}
-                className="h-4 w-4"
-              />
-              <span className="text-lg">{category.icon || "📦"}</span>
+              <span className="text-2xl">{category.icon || "📦"}</span>
               <div className="flex-1 min-w-0">
-                <span className="text-xs font-medium block truncate">{category.name}</span>
-                {category.category_type && (
-                  <span className="text-[10px] text-muted-foreground capitalize">
-                    {category.category_type === "pizza" ? "Pizza" : "Padrão"}
-                  </span>
-                )}
+                <span className="text-sm font-semibold block truncate">{category.name}</span>
+                <span className="text-xs text-muted-foreground">
+                  {category.category_type === "pizza" ? "🍕 Modelo Pizza" : "📦 Modelo Padrão"}
+                </span>
               </div>
-            </label>
+              {selectedCategoryId === category.id && (
+                <Check className="w-5 h-5 text-primary flex-shrink-0" />
+              )}
+            </button>
           ))
         )}
       </div>
-
-      {selectedCategories.length > 0 && (
-        <p className="text-[11px] text-muted-foreground text-center mt-3">
-          {selectedCategories.length} categoria{selectedCategories.length > 1 ? 's' : ''} selecionada{selectedCategories.length > 1 ? 's' : ''}
-        </p>
-      )}
     </div>
   );
+
+  // Step 2: Template/Modal type selection
+  const renderTemplateStep = () => {
+    const selectedCategory = categories.find(c => c.id === selectedCategoryId);
+    const isPizza = selectedCategory?.category_type === "pizza";
+    const templates = isPizza ? PIZZA_TEMPLATES : PADRAO_TEMPLATES;
+
+    return (
+      <div className="max-w-xl mx-auto">
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold text-foreground mb-1">
+            Escolha o tipo de modal
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {isPizza 
+              ? "Opções integradas com dados da categoria pizza"
+              : "Opções para categorias padrão"
+            }
+          </p>
+        </div>
+
+        {/* Selected category badge */}
+        <div className="p-3 rounded-lg bg-muted/40 border border-border/40 flex items-center gap-3 mb-4">
+          <span className="text-xl">{selectedCategory?.icon || "📦"}</span>
+          <div className="flex-1 min-w-0">
+            <span className="text-sm font-semibold block">{selectedCategory?.name}</span>
+            <span className="text-xs text-muted-foreground">
+              {isPizza ? "🍕 Modelo Pizza" : "📦 Modelo Padrão"}
+            </span>
+          </div>
+        </div>
+
+        {loadingCategoryItems ? (
+          <div className="text-center py-8 text-muted-foreground text-sm">
+            Carregando itens da categoria...
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            {templates.map((template) => {
+              const itemCount = getTemplateItemCount(template.id);
+              const needsItems = ["edge", "dough", "additional", "combo"].includes(template.id);
+              const hasNoItems = needsItems && itemCount === 0;
+              
+              return (
+                <div key={template.id}>
+                  <button
+                    type="button"
+                    onClick={() => !hasNoItems && handleTemplateSelect(template.id)}
+                    disabled={hasNoItems}
+                    className={cn(
+                      "w-full px-3 py-2.5 rounded-lg border-2 transition-all text-left flex items-center gap-3",
+                      hasNoItems
+                        ? "opacity-60 cursor-not-allowed border-border bg-muted/30"
+                        : selectedTemplate === template.id
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/30 hover:bg-muted/30"
+                    )}
+                  >
+                    <span className="text-lg">{template.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <span className="font-medium text-sm text-foreground">{template.label}</span>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {template.description}
+                      </p>
+                      {needsItems && !hasNoItems && (
+                        <p className="text-[10px] text-primary mt-0.5">
+                          ✓ {itemCount} {itemCount === 1 ? "item cadastrado" : "itens cadastrados"}
+                        </p>
+                      )}
+                    </div>
+                    {selectedTemplate === template.id && !hasNoItems && (
+                      <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                    )}
+                  </button>
+                  
+                  {/* Show register button when no items */}
+                  {hasNoItems && (
+                    <div className="ml-8 mt-1.5 mb-2">
+                      <p className="text-xs text-destructive mb-1.5">
+                        ⚠️ Nenhum item cadastrado nesta categoria
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleGoToCategoryEditor(template.id)}
+                        className="gap-1.5 text-xs"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        Cadastrar {template.id === "edge" ? "Bordas" : template.id === "dough" ? "Massas" : template.id === "additional" ? "Adicionais" : "Itens"}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // Step 3: Appearance
   const renderAppearanceStep = () => {
@@ -1137,8 +1200,8 @@ export default function UpsellModalEditorPage() {
         {/* Main Content */}
         <div className="flex-1 overflow-y-auto pb-24 bg-white">
           <div className="p-6">
-            {currentStep === 1 && renderTemplateStep()}
-            {currentStep === 2 && renderCategoriesStep()}
+            {currentStep === 1 && renderCategoryStep()}
+            {currentStep === 2 && renderTemplateStep()}
             {currentStep === 3 && renderAppearanceStep()}
             {currentStep === 4 && renderSettingsStep()}
           </div>
