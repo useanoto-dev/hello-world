@@ -457,18 +457,6 @@ export function PizzaFlavorSelectionDrawer({
                 </div>
               )}
 
-              {/* Observations */}
-              <div className="mt-6">
-                <label className="text-sm font-semibold text-foreground">
-                  Observações
-                </label>
-                <Textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Ex: Sem cebola, bem assada, etc."
-                  className="mt-2 min-h-[80px] resize-none border-border bg-muted/30"
-                />
-              </div>
             </div>
           </main>
 
