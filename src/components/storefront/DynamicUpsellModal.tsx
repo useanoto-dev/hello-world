@@ -47,6 +47,7 @@ interface DynamicUpsellModalProps {
   storeId: string;
   triggerCategoryId: string;
   onClose: () => void;
+  onBack?: () => void; // Called when user clicks back in combo modal - only closes upsell, keeps other drawers
   onSelectProducts?: () => void;
   onNavigateToCategory?: (categoryId: string) => void;
   // For pizza edge integration
@@ -59,6 +60,7 @@ export default function DynamicUpsellModal({
   storeId, 
   triggerCategoryId,
   onClose,
+  onBack,
   onSelectProducts,
   onNavigateToCategory,
   sizeId,
@@ -357,6 +359,15 @@ export default function DynamicUpsellModal({
         showEdges={showEdges}
         showDoughs={showDoughs}
         showAdditionals={showAdditionals}
+        onBack={() => {
+          // Just close the combo modal - keep pizza flavor drawer open underneath
+          // Use onBack if available, otherwise fall back to onClose
+          if (onBack) {
+            onBack();
+          } else {
+            onClose();
+          }
+        }}
         onClose={goToNextModal}
         onComplete={(selections, totalPrice) => {
           if (selections.edge) {
