@@ -252,9 +252,9 @@ export default function AdditionalsUpsellModal({
                           </div>
                         )}
                         <div className="min-w-0">
-                          <span className="font-medium text-sm text-foreground block truncate">{item.name}</span>
+                          <span className="font-medium text-[15px] text-gray-800 block truncate">{item.name}</span>
                           {item.price > 0 && (
-                            <span className="text-xs font-semibold text-primary">
+                            <span className="text-sm font-normal text-gray-500">
                               +{formatCurrency(item.price)}
                             </span>
                           )}
@@ -301,14 +301,7 @@ export default function AdditionalsUpsellModal({
             onClick={handleConfirm}
             className="w-full h-12 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
           >
-            {totalSelected > 0 ? (
-              <>
-                {buttonText} • {totalSelected} item{totalSelected > 1 ? 's' : ''} 
-                {totalPrice > 0 && ` (+${formatCurrency(totalPrice)})`}
-              </>
-            ) : (
-              buttonText
-            )}
+            {buttonText}
           </Button>
           <Button
             variant="ghost"

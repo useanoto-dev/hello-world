@@ -452,12 +452,6 @@ export default function ProductCustomizationModal({
                 <ArrowLeft className="w-5 h-5 text-gray-700" />
               </button>
               
-              <button 
-                onClick={handleShare}
-                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
-              >
-                <Share2 className="w-5 h-5 text-gray-700" />
-              </button>
               
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
                 <ChevronDown className="w-6 h-6 text-muted-foreground animate-bounce" />
@@ -489,19 +483,6 @@ export default function ProductCustomizationModal({
                 <h1 className="text-xl font-medium text-gray-800 leading-tight">
                   {product.name}
                 </h1>
-                <div className="flex items-center gap-2 mt-2">
-                  {hasPromotion && (
-                    <span className="text-sm text-gray-400 line-through">
-                      {formatCurrency(originalPrice!)}
-                    </span>
-                  )}
-                  <span className={cn(
-                    "text-lg font-normal",
-                    hasPromotion ? "text-green-600" : "text-gray-500"
-                  )}>
-                    {formatCurrency(basePrice)}
-                  </span>
-                </div>
                 {product.description && (
                   <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                     {product.description}
@@ -515,19 +496,6 @@ export default function ProductCustomizationModal({
               <h1 className="text-xl font-medium text-gray-800 leading-tight">
                 {product.name}
               </h1>
-              <div className="flex items-center gap-2 mt-1">
-                {hasPromotion && (
-                  <span className="text-sm text-gray-400 line-through">
-                    {formatCurrency(originalPrice!)}
-                  </span>
-                )}
-                <span className={cn(
-                  "text-lg font-normal",
-                  hasPromotion ? "text-green-600" : "text-gray-500"
-                )}>
-                  {formatCurrency(basePrice)}
-                </span>
-              </div>
               {product.description && (
                 <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                   {product.description}
