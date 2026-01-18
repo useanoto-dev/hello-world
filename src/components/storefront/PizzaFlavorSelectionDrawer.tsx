@@ -265,9 +265,6 @@ export function PizzaFlavorSelectionDrawer({
                 {flavor.description}
               </p>
             )}
-            <p className="text-xs font-semibold text-red-500 mt-0.5">
-              A partir de {formatCurrency(flavor.price)}
-            </p>
           </div>
           {isSelected && (
             <div className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -362,7 +359,7 @@ export function PizzaFlavorSelectionDrawer({
               {/* Desktop Product Hero - Horizontal layout */}
               <div className="hidden lg:flex gap-6 mb-6 items-start">
                 {/* Product Image - Square with rounded corners */}
-                <div className="w-44 h-44 rounded-2xl overflow-hidden flex-shrink-0">
+                <div className="w-40 h-40 rounded-2xl overflow-hidden flex-shrink-0">
                   {sizeImageUrl ? (
                     <img 
                       src={sizeImageUrl} 
@@ -376,16 +373,11 @@ export function PizzaFlavorSelectionDrawer({
                   )}
                 </div>
                 
-                {/* Product Info */}
+                {/* Product Info - Only name and description, no price */}
                 <div className="flex-1 min-w-0 pt-2">
                   <h1 className="text-xl font-bold text-foreground leading-tight uppercase">
                     Pizza {sizeName}
                   </h1>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-lg font-bold text-foreground">
-                      {formatCurrency(basePrice)}
-                    </span>
-                  </div>
                   <p className="text-sm text-muted-foreground mt-2">
                     Escolha até {maxFlavors} {maxFlavors === 1 ? 'sabor' : 'sabores'} para sua pizza
                   </p>
@@ -485,39 +477,39 @@ export function PizzaFlavorSelectionDrawer({
             </div>
           </main>
 
-          {/* Footer - Fixed bottom */}
-          <motion.footer
-            initial={{ y: 60, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2, type: "spring", damping: 25, stiffness: 400 }}
-            className="fixed bottom-0 inset-x-0 bg-white border-t border-border p-4 z-10"
-          >
-            <div className="lg:max-w-2xl lg:mx-auto lg:px-4">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <span className="text-sm text-muted-foreground">Total</span>
-                  {selectedFlavors.length > 0 && (
-                    <p className="text-xs text-muted-foreground">
-                      {selectedFlavors.length} {selectedFlavors.length === 1 ? 'sabor' : 'sabores'}
-                    </p>
-                  )}
-                </div>
-                <span className="text-xl font-bold text-foreground">
-                  {formatCurrency(totalPrice)}
-                </span>
-              </div>
-              <Button
-                onClick={handleContinue}
-                disabled={selectedFlavors.length === 0}
-                className="w-full h-12 text-base font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          {/* Footer - Only show when flavor is selected, floating button without background on desktop */}
+          <AnimatePresence>
+            {selectedFlavors.length > 0 && (
+              <motion.footer
+                initial={{ y: 60, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 60, opacity: 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 400 }}
+                className="fixed bottom-0 inset-x-0 p-4 z-10 bg-white border-t border-border lg:bg-transparent lg:border-0"
               >
-                {selectedFlavors.length === 0 
-                  ? `Selecione pelo menos 1 sabor`
-                  : `Continuar`
-                }
-              </Button>
-            </div>
-          </motion.footer>
+                <div className="lg:max-w-2xl lg:mx-auto lg:px-4">
+                  {/* Mobile: show total and count */}
+                  <div className="flex items-center justify-between mb-3 lg:hidden">
+                    <div>
+                      <span className="text-sm text-muted-foreground">Total</span>
+                      <p className="text-xs text-muted-foreground">
+                        {selectedFlavors.length} {selectedFlavors.length === 1 ? 'sabor' : 'sabores'}
+                      </p>
+                    </div>
+                    <span className="text-xl font-bold text-foreground">
+                      {formatCurrency(totalPrice)}
+                    </span>
+                  </div>
+                  <Button
+                    onClick={handleContinue}
+                    className="w-full h-12 text-base font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-lg"
+                  >
+                    Continuar
+                  </Button>
+                </div>
+              </motion.footer>
+            )}
+          </AnimatePresence>
         </motion.div>
       )}
 
