@@ -384,16 +384,11 @@ export function PizzaFlavorSelectionDrawer({
                 </div>
               </div>
 
-              {/* Mobile Product Info */}
+              {/* Mobile Product Info - Only name and description, no price */}
               <div className="mb-5 lg:hidden">
                 <h1 className="text-2xl font-bold text-foreground leading-tight">
                   Pizza {sizeName}
                 </h1>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xl font-bold text-amber-500">
-                    {formatCurrency(basePrice)}
-                  </span>
-                </div>
                 <p className="text-sm text-muted-foreground mt-2">
                   Escolha até {maxFlavors} {maxFlavors === 1 ? 'sabor' : 'sabores'} para sua pizza
                 </p>
@@ -477,7 +472,7 @@ export function PizzaFlavorSelectionDrawer({
             </div>
           </main>
 
-          {/* Footer - Only show when flavor is selected, floating button without background on desktop */}
+          {/* Footer - Only show when flavor is selected, floating button without background */}
           <AnimatePresence>
             {selectedFlavors.length > 0 && (
               <motion.footer
@@ -485,21 +480,9 @@ export function PizzaFlavorSelectionDrawer({
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: 60, opacity: 0 }}
                 transition={{ type: "spring", damping: 25, stiffness: 400 }}
-                className="fixed bottom-0 inset-x-0 p-4 z-10 bg-white border-t border-border lg:bg-transparent lg:border-0"
+                className="fixed bottom-0 inset-x-0 p-4 z-10"
               >
-                <div className="lg:max-w-2xl lg:mx-auto lg:px-4">
-                  {/* Mobile: show total and count */}
-                  <div className="flex items-center justify-between mb-3 lg:hidden">
-                    <div>
-                      <span className="text-sm text-muted-foreground">Total</span>
-                      <p className="text-xs text-muted-foreground">
-                        {selectedFlavors.length} {selectedFlavors.length === 1 ? 'sabor' : 'sabores'}
-                      </p>
-                    </div>
-                    <span className="text-xl font-bold text-foreground">
-                      {formatCurrency(totalPrice)}
-                    </span>
-                  </div>
+                <div className="max-w-2xl mx-auto px-0 lg:px-4">
                   <Button
                     onClick={handleContinue}
                     className="w-full h-12 text-base font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-lg"
