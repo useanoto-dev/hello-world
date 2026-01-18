@@ -64,56 +64,30 @@ export function SrPizzaButton({ flavors, onFlavorSelect }: SrPizzaButtonProps) {
 
   return (
     <>
-      {/* Sr Pizza Floating Card */}
+      {/* Sr Pizza - Compact curiosity trigger */}
       <div className="mb-4">
         <motion.button
           onClick={() => setShowModal(true)}
-          whileHover={{ scale: 1.02, y: -2 }}
-          whileTap={{ scale: 0.98 }}
-          className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-2xl shadow-lg overflow-hidden relative group"
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
+          className="w-full bg-gradient-to-r from-purple-500/10 to-pink-500/10 hover:from-purple-500/20 hover:to-pink-500/20 border border-purple-200/50 rounded-xl px-4 py-2.5 transition-all duration-200 group"
         >
-          {/* Animated background */}
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-          {/* Sparkles floating */}
-          <motion.div
-            animate={{ y: [0, -5, 0], opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="absolute top-2 right-4"
-          >
-            <Sparkles className="w-5 h-5 text-yellow-200" />
-          </motion.div>
-
-          <div className="relative flex items-center gap-3 p-3">
-            {/* Sr Pizza Image */}
-            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-              <span className="text-3xl">🍕</span>
-            </div>
-
-            {/* Text Content */}
-            <div className="flex-1 text-left">
-              <div className="flex items-center gap-1.5">
-                <span className="text-lg">🍕</span>
-                <span className="text-white font-bold text-sm">
-                  Sr. Pizza
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-sm">
+                <Sparkles className="w-3.5 h-3.5 text-white" />
+              </div>
+              <div className="text-left">
+                <span className="text-sm font-medium text-purple-700">
+                  Indeciso?
+                </span>
+                <span className="text-sm text-purple-500/80 ml-1">
+                  Deixe o Sr. Pizza escolher
                 </span>
               </div>
-              <p className="text-white/90 text-xs">
-                Indeciso? Deixe-me escolher pra você!
-              </p>
-              <span className="inline-block mt-1 px-2 py-0.5 bg-white/20 backdrop-blur-sm rounded-full text-[10px] text-white font-medium">
-                👆 Clique aqui!
-              </span>
             </div>
-
-            {/* Arrow indicator */}
-            <div className="flex-shrink-0">
-              <ChevronRight className="w-5 h-5 text-white/80" />
-            </div>
+            <ChevronRight className="w-4 h-4 text-purple-400 group-hover:translate-x-0.5 transition-transform" />
           </div>
-
-          {/* Pulse effect */}
-          <div className="absolute inset-0 bg-white/10 animate-pulse" />
         </motion.button>
       </div>
 
