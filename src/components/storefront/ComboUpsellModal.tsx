@@ -422,7 +422,14 @@ export default function ComboUpsellModal({
             onClick={() => !isSelected && toggleAdditional(item)}
             className="min-w-0 flex-1 text-left"
           >
-            <p className="font-medium text-[15px] text-foreground leading-tight">{item.name}</p>
+            <div className="flex items-center gap-2">
+              <p className="font-medium text-[15px] text-foreground leading-tight">{item.name}</p>
+              {item.price > 0 && (
+                <span className="text-sm font-normal text-gray-500">
+                  +R$ {item.price.toFixed(2).replace('.', ',')}
+                </span>
+              )}
+            </div>
           </button>
 
           {isSelected ? (
