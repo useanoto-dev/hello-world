@@ -221,18 +221,18 @@ export default function ProductDetailDrawer({
               
               {/* Product Info */}
               <div className="flex-1 min-w-0 pt-2">
-                <h1 className="text-xl font-bold text-foreground leading-tight uppercase">
+                <h1 className="text-xl font-medium text-gray-800 leading-tight">
                   {product.name}
                 </h1>
                 <div className="flex items-center gap-2 mt-2">
                   {hasPromotion && (
-                    <span className="text-base text-muted-foreground line-through">
+                    <span className="text-sm text-gray-400 line-through">
                       {formatCurrency(originalPrice!)}
                     </span>
                   )}
                   <span className={cn(
-                    "text-xl font-bold",
-                    hasPromotion ? "text-green-600" : "text-amber-500"
+                    "text-lg font-normal",
+                    hasPromotion ? "text-green-600" : "text-gray-500"
                   )}>
                     {formatCurrency(basePrice)}
                   </span>
@@ -247,18 +247,18 @@ export default function ProductDetailDrawer({
 
             {/* Mobile Product Info */}
             <div className="lg:hidden mb-6">
-              <h1 className="text-2xl font-bold text-foreground leading-tight">
+              <h1 className="text-2xl font-medium text-gray-800 leading-tight">
                 {product.name}
               </h1>
               <div className="flex items-center gap-2 mt-2">
                 {hasPromotion && (
-                  <span className="text-base text-muted-foreground line-through">
+                  <span className="text-sm text-gray-400 line-through">
                     {formatCurrency(originalPrice!)}
                   </span>
                 )}
                 <span className={cn(
-                  "text-xl font-bold",
-                  hasPromotion ? "text-green-600" : "text-amber-500"
+                  "text-lg font-normal",
+                  hasPromotion ? "text-green-600" : "text-gray-500"
                 )}>
                   {formatCurrency(basePrice)}
                 </span>
@@ -318,7 +318,7 @@ export default function ProductDetailDrawer({
           <div className="lg:max-w-2xl lg:mx-auto lg:px-4">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-muted-foreground">Total</span>
-              <span className="text-xl font-bold text-foreground">
+              <span className="text-lg font-normal text-gray-500">
                 {formatCurrency(totalPrice)}
               </span>
             </div>

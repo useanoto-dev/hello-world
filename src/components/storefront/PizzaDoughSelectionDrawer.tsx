@@ -170,12 +170,12 @@ export function PizzaDoughSelectionDrawer({
                         <div className="flex items-center gap-3">
                           <span className="text-2xl">🥖</span>
                           <div className="text-left">
-                            <h4 className="font-medium text-gray-900">{dough.name}</h4>
+                            <h4 className="font-medium text-[15px] text-gray-800">{dough.name}</h4>
                             {dough.description && (
-                              <p className="text-sm text-gray-500 line-clamp-1">{dough.description}</p>
+                              <p className="text-sm text-gray-400 line-clamp-1">{dough.description}</p>
                             )}
                             {dough.price > 0 && (
-                              <span className="text-sm text-primary font-semibold">
+                              <span className="text-sm text-gray-500 font-normal">
                                 +{formatCurrency(dough.price)}
                               </span>
                             )}

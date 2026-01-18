@@ -170,8 +170,8 @@ const ProductCard = memo(function ProductCard({
           loading="lazy"
         />
       )}
-      <p className="font-medium text-sm line-clamp-2">{product.name}</p>
-      <p className="text-sm font-semibold mt-1 text-primary">
+      <p className="font-medium text-[15px] text-gray-800 line-clamp-2">{product.name}</p>
+      <p className="text-sm font-normal mt-1 text-gray-500">
         {formatCurrency(product.promotional_price || product.price)}
       </p>
       <button
