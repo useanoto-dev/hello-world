@@ -893,6 +893,13 @@ export default function StorefrontPage() {
     setSimpleProduct(null);
   }, []);
 
+  // Handler for back button in combo modal - only closes upsell, keeps pizza flavor drawer open
+  const handleUpsellBack = useCallback(() => {
+    setShowUpsellModal(false);
+    setUpsellTriggerCategoryId(null);
+    // Don't close pizza flavor drawer - user is going back to it
+  }, []);
+
   // Pizza size selection handler
   const handlePizzaSizeSelect = useCallback((sizeId: string, sizeName: string, maxFlavors: number, basePrice: number, imageUrl: string | null) => {
     if (!isStoreOpen) {
@@ -1404,6 +1411,7 @@ export default function StorefrontPage() {
           storeId={store.id}
           triggerCategoryId={upsellTriggerCategoryId}
           onClose={handleUpsellClose}
+          onBack={handleUpsellBack}
           onNavigateToCategory={(categoryId) => {
             setActiveCategory(categoryId);
             // Scroll to top when navigating to category

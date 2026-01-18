@@ -57,7 +57,8 @@ interface ComboUpsellModalProps {
   showEdges?: boolean;
   showDoughs?: boolean;
   showAdditionals?: boolean;
-  onClose: () => void;
+  onBack?: () => void; // Called when user clicks back arrow - goes back to previous step
+  onClose: () => void; // Called when user skips or completes - closes the flow
   onComplete: (selections: ComboSelections, totalPrice: number) => void;
 }
 
@@ -187,6 +188,7 @@ export default function ComboUpsellModal({
   showEdges = true,
   showDoughs = true,
   showAdditionals = true,
+  onBack,
   onClose,
   onComplete,
 }: ComboUpsellModalProps) {
@@ -495,7 +497,7 @@ export default function ComboUpsellModal({
             {/* Simple Header - Both Desktop and Mobile */}
             <header className="flex items-center justify-between px-4 py-3 border-b border-border bg-white sticky top-0 z-20">
               <button 
-                onClick={onClose}
+                onClick={onBack || onClose}
                 className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
               >
                 <ArrowLeft className="w-5 h-5 text-foreground" />
