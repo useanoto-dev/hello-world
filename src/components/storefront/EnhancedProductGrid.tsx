@@ -210,7 +210,7 @@ export default function EnhancedProductGrid({
                 </div>
 
                 <div className="p-3">
-                  <h3 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2 min-h-[2.5rem]">
+                  <h3 className="font-medium text-gray-800 text-[15px] leading-snug line-clamp-2 min-h-[2.5rem]">
                     {product.name}
                   </h3>
                   
@@ -227,7 +227,7 @@ export default function EnhancedProductGrid({
                           {formatCurrency(product.price)}
                         </span>
                       )}
-                      <span className={`text-sm font-bold ${hasPromo ? 'text-green-600' : 'text-primary'}`}>
+                      <span className={`text-sm font-normal ${hasPromo ? 'text-green-600' : 'text-gray-500'}`}>
                         {formatCurrency(displayPrice)}
                       </span>
                     </div>

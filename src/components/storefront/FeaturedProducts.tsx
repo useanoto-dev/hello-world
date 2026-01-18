@@ -103,7 +103,7 @@ export default function FeaturedProducts({ products, onProductClick }: FeaturedP
 
                 {/* Product Info */}
                 <div className="p-3 relative">
-                  <h3 className="font-semibold text-foreground line-clamp-2 text-sm leading-tight">
+                  <h3 className="font-medium text-foreground line-clamp-2 text-[15px] leading-snug">
                     {product.name}
                   </h3>
                   
@@ -114,7 +114,7 @@ export default function FeaturedProducts({ products, onProductClick }: FeaturedP
                           {formatCurrency(product.price)}
                         </span>
                       )}
-                      <span className={`text-sm font-bold ${hasPromo ? 'text-destructive' : 'text-primary'}`}>
+                      <span className={`text-sm font-normal ${hasPromo ? 'text-green-600' : 'text-gray-500'}`}>
                         {formatCurrency(displayPrice)}
                       </span>
                     </div>

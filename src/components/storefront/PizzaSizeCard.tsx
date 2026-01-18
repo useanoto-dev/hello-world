@@ -66,7 +66,7 @@ export function PizzaSizeCard({ size, onClick, index }: PizzaSizeCardProps) {
 
         {/* Info - Compact */}
         <div className="p-3">
-          <h3 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2 min-h-[2.5rem]">
+          <h3 className="font-medium text-gray-800 text-[15px] leading-snug line-clamp-2 min-h-[2.5rem]">
             {size.name}
           </h3>
           
@@ -78,8 +78,8 @@ export function PizzaSizeCard({ size, onClick, index }: PizzaSizeCardProps) {
           
           {/* Price */}
           <div className="mt-2">
-            <span className="text-xs text-gray-400">A partir de</span>
-            <p className="text-sm font-bold text-primary">
+            <span className="text-[11px] text-gray-400">A partir de</span>
+            <p className="text-sm font-normal text-gray-500">
               {formatCurrency(size.base_price)}
             </p>
           </div>
