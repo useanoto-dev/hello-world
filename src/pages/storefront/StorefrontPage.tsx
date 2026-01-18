@@ -964,7 +964,7 @@ export default function StorefrontPage() {
     setSelectedPizzaEdge(null);
     setSelectedPizzaDough(null);
     
-    toast.success("Pizza adicionada ao carrinho!");
+    // Toast removed - cleaner UX without notification blocking content
   }, [selectedPizzaSize, activeCategoryData, addToCart]);
 
   // Helper to open the appropriate step drawer
@@ -1028,7 +1028,7 @@ export default function StorefrontPage() {
       });
     }
 
-    toast.success(drink ? "Pizza e bebida adicionadas!" : "Pizza adicionada ao carrinho!");
+    // Toast removed - cleaner UX without notification blocking content
     
     // Trigger upsell modal for pizza category - DON'T reset states yet, keep drawers open
     // The combo modal opens ON TOP with higher z-index
