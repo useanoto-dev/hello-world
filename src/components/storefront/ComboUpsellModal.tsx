@@ -488,29 +488,31 @@ export default function ComboUpsellModal({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="fixed inset-0 z-[60] bg-white flex flex-col"
+          className="fixed inset-0 z-[60] bg-white p-3 flex flex-col"
         >
-          {/* Simple Header - Both Desktop and Mobile */}
-          <header className="flex items-center justify-between px-4 py-3 border-b border-border bg-white sticky top-0 z-20">
-            <button 
-              onClick={onClose}
-              className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-foreground" />
-            </button>
-            <span className="text-base font-semibold text-foreground">{title}</span>
-            <button 
-              onClick={handleShare}
-              className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
-            >
-              <Share2 className="w-5 h-5 text-foreground" />
-            </button>
-          </header>
+          {/* Wrapper with dotted border around entire page */}
+          <div className="flex-1 flex flex-col border-2 border-dashed border-gray-300 rounded-2xl overflow-hidden">
+            {/* Simple Header - Both Desktop and Mobile */}
+            <header className="flex items-center justify-between px-4 py-3 border-b border-border bg-white sticky top-0 z-20">
+              <button 
+                onClick={onClose}
+                className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5 text-foreground" />
+              </button>
+              <span className="text-base font-semibold text-foreground">{title}</span>
+              <button 
+                onClick={handleShare}
+                className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
+              >
+                <Share2 className="w-5 h-5 text-foreground" />
+              </button>
+            </header>
 
-          {/* Scrollable Content - Minimalist design without banner */}
-          <main className="flex-1 overflow-y-auto pb-32 lg:pb-36 px-3 py-3">
-            {/* Content with dotted border */}
-            <div className="border-2 border-dashed border-gray-300 rounded-2xl px-4 py-4 lg:max-w-2xl lg:mx-auto lg:px-8">
+            {/* Scrollable Content - Minimalist design without banner */}
+            <main className="flex-1 overflow-y-auto pb-32 lg:pb-36">
+              {/* Content */}
+              <div className="px-4 py-4 lg:max-w-2xl lg:mx-auto lg:px-8">
               
               {/* Description and size info */}
               {(description || sizeName) && (
@@ -586,41 +588,37 @@ export default function ComboUpsellModal({
             </div>
           </main>
 
-          {/* Footer - Compact style */}
-          <motion.footer
-            initial={{ y: 60, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2, type: "spring", damping: 25, stiffness: 400 }}
-            className="fixed bottom-0 inset-x-0 bg-white border-t border-border px-4 py-2.5 z-10"
-          >
-            <div className="lg:max-w-2xl lg:mx-auto lg:px-4">
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <span className="text-xs text-muted-foreground">Extras</span>
-                  {selectionCount > 0 && (
-                    <span className="text-xs text-muted-foreground ml-1">
-                      • {selectionCount} {selectionCount === 1 ? 'item' : 'itens'}
-                    </span>
-                  )}
+            {/* Footer - Compact style - inside the dotted border */}
+            <footer className="bg-white border-t border-border px-4 py-2.5">
+              <div className="lg:max-w-2xl lg:mx-auto lg:px-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <span className="text-xs text-muted-foreground">Extras</span>
+                    {selectionCount > 0 && (
+                      <span className="text-xs text-muted-foreground ml-1">
+                        • {selectionCount} {selectionCount === 1 ? 'item' : 'itens'}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-base font-bold text-gray-700">
+                    {totalPrice > 0 ? `+${formatCurrency(totalPrice)}` : "Sem custo extra"}
+                  </span>
                 </div>
-                <span className="text-base font-bold text-gray-700">
-                  {totalPrice > 0 ? `+${formatCurrency(totalPrice)}` : "Sem custo extra"}
-                </span>
+                <Button
+                  onClick={handleConfirm}
+                  className="w-full h-11 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-lg"
+                >
+                  {buttonText}
+                </Button>
+                <button
+                  onClick={handleSkip}
+                  className="w-full h-8 text-sm text-muted-foreground hover:text-foreground mt-1.5 transition-colors"
+                >
+                  Não, obrigado
+                </button>
               </div>
-              <Button
-                onClick={handleConfirm}
-                className="w-full h-11 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-lg"
-              >
-                {buttonText}
-              </Button>
-              <button
-                onClick={handleSkip}
-                className="w-full h-8 text-sm text-muted-foreground hover:text-foreground mt-1.5 transition-colors"
-              >
-                Não, obrigado
-              </button>
-            </div>
-          </motion.footer>
+            </footer>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
