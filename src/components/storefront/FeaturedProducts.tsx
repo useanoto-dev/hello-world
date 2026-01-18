@@ -109,14 +109,15 @@ export default function FeaturedProducts({ products, onProductClick }: FeaturedP
                   
                   <div className="mt-2 flex items-center justify-between">
                     <div>
+                      <span className="text-[11px] text-gray-400">A partir de</span>
                       {hasPromo && (
-                        <span className="text-xs text-muted-foreground line-through block">
+                        <span className="text-xs text-gray-400 line-through block">
                           {formatCurrency(product.price)}
                         </span>
                       )}
-                      <span className={`text-sm font-normal ${hasPromo ? 'text-green-600' : 'text-gray-500'}`}>
+                      <p className={`text-sm font-normal ${hasPromo ? 'text-green-600' : 'text-gray-500'}`}>
                         {formatCurrency(displayPrice)}
-                      </span>
+                      </p>
                     </div>
 
                     {/* Add Button */}

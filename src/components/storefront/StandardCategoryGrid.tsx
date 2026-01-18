@@ -239,9 +239,12 @@ export function StandardCategoryGrid({
                             {size.description}
                           </p>
                         )}
-                        <p className="text-xs lg:text-sm font-semibold text-foreground mt-1 lg:mt-2">
-                          {formatCurrency(size.base_price)}
-                        </p>
+                        <div className="mt-1 lg:mt-2">
+                          <span className="text-[11px] text-gray-400">A partir de</span>
+                          <p className="text-sm font-normal text-gray-500">
+                            {formatCurrency(size.base_price)}
+                          </p>
+                        </div>
                       </div>
 
                       {/* Image - Right side */}
@@ -337,8 +340,8 @@ export function StandardCategoryGrid({
                       
                       {/* Price */}
                       <div className="mt-2">
-                        <span className="text-xs lg:text-sm text-muted-foreground">A partir de</span>
-                        <p className="text-sm lg:text-base font-bold text-primary">
+                        <span className="text-[11px] text-gray-400">A partir de</span>
+                        <p className="text-sm font-normal text-gray-500">
                           {formatCurrency(size.base_price)}
                         </p>
                       </div>
@@ -420,9 +423,12 @@ export function StandardCategoryGrid({
                         {item.description}
                       </p>
                     )}
-                    <p className="text-xs lg:text-sm font-semibold text-foreground mt-1 lg:mt-2">
-                      {formatCurrency(displayPrice)}
-                    </p>
+                    <div className="mt-1 lg:mt-2">
+                      <span className="text-[11px] text-gray-400">A partir de</span>
+                      <p className="text-sm font-normal text-gray-500">
+                        {formatCurrency(displayPrice)}
+                      </p>
+                    </div>
                   </div>
 
                   {/* Image - Right side */}
@@ -512,8 +518,8 @@ export function StandardCategoryGrid({
                   
                   {/* Price */}
                   <div className="mt-2">
-                    <span className="text-xs lg:text-sm text-muted-foreground">A partir de</span>
-                    <p className="text-sm lg:text-base font-bold text-primary">
+                    <span className="text-[11px] text-gray-400">A partir de</span>
+                    <p className="text-sm font-normal text-gray-500">
                       {formatCurrency(displayPrice)}
                     </p>
                   </div>
