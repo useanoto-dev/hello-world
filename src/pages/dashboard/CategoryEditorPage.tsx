@@ -400,6 +400,39 @@ export default function CategoryEditorPage() {
           }));
           setPizzaDoughs(loadedDoughs);
         }
+
+        // Load extras (additionals) from category_option_groups
+        const { data: extrasGroupData } = await supabase
+          .from("category_option_groups")
+          .select("*, category_option_items(*)")
+          .eq("category_id", id)
+          .eq("name", "Adicionais")
+          .maybeSingle();
+
+        if (extrasGroupData) {
+          setHasExtras("yes");
+          setExtrasRequired(extrasGroupData.is_required ? "required" : "optional");
+          setExtrasMin(extrasGroupData.min_selections ?? 0);
+          setExtrasMax(extrasGroupData.max_selections ?? 10);
+          
+          const items = extrasGroupData.category_option_items || [];
+          if (items.length > 0) {
+            const loadedExtras: PizzaOption[] = items
+              .sort((a: any, b: any) => (a.display_order ?? 0) - (b.display_order ?? 0))
+              .map((item: any) => ({
+                id: item.id,
+                title: item.name,
+                isOut: !item.is_active,
+                prices: sizesData?.map(size => ({
+                  sizeId: size.id,
+                  sizeName: size.name,
+                  enabled: true,
+                  price: (item.additional_price ?? 0).toString(),
+                })) || [],
+              }));
+            setPizzaExtras(loadedExtras);
+          }
+        }
       }
     } catch (error) {
       console.error("Error loading category:", error);
@@ -713,6 +746,18 @@ export default function CategoryEditorPage() {
       if (existingDoughs && existingDoughs.length > 0) {
         const doughIds = existingDoughs.map(d => d.id);
         await supabase.from("pizza_dough_prices").delete().in("dough_id", doughIds);
+      }
+      
+      // Delete existing option groups and items (for edges, doughs, extras, etc.)
+      const { data: existingGroups } = await supabase
+        .from("category_option_groups")
+        .select("id")
+        .eq("category_id", categoryId);
+      
+      if (existingGroups && existingGroups.length > 0) {
+        const groupIds = existingGroups.map(g => g.id);
+        await supabase.from("category_option_items").delete().in("group_id", groupIds);
+        await supabase.from("category_option_groups").delete().eq("category_id", categoryId);
       }
       
       await supabase.from("pizza_edges").delete().eq("category_id", categoryId);
