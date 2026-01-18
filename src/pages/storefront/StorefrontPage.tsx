@@ -23,7 +23,7 @@ import CardapioSkeleton from "@/components/storefront/skeletons/CardapioSkeleton
 import PedidosSkeleton from "@/components/storefront/skeletons/PedidosSkeleton";
 import SobreSkeleton from "@/components/storefront/skeletons/SobreSkeleton";
 import InstallPrompt from "@/components/storefront/InstallPrompt";
-import DynamicUpsellModal from "@/components/storefront/DynamicUpsellModal";
+import DynamicUpsellModal, { usePrefetchUpsellModals } from "@/components/storefront/DynamicUpsellModal";
 import { LoyaltyWidget } from "@/components/storefront/LoyaltyWidget";
 import { PizzaSizeGrid } from "@/components/storefront/PizzaSizeGrid";
 import { PizzaFlavorSelectionDrawer } from "@/components/storefront/PizzaFlavorSelectionDrawer";
@@ -760,6 +760,9 @@ export default function StorefrontPage() {
   // Check if current category is a standard category (by category_type, not by having sizes)
   const isStandardCategory = activeCategoryData?.category_type === "standard";
 
+  // Prefetch upsell modals for current category (instant modal loading)
+  const prefetchUpsellModals = usePrefetchUpsellModals(store?.id, activeCategoryData?.id);
+
   // Define handleSearch before early returns to avoid hook issues
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
@@ -900,7 +903,7 @@ export default function StorefrontPage() {
     // Don't close pizza flavor drawer - user is going back to it
   }, []);
 
-  // Pizza size selection handler
+  // Pizza size selection handler - prefetch upsell modals immediately
   const handlePizzaSizeSelect = useCallback((sizeId: string, sizeName: string, maxFlavors: number, basePrice: number, imageUrl: string | null) => {
     if (!isStoreOpen) {
       toast.error("Estabelecimento fechado", {
@@ -910,6 +913,9 @@ export default function StorefrontPage() {
     }
     
     if (activeCategoryData) {
+      // Prefetch upsell modals NOW so they're ready when user finishes
+      prefetchUpsellModals();
+      
       setSelectedPizzaSize({
         id: sizeId,
         name: sizeName,
@@ -920,7 +926,7 @@ export default function StorefrontPage() {
       });
       setShowPizzaFlavorDrawer(true);
     }
-  }, [isStoreOpen, activeCategoryData]);
+  }, [isStoreOpen, activeCategoryData, prefetchUpsellModals]);
 
   // Direct finalize without going through state (used when skipping steps)
   const finalizePizzaOrderDirect = useCallback((
