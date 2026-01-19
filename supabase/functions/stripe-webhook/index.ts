@@ -104,6 +104,41 @@ Deno.serve(async (req) => {
         break;
       }
 
+      case 'payment_intent.succeeded': {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        const storeId = paymentIntent.metadata?.store_id;
+        const plan = paymentIntent.metadata?.plan;
+        const isPix = paymentIntent.metadata?.payment_method === 'pix';
+
+        if (isPix && storeId) {
+          // PIX credit payment - add 30 days for monthly or 365 days for annual
+          const newPeriodEnd = new Date();
+          if (plan === 'annual') {
+            newPeriodEnd.setFullYear(newPeriodEnd.getFullYear() + 1);
+            newPeriodEnd.setDate(newPeriodEnd.getDate() + 3); // +3 days tolerance
+          } else {
+            newPeriodEnd.setMonth(newPeriodEnd.getMonth() + 1);
+            newPeriodEnd.setDate(newPeriodEnd.getDate() + 3); // +3 days tolerance
+          }
+
+          await supabase
+            .from('subscriptions')
+            .update({
+              status: 'active',
+              current_period_start: new Date().toISOString(),
+              current_period_end: newPeriodEnd.toISOString(),
+              pix_invoice_id: null,
+              pix_qr_code_url: null,
+              pix_code: null,
+              pix_expires_at: null,
+            })
+            .eq('store_id', storeId);
+
+          console.log(`PIX credit payment confirmed for store ${storeId}, plan: ${plan}, expires: ${newPeriodEnd.toISOString()}`);
+        }
+        break;
+      }
+
       case 'invoice.paid': {
         const invoice = event.data.object as Stripe.Invoice;
         const subscriptionId = invoice.subscription as string;
@@ -119,8 +154,10 @@ Deno.serve(async (req) => {
           const newPeriodEnd = new Date();
           if (planFromInvoice === 'annual') {
             newPeriodEnd.setFullYear(newPeriodEnd.getFullYear() + 1);
+            newPeriodEnd.setDate(newPeriodEnd.getDate() + 3); // +3 days tolerance
           } else {
             newPeriodEnd.setMonth(newPeriodEnd.getMonth() + 1);
+            newPeriodEnd.setDate(newPeriodEnd.getDate() + 3); // +3 days tolerance
           }
 
           await supabase
