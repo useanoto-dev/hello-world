@@ -64,9 +64,8 @@ export default defineConfig(({ mode }) => ({
           }
         ]
       },
-      // PWA com suporte offline completo
       workbox: {
-        // Cachear arquivos estáticos
+        // Cache static assets for faster loading
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,woff,avif,jpg,jpeg,webp}'],
         // Estratégias de cache por tipo de recurso
         runtimeCaching: [
