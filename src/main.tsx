@@ -2,10 +2,6 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
-import { initSentry } from "./lib/sentry";
-
-// Initialize Sentry monitoring
-initSentry();
 
 // Environment flags (Vite)
 const IS_DEV = import.meta.env.DEV;
