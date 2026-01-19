@@ -86,7 +86,6 @@ Deno.serve(async (req) => {
         metadata: {
           store_id: storeId,
         },
-        trial_period_days: 7,
       },
       allow_promotion_codes: true,
       billing_address_collection: 'required',

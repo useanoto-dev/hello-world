@@ -59,12 +59,29 @@ Deno.serve(async (req) => {
         const storeId = subscription.metadata?.store_id;
 
         if (storeId) {
+          // Mapear status do Stripe para o sistema
+          let mappedStatus = 'expired';
+          if (subscription.status === 'active') {
+            mappedStatus = 'active';
+          } else if (subscription.status === 'past_due') {
+            // Verificar se está em atraso por mais de 3 dias
+            const currentPeriodEnd = new Date(subscription.current_period_end * 1000);
+            const now = new Date();
+            const daysPastDue = Math.floor((now.getTime() - currentPeriodEnd.getTime()) / (1000 * 60 * 60 * 24));
+            
+            if (daysPastDue >= 3) {
+              mappedStatus = 'expired'; // Bloquear acesso após 3 dias de atraso
+            } else {
+              mappedStatus = 'past_due'; // Ainda tem tolerância
+            }
+          } else if (subscription.status === 'canceled') {
+            mappedStatus = 'canceled';
+          }
+
           await supabase
             .from('subscriptions')
             .update({
-              status: subscription.status === 'active' ? 'active' : 
-                      subscription.status === 'trialing' ? 'trialing' :
-                      subscription.status === 'canceled' ? 'canceled' : 'expired',
+              status: mappedStatus,
               current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
               current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
               cancel_at_period_end: subscription.cancel_at_period_end,
