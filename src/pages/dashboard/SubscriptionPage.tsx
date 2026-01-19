@@ -27,7 +27,7 @@ export default function SubscriptionPage() {
   const [searchParams] = useSearchParams();
   const { restaurantId } = useActiveRestaurant();
   const { t } = useTranslation();
-  const [isLoading, setIsLoading] = useState<"daily" | "monthly" | "annual" | null>(null);
+  const [isLoading, setIsLoading] = useState<"monthly" | "annual" | null>(null);
   const [isPortalLoading, setIsPortalLoading] = useState(false);
   const [subscription, setSubscription] = useState<{
     status: string;
@@ -66,7 +66,7 @@ export default function SubscriptionPage() {
     fetchSubscription();
   }, [restaurantId]);
 
-  const handleSubscribe = async (plan: "daily" | "monthly" | "annual") => {
+  const handleSubscribe = async (plan: "monthly" | "annual") => {
     if (!restaurantId) {
       toast.error(t('subscription.noStore'));
       return;
@@ -154,12 +154,6 @@ export default function SubscriptionPage() {
     t('subscription.features.whatsappApi'),
   ];
 
-  const dailyFeatures = [
-    t('subscription.features.unlimitedMenu'),
-    t('subscription.features.unlimitedOrders'),
-    t('subscription.features.zeroFee'),
-    t('subscription.features.dashboard'),
-  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -203,80 +197,13 @@ export default function SubscriptionPage() {
         </motion.div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Plano Diário */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="order-3 md:order-1"
-          >
-            <Card 
-              className="h-full relative overflow-hidden"
-              style={{ backgroundColor: "#fff", boxShadow: "0 4px 24px rgba(0,0,0,0.08)", border: `1px solid ${COLORS.border}` }}
-            >
-              <div className="p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold" style={{ color: COLORS.foreground }}>
-                    Plano Diário
-                  </h3>
-                  <span 
-                    className="text-[10px] px-2 py-0.5 rounded-full"
-                    style={{ backgroundColor: "#E3F2FD", color: "#1976D2" }}
-                  >
-                    Teste
-                  </span>
-                </div>
-                
-                <div className="flex items-baseline flex-wrap gap-x-1">
-                  <span className="text-4xl font-bold" style={{ color: COLORS.foreground }}>R$ 1</span>
-                  <span className="text-lg" style={{ color: COLORS.muted }}>,00</span>
-                  <span className="text-sm" style={{ color: COLORS.muted }}>/dia</span>
-                </div>
-                
-                <p className="mt-2 text-[11px]" style={{ color: COLORS.muted }}>
-                  Ideal para testar antes de assinar
-                </p>
-                
-                <div className="my-4 h-px" style={{ backgroundColor: COLORS.border }} />
-                
-                <ul className="space-y-2">
-                  {dailyFeatures.map(item => (
-                    <li key={item} className="flex items-center gap-2">
-                      <div 
-                        className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: COLORS.primaryLight }}
-                      >
-                        <Check className="w-2.5 h-2.5" style={{ color: COLORS.primaryDark }} />
-                      </div>
-                      <span className="text-xs" style={{ color: COLORS.foreground }}>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full mt-5 rounded-full text-xs font-semibold h-10"
-                  onClick={() => handleSubscribe("daily")}
-                  disabled={isLoading !== null || isActive}
-                  style={{ borderColor: COLORS.border, color: COLORS.foreground }}
-                >
-                  {isLoading === "daily" ? (
-                    <Loader2 className="w-3 h-3 animate-spin mr-2" />
-                  ) : null}
-                  {isActive ? t('subscription.currentPlan') : 'Assinar Diário'}
-                </Button>
-              </div>
-            </Card>
-          </motion.div>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
           {/* Plano Mensal */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="order-2 md:order-2"
+            transition={{ delay: 0.1 }}
+            className="order-2 md:order-1"
           >
             <Card 
               className="h-full relative overflow-hidden"
@@ -342,8 +269,8 @@ export default function SubscriptionPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="order-1 md:order-3"
+            transition={{ delay: 0.2 }}
+            className="order-1 md:order-2"
           >
             <Card 
               className="relative h-full overflow-hidden border-0"
