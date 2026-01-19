@@ -27,7 +27,7 @@ export default function SubscriptionPage() {
   const [searchParams] = useSearchParams();
   const { restaurantId } = useActiveRestaurant();
   const { t } = useTranslation();
-  const [isLoading, setIsLoading] = useState<"monthly" | "annual" | null>(null);
+  const [isLoading, setIsLoading] = useState<"daily" | "monthly" | "annual" | null>(null);
   const [isPortalLoading, setIsPortalLoading] = useState(false);
   const [subscription, setSubscription] = useState<{
     status: string;
@@ -66,7 +66,7 @@ export default function SubscriptionPage() {
     fetchSubscription();
   }, [restaurantId]);
 
-  const handleSubscribe = async (plan: "monthly" | "annual") => {
+  const handleSubscribe = async (plan: "daily" | "monthly" | "annual") => {
     if (!restaurantId) {
       toast.error(t('subscription.noStore'));
       return;
@@ -154,6 +154,13 @@ export default function SubscriptionPage() {
     t('subscription.features.whatsappApi'),
   ];
 
+  const dailyFeatures = [
+    t('subscription.features.unlimitedMenu'),
+    t('subscription.features.unlimitedOrders'),
+    t('subscription.features.zeroFee'),
+    t('subscription.features.dashboard'),
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -196,92 +203,70 @@ export default function SubscriptionPage() {
         </motion.div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Plano Anual - Destaque */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Plano Diário */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="order-1 md:order-2"
+            className="order-3 md:order-1"
           >
             <Card 
-              className="relative h-full overflow-hidden border-0"
-              style={{ backgroundColor: COLORS.foreground, boxShadow: "0 8px 40px rgba(0,0,0,0.25)" }}
+              className="h-full relative overflow-hidden"
+              style={{ backgroundColor: "#fff", boxShadow: "0 4px 24px rgba(0,0,0,0.08)", border: `1px solid ${COLORS.border}` }}
             >
-              <div 
-                className="absolute top-0 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-b-xl text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"
-                style={{ backgroundColor: COLORS.primary, color: COLORS.foreground }}
-              >
-                <Star className="w-3 h-3" />
-                {t('subscription.mostChosen')}
-              </div>
-              
-              <div className="p-6 mt-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-                  <div className="flex items-center gap-2">
-                    <Crown className="w-5 h-5 text-yellow-400" />
-                    <h3 className="text-base font-semibold text-white">{t('subscription.annualPlan')}</h3>
-                  </div>
+              <div className="p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold" style={{ color: COLORS.foreground }}>
+                    Plano Diário
+                  </h3>
                   <span 
-                    className="text-xs px-3 py-1 rounded-full font-semibold w-fit"
-                    style={{ backgroundColor: COLORS.success, color: "#fff" }}
+                    className="text-[10px] px-2 py-0.5 rounded-full"
+                    style={{ backgroundColor: "#E3F2FD", color: "#1976D2" }}
                   >
-                    {t('subscription.saveYear', { amount: '442,80' })}
+                    Teste
                   </span>
                 </div>
                 
                 <div className="flex items-baseline flex-wrap gap-x-1">
-                  <span className="text-sm line-through" style={{ color: "rgba(255,255,255,0.5)" }}>
-                    R$ 179,90
-                  </span>
-                  <span className="text-5xl font-bold text-white">R$ 143</span>
-                  <span className="text-lg" style={{ color: "rgba(255,255,255,0.7)" }}>,00</span>
-                  <span className="text-sm" style={{ color: "rgba(255,255,255,0.7)" }}>/{t('subscription.month')}</span>
+                  <span className="text-4xl font-bold" style={{ color: COLORS.foreground }}>R$ 1</span>
+                  <span className="text-lg" style={{ color: COLORS.muted }}>,00</span>
+                  <span className="text-sm" style={{ color: COLORS.muted }}>/dia</span>
                 </div>
                 
-                <div 
-                  className="mt-3 p-3 rounded-xl"
-                  style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-                >
-                  <p className="text-xs text-white flex flex-wrap items-center gap-1">
-                    <span className="font-semibold">{t('subscription.yearlyTotal')}:</span> 
-                    <span>R$ 1.716,00</span>
-                    <span className="text-[10px]" style={{ color: COLORS.primary }}>• 12x R$ 143,00</span>
-                  </p>
-                </div>
+                <p className="mt-2 text-[11px]" style={{ color: COLORS.muted }}>
+                  Ideal para testar antes de assinar
+                </p>
                 
-                <div className="my-5 h-px" style={{ backgroundColor: "rgba(255,255,255,0.15)" }} />
+                <div className="my-4 h-px" style={{ backgroundColor: COLORS.border }} />
                 
-                <ul className="space-y-3">
-                  {annualFeatures.map(item => (
+                <ul className="space-y-2">
+                  {dailyFeatures.map(item => (
                     <li key={item} className="flex items-center gap-2">
                       <div 
-                        className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: COLORS.primary }}
+                        className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: COLORS.primaryLight }}
                       >
-                        <Check className="w-3 h-3" style={{ color: COLORS.foreground }} />
+                        <Check className="w-2.5 h-2.5" style={{ color: COLORS.primaryDark }} />
                       </div>
-                      <span className="text-sm text-white">{item}</span>
+                      <span className="text-xs" style={{ color: COLORS.foreground }}>{item}</span>
                     </li>
                   ))}
                 </ul>
                 
                 <Button 
-                  size="lg" 
-                  className="w-full mt-6 rounded-full text-sm font-semibold h-12 transition-transform hover:scale-[1.02]"
-                  onClick={() => handleSubscribe("annual")}
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full mt-5 rounded-full text-xs font-semibold h-10"
+                  onClick={() => handleSubscribe("daily")}
                   disabled={isLoading !== null || isActive}
-                  style={{ backgroundColor: COLORS.primary, color: COLORS.foreground }}
+                  style={{ borderColor: COLORS.border, color: COLORS.foreground }}
                 >
-                  {isLoading === "annual" ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  {isLoading === "daily" ? (
+                    <Loader2 className="w-3 h-3 animate-spin mr-2" />
                   ) : null}
-                  {isActive ? t('subscription.currentPlan') : t('subscription.subscribeAnnual')}
+                  {isActive ? t('subscription.currentPlan') : 'Assinar Diário'}
                 </Button>
-                
-                <p className="text-center mt-3 text-[10px]" style={{ color: "rgba(255,255,255,0.6)" }}>
-                  🔒 {t('subscription.guarantee')}
-                </p>
               </div>
             </Card>
           </motion.div>
@@ -291,19 +276,19 @@ export default function SubscriptionPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="order-2 md:order-1"
+            className="order-2 md:order-2"
           >
             <Card 
               className="h-full relative overflow-hidden"
               style={{ backgroundColor: "#fff", boxShadow: "0 4px 24px rgba(0,0,0,0.08)", border: `1px solid ${COLORS.border}` }}
             >
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-base font-semibold" style={{ color: COLORS.foreground }}>
+              <div className="p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold" style={{ color: COLORS.foreground }}>
                     {t('subscription.monthlyPlan')}
                   </h3>
                   <span 
-                    className="text-xs px-2 py-1 rounded-full"
+                    className="text-[10px] px-2 py-0.5 rounded-full"
                     style={{ backgroundColor: COLORS.backgroundAlt, color: COLORS.muted, border: `1px solid ${COLORS.border}` }}
                   >
                     {t('subscription.flexible')}
@@ -311,44 +296,132 @@ export default function SubscriptionPage() {
                 </div>
                 
                 <div className="flex items-baseline flex-wrap gap-x-1">
-                  <span className="text-5xl font-bold" style={{ color: COLORS.foreground }}>R$ 179</span>
+                  <span className="text-4xl font-bold" style={{ color: COLORS.foreground }}>R$ 179</span>
                   <span className="text-lg" style={{ color: COLORS.muted }}>,90</span>
                   <span className="text-sm" style={{ color: COLORS.muted }}>/{t('subscription.month')}</span>
                 </div>
                 
-                <p className="mt-2 text-xs" style={{ color: COLORS.muted }}>
+                <p className="mt-2 text-[11px]" style={{ color: COLORS.muted }}>
                   {t('subscription.monthlyBilling')}
                 </p>
                 
-                <div className="my-5 h-px" style={{ backgroundColor: COLORS.border }} />
+                <div className="my-4 h-px" style={{ backgroundColor: COLORS.border }} />
                 
-                <ul className="space-y-3">
+                <ul className="space-y-2">
                   {monthlyFeatures.map(item => (
                     <li key={item} className="flex items-center gap-2">
                       <div 
-                        className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+                        className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
                         style={{ backgroundColor: COLORS.primaryLight }}
                       >
-                        <Check className="w-3 h-3" style={{ color: COLORS.primaryDark }} />
+                        <Check className="w-2.5 h-2.5" style={{ color: COLORS.primaryDark }} />
                       </div>
-                      <span className="text-sm" style={{ color: COLORS.foreground }}>{item}</span>
+                      <span className="text-xs" style={{ color: COLORS.foreground }}>{item}</span>
                     </li>
                   ))}
                 </ul>
                 
                 <Button 
                   variant="outline" 
-                  size="lg" 
-                  className="w-full mt-6 rounded-full text-sm font-semibold h-12"
+                  size="sm" 
+                  className="w-full mt-5 rounded-full text-xs font-semibold h-10"
                   onClick={() => handleSubscribe("monthly")}
                   disabled={isLoading !== null || isActive}
                   style={{ borderColor: COLORS.border, color: COLORS.foreground }}
                 >
                   {isLoading === "monthly" ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    <Loader2 className="w-3 h-3 animate-spin mr-2" />
                   ) : null}
                   {isActive ? t('subscription.currentPlan') : t('subscription.subscribeMonthly')}
                 </Button>
+              </div>
+            </Card>
+          </motion.div>
+
+          {/* Plano Anual - Destaque */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="order-1 md:order-3"
+          >
+            <Card 
+              className="relative h-full overflow-hidden border-0"
+              style={{ backgroundColor: COLORS.foreground, boxShadow: "0 8px 40px rgba(0,0,0,0.25)" }}
+            >
+              <div 
+                className="absolute top-0 left-1/2 -translate-x-1/2 px-3 py-1 rounded-b-lg text-[9px] font-bold uppercase tracking-wider flex items-center gap-1"
+                style={{ backgroundColor: COLORS.primary, color: COLORS.foreground }}
+              >
+                <Star className="w-2.5 h-2.5" />
+                {t('subscription.mostChosen')}
+              </div>
+              
+              <div className="p-5 mt-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2">
+                    <Crown className="w-4 h-4 text-yellow-400" />
+                    <h3 className="text-sm font-semibold text-white">{t('subscription.annualPlan')}</h3>
+                  </div>
+                  <span 
+                    className="text-[10px] px-2 py-0.5 rounded-full font-semibold w-fit"
+                    style={{ backgroundColor: COLORS.success, color: "#fff" }}
+                  >
+                    {t('subscription.saveYear', { amount: '442,80' })}
+                  </span>
+                </div>
+                
+                <div className="flex items-baseline flex-wrap gap-x-1">
+                  <span className="text-xs line-through" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    R$ 179,90
+                  </span>
+                  <span className="text-4xl font-bold text-white">R$ 143</span>
+                  <span className="text-lg" style={{ color: "rgba(255,255,255,0.7)" }}>,00</span>
+                  <span className="text-sm" style={{ color: "rgba(255,255,255,0.7)" }}>/{t('subscription.month')}</span>
+                </div>
+                
+                <div 
+                  className="mt-2 p-2 rounded-lg"
+                  style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+                >
+                  <p className="text-[10px] text-white flex flex-wrap items-center gap-1">
+                    <span className="font-semibold">{t('subscription.yearlyTotal')}:</span> 
+                    <span>R$ 1.716,00</span>
+                  </p>
+                </div>
+                
+                <div className="my-4 h-px" style={{ backgroundColor: "rgba(255,255,255,0.15)" }} />
+                
+                <ul className="space-y-2">
+                  {annualFeatures.map(item => (
+                    <li key={item} className="flex items-center gap-2">
+                      <div 
+                        className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: COLORS.primary }}
+                      >
+                        <Check className="w-2.5 h-2.5" style={{ color: COLORS.foreground }} />
+                      </div>
+                      <span className="text-xs text-white">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                
+                <Button 
+                  size="sm" 
+                  className="w-full mt-5 rounded-full text-xs font-semibold h-10 transition-transform hover:scale-[1.02]"
+                  onClick={() => handleSubscribe("annual")}
+                  disabled={isLoading !== null || isActive}
+                  style={{ backgroundColor: COLORS.primary, color: COLORS.foreground }}
+                >
+                  {isLoading === "annual" ? (
+                    <Loader2 className="w-3 h-3 animate-spin mr-2" />
+                  ) : null}
+                  {isActive ? t('subscription.currentPlan') : t('subscription.subscribeAnnual')}
+                </Button>
+                
+                <p className="text-center mt-2 text-[9px]" style={{ color: "rgba(255,255,255,0.6)" }}>
+                  🔒 {t('subscription.guarantee')}
+                </p>
               </div>
             </Card>
           </motion.div>
@@ -393,7 +466,11 @@ export default function SubscriptionPage() {
                 <p className="text-sm text-muted-foreground mb-3">
                   {isActive 
                     ? t('subscription.activeDescription', { 
-                        plan: subscription?.plan === 'annual' ? t('subscription.annualPlan') : t('subscription.monthlyPlan'),
+                        plan: subscription?.plan === 'annual' 
+                          ? t('subscription.annualPlan') 
+                          : subscription?.plan === 'daily' 
+                            ? 'Plano Diário' 
+                            : t('subscription.monthlyPlan'),
                         date: subscription?.current_period_end 
                           ? new Date(subscription.current_period_end).toLocaleDateString() 
                           : ''
@@ -419,7 +496,12 @@ export default function SubscriptionPage() {
                   )}
                   {isActive && subscription?.plan && (
                     <Badge variant="outline">
-                      {subscription.plan === 'annual' ? t('subscription.annualPlan') : t('subscription.monthlyPlan')}
+                      {subscription.plan === 'annual' 
+                        ? t('subscription.annualPlan') 
+                        : subscription.plan === 'daily' 
+                          ? 'Plano Diário' 
+                          : t('subscription.monthlyPlan')
+                      }
                     </Badge>
                   )}
                 </div>
