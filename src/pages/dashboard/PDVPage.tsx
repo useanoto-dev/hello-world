@@ -8,7 +8,6 @@ import { PDVPaymentSection } from "@/components/pdv/PDVPaymentSection";
 import { PDVManualDiscount } from "@/components/pdv/PDVManualDiscount";
 import { PDVProductsPanel } from "@/components/pdv/PDVProductsPanel";
 import { PDVNewCartPanel } from "@/components/pdv/PDVNewCartPanel";
-import { PDVFullscreenHeader } from "@/components/pdv/PDVFullscreenHeader";
 import { PDVTableSelectionModal } from "@/components/pdv/PDVTableSelectionModal";
 import TablesManagement from "@/components/pdv/TablesManagement";
 import { Button } from "@/components/ui/button";
@@ -35,11 +34,31 @@ import {
 } from "@/services/PrintService";
 import { usePDVData, Table, getItemPrice } from "@/hooks/usePDVData";
 import { usePDVCart } from "@/hooks/usePDVCart";
-import { useFullscreen } from "@/hooks/useFullscreen";
+
+interface PDVOutletContext {
+  store: {
+    id: string;
+    name: string;
+    slug: string;
+    delivery_fee: number;
+    min_order_value: number;
+    printnode_api_key?: string;
+    printnode_printer_id?: string;
+    printnode_printer_width?: string;
+    printer_width?: string;
+    printnode_auto_print?: boolean;
+    printnode_printer_name?: string;
+    printnode_max_retries?: number;
+    logo_url?: string;
+    address?: string;
+    phone?: string;
+    whatsapp?: string;
+    print_footer_message?: string;
+  };
+}
 
 export default function PDVPage() {
-  const { store } = useOutletContext<{ store: any }>();
-  const { isFullscreen, toggleFullscreen, isSupported: fullscreenSupported } = useFullscreen();
+  const { store } = useOutletContext<PDVOutletContext>();
   
   // State for active module tab
   const [activeModule, setActiveModule] = useState<string>("vendas");
@@ -541,12 +560,7 @@ export default function PDVPage() {
   }
 
   return (
-    <div className={isFullscreen ? "h-screen flex flex-col" : "h-[calc(100vh-4rem)] flex flex-col"}>
-      {/* Fullscreen Header - Only show in fullscreen mode */}
-      {isFullscreen && (
-        <PDVFullscreenHeader onExitFullscreen={toggleFullscreen} />
-      )}
-
+    <div className="h-[calc(100vh-4rem)] flex flex-col">
       {/* Module Tabs */}
       <div className="border-b bg-background px-4 pt-2">
         <Tabs value={activeModule} onValueChange={setActiveModule} className="w-full">
@@ -588,9 +602,6 @@ export default function PDVPage() {
             loyaltyDiscount={loyaltyDiscount}
             finalTotal={finalTotal}
             onFinishOrder={handleFinishOrder}
-            isFullscreen={isFullscreen}
-            onToggleFullscreen={toggleFullscreen}
-            fullscreenSupported={fullscreenSupported}
           />
         </div>
       ) : (
