@@ -85,82 +85,82 @@ export default function SuperAdminUsage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+      <div className="admin-page-header">
+        <h1 className="admin-page-title text-2xl">
           Uso de Dados
         </h1>
-        <p className="text-gray-500 mt-1">
+        <p className="admin-page-description">
           Visualize quanto cada conta consome de recursos do sistema
         </p>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card className="border-0 shadow-sm">
+        <Card className="admin-card">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                <ShoppingCart className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <ShoppingCart className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{totals.orders}</p>
-                <p className="text-xs text-gray-500">Pedidos</p>
+                <p className="text-2xl font-bold text-foreground">{totals.orders}</p>
+                <p className="text-xs text-muted-foreground">Pedidos</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm">
+        <Card className="admin-card">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{totals.products}</p>
-                <p className="text-xs text-gray-500">Produtos</p>
+                <p className="text-2xl font-bold text-foreground">{totals.products}</p>
+                <p className="text-xs text-muted-foreground">Produtos</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm">
+        <Card className="admin-card">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                <Database className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+                <Database className="w-5 h-5 text-success" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{totals.customers}</p>
-                <p className="text-xs text-gray-500">Clientes</p>
+                <p className="text-2xl font-bold text-foreground">{totals.customers}</p>
+                <p className="text-xs text-muted-foreground">Clientes</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm">
+        <Card className="admin-card">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
-                <Image className="w-5 h-5 text-orange-600" />
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Image className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{totals.banners}</p>
-                <p className="text-xs text-gray-500">Banners</p>
+                <p className="text-2xl font-bold text-foreground">{totals.banners}</p>
+                <p className="text-xs text-muted-foreground">Banners</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm">
+        <Card className="admin-card">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-pink-100 flex items-center justify-center">
-                <Store className="w-5 h-5 text-pink-600" />
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Store className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{totals.categories}</p>
-                <p className="text-xs text-gray-500">Categorias</p>
+                <p className="text-2xl font-bold text-foreground">{totals.categories}</p>
+                <p className="text-xs text-muted-foreground">Categorias</p>
               </div>
             </div>
           </CardContent>
@@ -168,20 +168,20 @@ export default function SuperAdminUsage() {
       </div>
 
       {/* Usage by Store */}
-      <Card className="border-0 shadow-sm">
+      <Card className="admin-card">
         <CardHeader>
-          <CardTitle className="text-lg">Uso por Loja</CardTitle>
+          <CardTitle className="text-lg text-foreground">Uso por Loja</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Loja</TableHead>
-                <TableHead className="text-center">Pedidos</TableHead>
-                <TableHead className="text-center">Produtos</TableHead>
-                <TableHead className="text-center">Clientes</TableHead>
-                <TableHead className="text-center">Categorias</TableHead>
-                <TableHead>Uso Relativo</TableHead>
+                <TableHead className="admin-table-header">Loja</TableHead>
+                <TableHead className="admin-table-header text-center">Pedidos</TableHead>
+                <TableHead className="admin-table-header text-center">Produtos</TableHead>
+                <TableHead className="admin-table-header text-center">Clientes</TableHead>
+                <TableHead className="admin-table-header text-center">Categorias</TableHead>
+                <TableHead className="admin-table-header">Uso Relativo</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -196,38 +196,38 @@ export default function SuperAdminUsage() {
                 </TableRow>
               ) : storeUsage?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                     Nenhuma loja encontrada
                   </TableCell>
                 </TableRow>
               ) : (
                 storeUsage?.map((store) => (
                   <TableRow key={store.id}>
-                    <TableCell>
+                    <TableCell className="admin-table-cell">
                       <div>
-                        <p className="font-medium">{store.name}</p>
-                        <p className="text-xs text-gray-500">{store.slug}</p>
+                        <p className="font-medium text-foreground">{store.name}</p>
+                        <p className="text-xs text-muted-foreground">{store.slug}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="text-center font-medium">
+                    <TableCell className="admin-table-cell text-center font-medium text-foreground">
                       {store.orders_count}
                     </TableCell>
-                    <TableCell className="text-center font-medium">
+                    <TableCell className="admin-table-cell text-center font-medium text-foreground">
                       {store.products_count}
                     </TableCell>
-                    <TableCell className="text-center font-medium">
+                    <TableCell className="admin-table-cell text-center font-medium text-foreground">
                       {store.customers_count}
                     </TableCell>
-                    <TableCell className="text-center font-medium">
+                    <TableCell className="admin-table-cell text-center font-medium text-foreground">
                       {store.categories_count}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="admin-table-cell">
                       <div className="flex items-center gap-2">
                         <Progress
                           value={(store.total_items / maxUsage) * 100}
                           className="h-2 w-24"
                         />
-                        <span className="text-xs text-gray-500 w-12">
+                        <span className="text-xs text-muted-foreground w-12">
                           {store.total_items}
                         </span>
                       </div>

@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import logoHeader from "@/assets/anoto-logo-header.avif";
 
 const navItems = [
   { title: "Dashboard", url: "/superadmin", icon: LayoutDashboard, end: true },
@@ -39,7 +40,7 @@ export default function SuperAdminLayout() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
       </div>
     );
@@ -55,18 +56,20 @@ export default function SuperAdminLayout() {
   };
 
   return (
-    <div className="min-h-screen flex bg-gray-100 dark:bg-gray-900">
-      {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white flex flex-col">
-        {/* Header */}
-        <div className="p-4 border-b border-gray-800">
+    <div className="min-h-screen flex bg-background">
+      {/* Sidebar - Anoto Brand Yellow */}
+      <aside className="w-64 bg-primary text-primary-foreground flex flex-col">
+        {/* Header with Logo */}
+        <div className="p-4 border-b border-black/10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="font-bold text-sm">Super Admin</h1>
-              <p className="text-xs text-gray-400">Painel de Controle</p>
+            <img 
+              src={logoHeader} 
+              alt="Anoto" 
+              className="h-8 w-auto"
+            />
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              <span className="text-xs font-semibold uppercase tracking-wide">Admin</span>
             </div>
           </div>
         </div>
@@ -84,8 +87,8 @@ export default function SuperAdminLayout() {
                   cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
                     isActive
-                      ? "bg-red-600 text-white"
-                      : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                      ? "bg-black text-white"
+                      : "text-black/70 hover:bg-black/10 hover:text-black"
                   )
                 }
               >
@@ -97,10 +100,10 @@ export default function SuperAdminLayout() {
         </nav>
 
         {/* Footer */}
-        <div className="p-3 border-t border-gray-800">
+        <div className="p-3 border-t border-black/10">
           <Button
             variant="ghost"
-            className="w-full justify-start text-gray-400 hover:text-white hover:bg-gray-800"
+            className="w-full justify-start text-black/70 hover:text-black hover:bg-black/10"
             onClick={handleSignOut}
           >
             <LogOut className="w-4 h-4 mr-3" />
