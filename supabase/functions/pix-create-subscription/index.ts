@@ -10,10 +10,10 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
   apiVersion: '2025-05-28.basil',
 });
 
-// Price IDs - produção
+// Prices in centavos (BRL)
 const PRICES = {
-  monthly: 'price_1SrOK7E192cWcvpVUTc7JtVz', // R$ 179,90/mês
-  annual: 'price_1SrOKUE192cWcvpVMdTW0yT8',  // R$ 1.716/ano
+  monthly: 17990, // R$ 179,90
+  annual: 171600, // R$ 1.716,00
 };
 
 Deno.serve(async (req) => {
@@ -50,22 +50,18 @@ Deno.serve(async (req) => {
       customerId = customer.id;
     }
 
-    // Get price details
-    const priceId = PRICES[plan as keyof typeof PRICES];
-    if (!priceId) {
+    // Get amount based on plan
+    const amount = PRICES[plan as keyof typeof PRICES];
+    if (!amount) {
       throw new Error('Invalid plan');
     }
 
-    const price = await stripe.prices.retrieve(priceId);
-
-    // Create Invoice with PIX
-    const invoice = await stripe.invoices.create({
+    // Create PaymentIntent with PIX (PIX uses PaymentIntent, not Invoice)
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency: 'brl',
       customer: customerId,
-      collection_method: 'send_invoice',
-      days_until_due: 1, // PIX expira em 24h
-      payment_settings: {
-        payment_method_types: ['pix'],
-      },
+      payment_method_types: ['pix'],
       metadata: {
         store_id: storeId,
         plan: plan,
@@ -73,34 +69,19 @@ Deno.serve(async (req) => {
       },
     });
 
-    // Add line item with plan price
-    await stripe.invoiceItems.create({
-      customer: customerId,
-      invoice: invoice.id,
-      price: priceId,
-      quantity: 1,
-    });
-
-    // Finalize to generate PIX QR Code
-    const finalizedInvoice = await stripe.invoices.finalizeInvoice(invoice.id);
-
-    // Get PIX payment details
+    // Get PIX payment details from next_action
     let pixQrCode = '';
     let pixCode = '';
 
-    if (finalizedInvoice.payment_intent) {
-      const paymentIntent = await stripe.paymentIntents.retrieve(
-        finalizedInvoice.payment_intent as string
-      );
+    // PIX QR code is generated after confirmation, so we need to confirm first
+    const confirmedIntent = await stripe.paymentIntents.confirm(paymentIntent.id);
 
-      // Access next_action for PIX details
-      if (paymentIntent.next_action?.pix_display_qr_code) {
-        pixQrCode = paymentIntent.next_action.pix_display_qr_code.image_url_png || '';
-        pixCode = paymentIntent.next_action.pix_display_qr_code.data || '';
-      }
+    if (confirmedIntent.next_action?.pix_display_qr_code) {
+      pixQrCode = confirmedIntent.next_action.pix_display_qr_code.image_url_png || '';
+      pixCode = confirmedIntent.next_action.pix_display_qr_code.data || '';
     }
 
-    // Calculate expiration (24 hours from now)
+    // Calculate expiration (PIX expires in 24 hours by default)
     const pixExpiresAt = new Date();
     pixExpiresAt.setHours(pixExpiresAt.getHours() + 24);
 
@@ -121,8 +102,8 @@ Deno.serve(async (req) => {
         payment_method: 'pix',
         plan: plan,
         status: 'pending_payment',
-        pix_invoice_id: invoice.id,
-        pix_qr_code_url: pixQrCode || finalizedInvoice.hosted_invoice_url,
+        pix_invoice_id: paymentIntent.id, // Store PaymentIntent ID instead of Invoice ID
+        pix_qr_code_url: pixQrCode,
         pix_code: pixCode,
         pix_expires_at: pixExpiresAt.toISOString(),
         current_period_end: currentPeriodEnd.toISOString(),
@@ -131,12 +112,11 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        invoiceId: invoice.id,
-        hostedInvoiceUrl: finalizedInvoice.hosted_invoice_url,
-        pixQrCode: pixQrCode || finalizedInvoice.hosted_invoice_url,
+        paymentIntentId: paymentIntent.id,
+        pixQrCode,
         pixCode,
         expiresAt: pixExpiresAt.toISOString(),
-        amount: price.unit_amount ? price.unit_amount / 100 : 0,
+        amount: amount / 100,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
