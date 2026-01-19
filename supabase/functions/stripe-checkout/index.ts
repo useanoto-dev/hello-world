@@ -12,7 +12,6 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
 
 // Price IDs - produção
 const PRICES = {
-  daily: 'price_1SrPQqE192cWcvpVdplNs45w',   // R$ 1,00/dia
   monthly: 'price_1SrOK7E192cWcvpVUTc7JtVz', // R$ 179,90/mês
   annual: 'price_1SrOKUE192cWcvpVMdTW0yT8',  // R$ 1.716/ano
 };
@@ -71,6 +70,7 @@ Deno.serve(async (req) => {
     // Create Checkout Session
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'subscription',
+      payment_method_types: ['card', 'boleto'],
       line_items: [
         {
           price: selectedPriceId,
