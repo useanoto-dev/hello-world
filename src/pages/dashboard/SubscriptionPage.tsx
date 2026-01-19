@@ -1,14 +1,18 @@
 import { motion } from "framer-motion";
-import { Check, Shield, Zap, Crown, Star, ArrowLeft, Loader2, Settings, ExternalLink } from "lucide-react";
+import { Check, Shield, Zap, Crown, Star, ArrowLeft, Loader2, Settings, ExternalLink, QrCode, Copy, RefreshCw, CreditCard, Barcode, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveRestaurant } from "@/hooks/useActiveRestaurant";
 import { useTranslation } from "@/hooks/useTranslation";
 import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const COLORS = {
   background: "#FDFDFD",
@@ -29,11 +33,23 @@ export default function SubscriptionPage() {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState<"monthly" | "annual" | null>(null);
   const [isPortalLoading, setIsPortalLoading] = useState(false);
+  const [isRegeneratingPix, setIsRegeneratingPix] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "pix">("card");
+  const [pixData, setPixData] = useState<{
+    qrCode: string;
+    code: string;
+    expiresAt: string;
+    amount: number;
+  } | null>(null);
   const [subscription, setSubscription] = useState<{
     status: string;
     plan?: string;
     trial_ends_at?: string;
     current_period_end?: string;
+    payment_method?: string;
+    pix_qr_code_url?: string;
+    pix_code?: string;
+    pix_expires_at?: string;
   } | null>(null);
 
   // Check for success/cancel from Stripe
@@ -53,12 +69,24 @@ export default function SubscriptionPage() {
     
     const { data } = await supabase
       .from('subscriptions')
-      .select('status, plan, trial_ends_at, current_period_end')
+      .select('status, plan, trial_ends_at, current_period_end, payment_method, pix_qr_code_url, pix_code, pix_expires_at')
       .eq('store_id', restaurantId)
       .single();
     
     if (data) {
-      setSubscription(data);
+      setSubscription(data as typeof subscription);
+      
+      // If there's pending PIX data (status may be pending_payment which is not in the enum)
+      const statusStr = data.status as string;
+      if (data.payment_method === 'pix' && data.pix_qr_code_url && statusStr === 'pending_payment') {
+        setPixData({
+          qrCode: data.pix_qr_code_url,
+          code: data.pix_code || '',
+          expiresAt: data.pix_expires_at || '',
+          amount: data.plan === 'annual' ? 1716 : 179.90,
+        });
+        setPaymentMethod('pix');
+      }
     }
   };
 
@@ -78,24 +106,86 @@ export default function SubscriptionPage() {
       // Get user email
       const { data: { user } } = await supabase.auth.getUser();
       
-      const { data, error } = await supabase.functions.invoke('stripe-checkout', {
-        body: {
-          plan,
-          storeId: restaurantId,
-          email: user?.email,
-        },
-      });
+      if (paymentMethod === 'pix') {
+        // PIX flow
+        const { data, error } = await supabase.functions.invoke('pix-create-subscription', {
+          body: {
+            plan,
+            storeId: restaurantId,
+            email: user?.email,
+          },
+        });
 
-      if (error) throw error;
-      
-      if (data?.url) {
-        window.location.href = data.url;
+        if (error) throw error;
+        
+        if (data?.success) {
+          setPixData({
+            qrCode: data.pixQrCode,
+            code: data.pixCode,
+            expiresAt: data.expiresAt,
+            amount: data.amount,
+          });
+          toast.success('QR Code PIX gerado com sucesso!');
+          fetchSubscription();
+        }
+      } else {
+        // Card/Boleto flow - redirect to Stripe Checkout
+        const { data, error } = await supabase.functions.invoke('stripe-checkout', {
+          body: {
+            plan,
+            storeId: restaurantId,
+            email: user?.email,
+          },
+        });
+
+        if (error) throw error;
+        
+        if (data?.url) {
+          window.location.href = data.url;
+        }
       }
     } catch (error) {
       console.error('Checkout error:', error);
       toast.error(t('subscription.error'));
     } finally {
       setIsLoading(null);
+    }
+  };
+
+  const handleRegeneratePixCode = async () => {
+    if (!restaurantId) return;
+
+    setIsRegeneratingPix(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('pix-regenerate-qrcode', {
+        body: { storeId: restaurantId },
+      });
+
+      if (error) throw error;
+      
+      if (data?.success) {
+        setPixData({
+          qrCode: data.pixQrCode,
+          code: data.pixCode,
+          expiresAt: data.expiresAt,
+          amount: subscription?.plan === 'annual' ? 1716 : 179.90,
+        });
+        toast.success('Novo QR Code gerado!');
+        fetchSubscription();
+      }
+    } catch (error) {
+      console.error('Regenerate error:', error);
+      toast.error('Erro ao gerar novo QR Code');
+    } finally {
+      setIsRegeneratingPix(false);
+    }
+  };
+
+  const copyPixCode = () => {
+    if (pixData?.code) {
+      navigator.clipboard.writeText(pixData.code);
+      toast.success('Código PIX copiado!');
     }
   };
 
@@ -353,6 +443,138 @@ export default function SubscriptionPage() {
             </Card>
           </motion.div>
         </div>
+
+        {/* Payment Method Selection */}
+        {!isActive && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            className="mt-8 max-w-md mx-auto"
+          >
+            <Card className="p-5">
+              <h3 className="text-sm font-semibold mb-4 text-center">Forma de Pagamento</h3>
+              <RadioGroup
+                value={paymentMethod}
+                onValueChange={(value) => setPaymentMethod(value as "card" | "pix")}
+                className="grid grid-cols-2 gap-3"
+              >
+                <Label
+                  htmlFor="card"
+                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    paymentMethod === 'card' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                  }`}
+                >
+                  <RadioGroupItem value="card" id="card" className="sr-only" />
+                  <CreditCard className="w-6 h-6" />
+                  <span className="text-xs font-medium">Cartão / Boleto</span>
+                  <span className="text-[10px] text-muted-foreground">Automático</span>
+                </Label>
+                <Label
+                  htmlFor="pix"
+                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    paymentMethod === 'pix' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                  }`}
+                >
+                  <RadioGroupItem value="pix" id="pix" className="sr-only" />
+                  <Smartphone className="w-6 h-6" />
+                  <span className="text-xs font-medium">PIX</span>
+                  <span className="text-[10px] text-muted-foreground">QR Code</span>
+                </Label>
+              </RadioGroup>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* PIX QR Code Section */}
+        {pixData && (subscription?.status as string) === 'pending_payment' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mt-8"
+          >
+            <Card className="p-6 max-w-md mx-auto text-center border-2 border-primary/20">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <QrCode className="w-5 h-5 text-primary" />
+                <h3 className="font-semibold">Pague via PIX</h3>
+              </div>
+              
+              <div className="bg-white p-4 rounded-xl border mb-4">
+                {pixData.qrCode.startsWith('http') ? (
+                  <img 
+                    src={pixData.qrCode} 
+                    alt="QR Code PIX"
+                    className="mx-auto w-48 h-48 object-contain"
+                  />
+                ) : (
+                  <div className="w-48 h-48 mx-auto flex items-center justify-center bg-muted rounded-lg">
+                    <a 
+                      href={pixData.qrCode} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary underline text-sm"
+                    >
+                      Abrir página de pagamento
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              <div className="mb-4">
+                <p className="text-2xl font-bold text-primary">
+                  R$ {pixData.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {subscription?.plan === 'annual' ? 'Plano Anual' : 'Plano Mensal'}
+                </p>
+              </div>
+
+              {pixData.code && (
+                <div className="mb-4">
+                  <p className="text-xs text-muted-foreground mb-2">Código PIX (copia e cola):</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={pixData.code}
+                      readOnly
+                      className="flex-1 text-xs p-2 bg-muted rounded border text-center truncate"
+                    />
+                    <Button size="sm" variant="outline" onClick={copyPixCode}>
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {pixData.expiresAt && (
+                <p className="text-xs text-muted-foreground mb-4">
+                  Expira {formatDistanceToNow(new Date(pixData.expiresAt), { addSuffix: true, locale: ptBR })}
+                </p>
+              )}
+
+              <div className="flex gap-2 justify-center">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleRegeneratePixCode}
+                  disabled={isRegeneratingPix}
+                >
+                  {isRegeneratingPix ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                  )}
+                  Novo QR Code
+                </Button>
+              </div>
+
+              <p className="text-[10px] text-muted-foreground mt-4">
+                Após o pagamento, sua assinatura será ativada automaticamente em até 5 minutos.
+              </p>
+            </Card>
+          </motion.div>
+        )}
 
         {/* Trust badges */}
         <motion.div 
