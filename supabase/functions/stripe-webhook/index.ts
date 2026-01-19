@@ -1,0 +1,142 @@
+import Stripe from 'https://esm.sh/stripe@17.7.0?target=deno';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.90.1';
+
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+  apiVersion: '2025-05-28.basil',
+});
+
+const endpointSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET') || '';
+
+Deno.serve(async (req) => {
+  const signature = req.headers.get('stripe-signature');
+
+  if (!signature) {
+    return new Response('No signature', { status: 400 });
+  }
+
+  try {
+    const body = await req.text();
+    let event: Stripe.Event;
+
+    try {
+      event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      console.error('Webhook signature verification failed:', err);
+      return new Response(`Webhook Error: ${message}`, { status: 400 });
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const storeId = session.metadata?.store_id;
+        
+        if (storeId && session.subscription) {
+          const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+          
+          await supabase
+            .from('subscriptions')
+            .upsert({
+              store_id: storeId,
+              stripe_customer_id: session.customer as string,
+              stripe_subscription_id: session.subscription as string,
+              status: 'active',
+              plan: subscription.items.data[0]?.price.recurring?.interval === 'year' ? 'annual' : 'monthly',
+              current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+              trial_ends_at: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+            }, { onConflict: 'store_id' });
+        }
+        break;
+      }
+
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object as Stripe.Subscription;
+        const storeId = subscription.metadata?.store_id;
+
+        if (storeId) {
+          await supabase
+            .from('subscriptions')
+            .update({
+              status: subscription.status === 'active' ? 'active' : 
+                      subscription.status === 'trialing' ? 'trialing' :
+                      subscription.status === 'canceled' ? 'canceled' : 'expired',
+              current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+              cancel_at_period_end: subscription.cancel_at_period_end,
+            })
+            .eq('store_id', storeId);
+        }
+        break;
+      }
+
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object as Stripe.Subscription;
+        const storeId = subscription.metadata?.store_id;
+
+        if (storeId) {
+          await supabase
+            .from('subscriptions')
+            .update({ status: 'canceled' })
+            .eq('store_id', storeId);
+        }
+        break;
+      }
+
+      case 'invoice.paid': {
+        const invoice = event.data.object as Stripe.Invoice;
+        const subscriptionId = invoice.subscription as string;
+        
+        if (subscriptionId) {
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const storeId = subscription.metadata?.store_id;
+          
+          if (storeId) {
+            await supabase
+              .from('subscriptions')
+              .update({
+                status: 'active',
+                current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+              })
+              .eq('store_id', storeId);
+          }
+        }
+        break;
+      }
+
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object as Stripe.Invoice;
+        const subscriptionId = invoice.subscription as string;
+        
+        if (subscriptionId) {
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const storeId = subscription.metadata?.store_id;
+          
+          if (storeId) {
+            await supabase
+              .from('subscriptions')
+              .update({ status: 'past_due' })
+              .eq('store_id', storeId);
+          }
+        }
+        break;
+      }
+    }
+
+    return new Response(JSON.stringify({ received: true }), {
+      headers: { 'Content-Type': 'application/json' },
+      status: 200,
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Webhook error:', error);
+    return new Response(
+      JSON.stringify({ error: message }),
+      { status: 500 }
+    );
+  }
+});
