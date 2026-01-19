@@ -10,9 +10,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Activity, ShoppingCart, User, Store, Clock } from "lucide-react";
+import { ShoppingCart, User, Clock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 export default function SuperAdminActivity() {
   // Recent orders
@@ -75,19 +76,19 @@ export default function SuperAdminActivity() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
-        return "bg-yellow-100 text-yellow-700";
+        return "bg-primary/20 text-primary";
       case "confirmed":
-        return "bg-blue-100 text-blue-700";
+        return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
       case "preparing":
-        return "bg-purple-100 text-purple-700";
+        return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400";
       case "ready":
-        return "bg-green-100 text-green-700";
+        return "bg-success/20 text-success";
       case "delivered":
-        return "bg-emerald-100 text-emerald-700";
+        return "bg-success/20 text-success";
       case "canceled":
-        return "bg-red-100 text-red-700";
+        return "bg-destructive/20 text-destructive";
       default:
-        return "bg-gray-100 text-gray-700";
+        return "bg-muted text-muted-foreground";
     }
   };
 
@@ -112,22 +113,24 @@ export default function SuperAdminActivity() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+      <div className="admin-page-header">
+        <h1 className="admin-page-title text-2xl">
           Atividade do Sistema
         </h1>
-        <p className="text-gray-500 mt-1">
+        <p className="admin-page-description">
           Monitore atividades recentes em tempo real
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Orders */}
-        <Card className="border-0 shadow-sm">
+        <Card className="admin-card">
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
-              <ShoppingCart className="w-5 h-5 text-blue-600" />
-              <CardTitle className="text-lg">Pedidos Recentes</CardTitle>
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <ShoppingCart className="w-4 h-4 text-primary" />
+              </div>
+              <CardTitle className="text-lg text-foreground">Pedidos Recentes</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -135,11 +138,11 @@ export default function SuperAdminActivity() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>#</TableHead>
-                    <TableHead>Cliente</TableHead>
-                    <TableHead>Loja</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead className="admin-table-header">#</TableHead>
+                    <TableHead className="admin-table-header">Cliente</TableHead>
+                    <TableHead className="admin-table-header">Loja</TableHead>
+                    <TableHead className="admin-table-header text-right">Total</TableHead>
+                    <TableHead className="admin-table-header">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -154,15 +157,15 @@ export default function SuperAdminActivity() {
                   ) : (
                     recentOrders?.map((order) => (
                       <TableRow key={order.id}>
-                        <TableCell className="font-mono text-xs">
+                        <TableCell className="admin-table-cell font-mono text-xs text-foreground">
                           #{order.order_number}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="admin-table-cell">
                           <div>
-                            <p className="text-sm font-medium truncate max-w-[120px]">
+                            <p className="text-sm font-medium truncate max-w-[120px] text-foreground">
                               {order.customer_name}
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-muted-foreground">
                               {formatDistanceToNow(new Date(order.created_at), {
                                 addSuffix: true,
                                 locale: ptBR,
@@ -170,17 +173,17 @@ export default function SuperAdminActivity() {
                             </p>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <span className="text-xs text-gray-600 truncate max-w-[100px] block">
+                        <TableCell className="admin-table-cell">
+                          <span className="text-xs text-muted-foreground truncate max-w-[100px] block">
                             {order.store_name}
                           </span>
                         </TableCell>
-                        <TableCell className="text-right font-medium">
+                        <TableCell className="admin-table-cell text-right font-medium text-foreground">
                           R$ {order.total.toFixed(2)}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="admin-table-cell">
                           <Badge
-                            className={`${getStatusColor(order.status)} text-xs`}
+                            className={cn("text-xs", getStatusColor(order.status))}
                           >
                             {getStatusLabel(order.status)}
                           </Badge>
@@ -195,11 +198,13 @@ export default function SuperAdminActivity() {
         </Card>
 
         {/* Recent Signups */}
-        <Card className="border-0 shadow-sm">
+        <Card className="admin-card">
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
-              <User className="w-5 h-5 text-purple-600" />
-              <CardTitle className="text-lg">Cadastros Recentes</CardTitle>
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <User className="w-4 h-4 text-primary" />
+              </div>
+              <CardTitle className="text-lg text-foreground">Cadastros Recentes</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
@@ -212,20 +217,20 @@ export default function SuperAdminActivity() {
                 recentSignups?.map((user) => (
                   <div
                     key={user.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-                        <User className="w-4 h-4 text-purple-600" />
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="w-4 h-4 text-primary" />
                       </div>
                       <div>
-                        <p className="font-medium text-sm">
+                        <p className="font-medium text-sm text-foreground">
                           {user.full_name || "Sem nome"}
                         </p>
-                        <p className="text-xs text-gray-500">{user.email}</p>
+                        <p className="text-xs text-muted-foreground">{user.email}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-gray-400">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Clock className="w-3 h-3" />
                       {formatDistanceToNow(new Date(user.created_at), {
                         addSuffix: true,

@@ -5,26 +5,30 @@ import { Shield, Database, Bell, Lock, RefreshCw } from "lucide-react";
 export default function SuperAdminSettings() {
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+      <div className="admin-page-header">
+        <h1 className="admin-page-title text-2xl">
           Configurações do Sistema
         </h1>
-        <p className="text-gray-500 mt-1">
+        <p className="admin-page-description">
           Gerencie configurações globais do sistema
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Security Settings */}
-        <Card className="border-0 shadow-sm">
+        <Card className="admin-card">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-red-600" />
-              <CardTitle className="text-lg">Segurança</CardTitle>
+              <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center">
+                <Shield className="w-4 h-4 text-destructive" />
+              </div>
+              <div>
+                <CardTitle className="text-lg text-foreground">Segurança</CardTitle>
+                <CardDescription>
+                  Configurações de segurança do sistema
+                </CardDescription>
+              </div>
             </div>
-            <CardDescription>
-              Configurações de segurança do sistema
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <Button variant="outline" className="w-full justify-start" disabled>
@@ -39,15 +43,19 @@ export default function SuperAdminSettings() {
         </Card>
 
         {/* Database Settings */}
-        <Card className="border-0 shadow-sm">
+        <Card className="admin-card">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Database className="w-5 h-5 text-blue-600" />
-              <CardTitle className="text-lg">Banco de Dados</CardTitle>
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Database className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-lg text-foreground">Banco de Dados</CardTitle>
+                <CardDescription>
+                  Gerenciamento do banco de dados
+                </CardDescription>
+              </div>
             </div>
-            <CardDescription>
-              Gerenciamento do banco de dados
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <Button variant="outline" className="w-full justify-start" disabled>
@@ -62,15 +70,19 @@ export default function SuperAdminSettings() {
         </Card>
 
         {/* Notifications */}
-        <Card className="border-0 shadow-sm">
+        <Card className="admin-card">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Bell className="w-5 h-5 text-orange-600" />
-              <CardTitle className="text-lg">Notificações</CardTitle>
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Bell className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-lg text-foreground">Notificações</CardTitle>
+                <CardDescription>
+                  Configurações de alertas do sistema
+                </CardDescription>
+              </div>
             </div>
-            <CardDescription>
-              Configurações de alertas do sistema
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <Button variant="outline" className="w-full justify-start" disabled>
@@ -81,9 +93,9 @@ export default function SuperAdminSettings() {
         </Card>
       </div>
 
-      <Card className="border-0 shadow-sm bg-yellow-50 border-yellow-200">
+      <Card className="admin-card bg-primary/5 border-primary/20">
         <CardContent className="p-4">
-          <p className="text-sm text-yellow-800">
+          <p className="text-sm text-foreground">
             <strong>Nota:</strong> Algumas funcionalidades estão em desenvolvimento e serão habilitadas em breve.
           </p>
         </CardContent>

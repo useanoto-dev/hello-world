@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Search, Store, ExternalLink, Power, PowerOff } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface StoreWithStats {
   id: string;
@@ -130,22 +131,22 @@ export default function SuperAdminStores() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="admin-page-header flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="admin-page-title text-2xl">
             Gerenciar Lojas
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="admin-page-description">
             {stores?.length || 0} lojas cadastradas no sistema
           </p>
         </div>
       </div>
 
       {/* Search */}
-      <Card className="border-0 shadow-sm">
+      <Card className="admin-card">
         <CardContent className="p-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Buscar por nome, slug ou email do proprietário..."
               value={search}
@@ -157,19 +158,19 @@ export default function SuperAdminStores() {
       </Card>
 
       {/* Stores Table */}
-      <Card className="border-0 shadow-sm">
+      <Card className="admin-card">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Loja</TableHead>
-                <TableHead>Proprietário</TableHead>
-                <TableHead className="text-center">Pedidos</TableHead>
-                <TableHead className="text-center">Produtos</TableHead>
-                <TableHead className="text-center">Clientes</TableHead>
-                <TableHead className="text-center">Status</TableHead>
-                <TableHead className="text-center">Criada em</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
+                <TableHead className="admin-table-header">Loja</TableHead>
+                <TableHead className="admin-table-header">Proprietário</TableHead>
+                <TableHead className="admin-table-header text-center">Pedidos</TableHead>
+                <TableHead className="admin-table-header text-center">Produtos</TableHead>
+                <TableHead className="admin-table-header text-center">Clientes</TableHead>
+                <TableHead className="admin-table-header text-center">Status</TableHead>
+                <TableHead className="admin-table-header text-center">Criada em</TableHead>
+                <TableHead className="admin-table-header text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -184,56 +185,56 @@ export default function SuperAdminStores() {
                 </TableRow>
               ) : filteredStores?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     Nenhuma loja encontrada
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredStores?.map((store) => (
                   <TableRow key={store.id}>
-                    <TableCell>
+                    <TableCell className="admin-table-cell">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                          <Store className="w-4 h-4 text-gray-600" />
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Store className="w-4 h-4 text-primary" />
                         </div>
                         <div>
-                          <p className="font-medium">{store.name}</p>
-                          <p className="text-xs text-gray-500">{store.slug}</p>
+                          <p className="font-medium text-foreground">{store.name}</p>
+                          <p className="text-xs text-muted-foreground">{store.slug}</p>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-gray-600">
+                    <TableCell className="admin-table-cell">
+                      <span className="text-sm text-muted-foreground">
                         {store.owner_email || "—"}
                       </span>
                     </TableCell>
-                    <TableCell className="text-center">
-                      <span className="font-medium">{store.total_orders}</span>
+                    <TableCell className="admin-table-cell text-center">
+                      <span className="font-medium text-foreground">{store.total_orders}</span>
                     </TableCell>
-                    <TableCell className="text-center">
-                      <span className="font-medium">{store.total_products}</span>
+                    <TableCell className="admin-table-cell text-center">
+                      <span className="font-medium text-foreground">{store.total_products}</span>
                     </TableCell>
-                    <TableCell className="text-center">
-                      <span className="font-medium">{store.total_customers}</span>
+                    <TableCell className="admin-table-cell text-center">
+                      <span className="font-medium text-foreground">{store.total_customers}</span>
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="admin-table-cell text-center">
                       <Badge
-                        variant={store.is_active ? "default" : "destructive"}
-                        className={
+                        className={cn(
+                          "text-xs",
                           store.is_active
-                            ? "bg-green-100 text-green-700 hover:bg-green-100"
-                            : ""
-                        }
+                            ? "bg-success/20 text-success hover:bg-success/20"
+                            : "bg-destructive/20 text-destructive hover:bg-destructive/20"
+                        )}
                       >
                         {store.is_active ? "Ativa" : "Inativa"}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-center">
-                      <span className="text-sm text-gray-500">
+                    <TableCell className="admin-table-cell text-center">
+                      <span className="text-sm text-muted-foreground">
                         {new Date(store.created_at).toLocaleDateString("pt-BR")}
                       </span>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="admin-table-cell text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Button
                           variant="ghost"
@@ -248,8 +249,8 @@ export default function SuperAdminStores() {
                           onClick={() => setStoreToToggle(store)}
                           className={
                             store.is_active
-                              ? "text-red-600 hover:text-red-700 hover:bg-red-50"
-                              : "text-green-600 hover:text-green-700 hover:bg-green-50"
+                              ? "text-destructive hover:text-destructive hover:bg-destructive/10"
+                              : "text-success hover:text-success hover:bg-success/10"
                           }
                         >
                           {store.is_active ? (
@@ -292,7 +293,7 @@ export default function SuperAdminStores() {
                   });
                 }
               }}
-              className={storeToToggle?.is_active ? "bg-red-600 hover:bg-red-700" : ""}
+              className={storeToToggle?.is_active ? "bg-destructive hover:bg-destructive/90" : "bg-success hover:bg-success/90"}
             >
               {storeToToggle?.is_active ? "Desativar" : "Ativar"}
             </AlertDialogAction>

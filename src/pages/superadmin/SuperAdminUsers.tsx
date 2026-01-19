@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Search, User, Store, Mail, Calendar } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface UserWithStore {
   id: string;
@@ -77,20 +78,20 @@ export default function SuperAdminUsers() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+      <div className="admin-page-header">
+        <h1 className="admin-page-title text-2xl">
           Gerenciar Usuários
         </h1>
-        <p className="text-gray-500 mt-1">
+        <p className="admin-page-description">
           {users?.length || 0} usuários cadastrados no sistema
         </p>
       </div>
 
       {/* Search */}
-      <Card className="border-0 shadow-sm">
+      <Card className="admin-card">
         <CardContent className="p-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Buscar por nome, email ou loja..."
               value={search}
@@ -102,16 +103,16 @@ export default function SuperAdminUsers() {
       </Card>
 
       {/* Users Table */}
-      <Card className="border-0 shadow-sm">
+      <Card className="admin-card">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Usuário</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Loja</TableHead>
-                <TableHead className="text-center">Tipo</TableHead>
-                <TableHead className="text-center">Criado em</TableHead>
+                <TableHead className="admin-table-header">Usuário</TableHead>
+                <TableHead className="admin-table-header">Email</TableHead>
+                <TableHead className="admin-table-header">Loja</TableHead>
+                <TableHead className="admin-table-header text-center">Tipo</TableHead>
+                <TableHead className="admin-table-header text-center">Criado em</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -126,53 +127,53 @@ export default function SuperAdminUsers() {
                 </TableRow>
               ) : filteredUsers?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                     Nenhum usuário encontrado
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredUsers?.map((user) => (
                   <TableRow key={user.id}>
-                    <TableCell>
+                    <TableCell className="admin-table-cell">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                          <User className="w-4 h-4 text-gray-600" />
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <User className="w-4 h-4 text-primary" />
                         </div>
-                        <span className="font-medium">
+                        <span className="font-medium text-foreground">
                           {user.full_name || "Sem nome"}
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <TableCell className="admin-table-cell">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Mail className="w-3 h-3" />
                         {user.email}
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="admin-table-cell">
                       {user.store_name ? (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Store className="w-3 h-3 text-gray-400" />
+                        <div className="flex items-center gap-2 text-sm text-foreground">
+                          <Store className="w-3 h-3 text-muted-foreground" />
                           {user.store_name}
                         </div>
                       ) : (
-                        <span className="text-gray-400">—</span>
+                        <span className="text-muted-foreground">—</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="admin-table-cell text-center">
                       <Badge
-                        variant={user.is_owner ? "default" : "secondary"}
-                        className={
+                        className={cn(
+                          "text-xs",
                           user.is_owner
-                            ? "bg-purple-100 text-purple-700 hover:bg-purple-100"
-                            : ""
-                        }
+                            ? "bg-primary/20 text-primary hover:bg-primary/20"
+                            : "bg-muted text-muted-foreground hover:bg-muted"
+                        )}
                       >
                         {user.is_owner ? "Proprietário" : "Usuário"}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center gap-1 text-sm text-gray-500">
+                    <TableCell className="admin-table-cell text-center">
+                      <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">
                         <Calendar className="w-3 h-3" />
                         {new Date(user.created_at).toLocaleDateString("pt-BR")}
                       </div>

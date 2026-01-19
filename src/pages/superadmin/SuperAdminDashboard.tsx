@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Store, Users, ShoppingCart, DollarSign, TrendingUp, Activity } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function SuperAdminDashboard() {
   // Fetch stores count
@@ -84,36 +85,31 @@ export default function SuperAdminDashboard() {
       title: "Total de Lojas",
       value: storesData || 0,
       icon: Store,
-      color: "text-blue-600",
-      bgColor: "bg-blue-100",
+      gradient: "from-primary to-primary/80",
     },
     {
       title: "Lojas Ativas (30d)",
       value: activeStoresCount || 0,
       icon: Activity,
-      color: "text-green-600",
-      bgColor: "bg-green-100",
+      gradient: "from-success to-success/80",
     },
     {
       title: "Total de Usuários",
       value: usersData || 0,
       icon: Users,
-      color: "text-purple-600",
-      bgColor: "bg-purple-100",
+      gradient: "from-primary to-primary/80",
     },
     {
       title: "Total de Pedidos",
       value: ordersData || 0,
       icon: ShoppingCart,
-      color: "text-orange-600",
-      bgColor: "bg-orange-100",
+      gradient: "from-primary to-primary/80",
     },
     {
       title: "Receita Total",
       value: `R$ ${(revenueData || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
       icon: DollarSign,
-      color: "text-emerald-600",
-      bgColor: "bg-emerald-100",
+      gradient: "from-success to-success/80",
     },
     {
       title: "Taxa de Conversão",
@@ -121,18 +117,17 @@ export default function SuperAdminDashboard() {
         ? `${((activeStoresCount / storesData) * 100).toFixed(1)}%`
         : "0%",
       icon: TrendingUp,
-      color: "text-pink-600",
-      bgColor: "bg-pink-100",
+      gradient: "from-primary to-primary/80",
     },
   ];
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+      <div className="admin-page-header">
+        <h1 className="admin-page-title text-2xl">
           Dashboard Super Admin
         </h1>
-        <p className="text-gray-500 mt-1">
+        <p className="admin-page-description">
           Visão geral de todas as contas e métricas do sistema
         </p>
       </div>
@@ -142,15 +137,15 @@ export default function SuperAdminDashboard() {
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
-            <Card key={index} className="border-0 shadow-sm">
+            <Card key={index} className="admin-card overflow-hidden">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500">{stat.title}</p>
-                    <p className="text-2xl font-bold mt-1">{stat.value}</p>
+                    <p className="text-sm text-muted-foreground">{stat.title}</p>
+                    <p className="text-2xl font-bold mt-1 text-foreground">{stat.value}</p>
                   </div>
-                  <div className={cn(stat.bgColor, "w-12 h-12 rounded-xl flex items-center justify-center")}>
-                    <Icon className={cn("w-6 h-6", stat.color)} />
+                  <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br", stat.gradient)}>
+                    <Icon className="w-6 h-6 text-primary-foreground" />
                   </div>
                 </div>
               </CardContent>
@@ -160,33 +155,33 @@ export default function SuperAdminDashboard() {
       </div>
 
       {/* Recent Stores */}
-      <Card className="border-0 shadow-sm">
+      <Card className="admin-card">
         <CardHeader>
-          <CardTitle className="text-lg">Lojas Recentes</CardTitle>
+          <CardTitle className="text-lg text-foreground">Lojas Recentes</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             {recentStores?.map((store) => (
               <div
                 key={store.id}
-                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
               >
                 <div>
-                  <p className="font-medium">{store.name}</p>
-                  <p className="text-sm text-gray-500">{store.slug}</p>
+                  <p className="font-medium text-foreground">{store.name}</p>
+                  <p className="text-sm text-muted-foreground">{store.slug}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span
                     className={cn(
                       "px-2 py-1 rounded-full text-xs font-medium",
                       store.is_active
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
+                        ? "bg-success/20 text-success"
+                        : "bg-destructive/20 text-destructive"
                     )}
                   >
                     {store.is_active ? "Ativa" : "Inativa"}
                   </span>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-muted-foreground">
                     {new Date(store.created_at).toLocaleDateString("pt-BR")}
                   </span>
                 </div>
@@ -197,8 +192,4 @@ export default function SuperAdminDashboard() {
       </Card>
     </div>
   );
-}
-
-function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(" ");
 }
