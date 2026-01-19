@@ -85,15 +85,29 @@ Deno.serve(async (req) => {
     const pixExpiresAt = new Date();
     pixExpiresAt.setHours(pixExpiresAt.getHours() + 24);
 
-    // Calculate trial period end (for new subscriptions)
-    const currentPeriodEnd = new Date();
-    if (plan === 'annual') {
-      currentPeriodEnd.setFullYear(currentPeriodEnd.getFullYear() + 1);
-    } else {
-      currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + 1);
+    // Get current subscription to check existing period
+    const { data: currentSub } = await supabase
+      .from('subscriptions')
+      .select('current_period_end, status')
+      .eq('store_id', storeId)
+      .single();
+
+    // Calculate period end - only set if currently expired/pending
+    // The actual period will be set when payment is confirmed via webhook
+    let currentPeriodEnd = currentSub?.current_period_end;
+    if (!currentPeriodEnd || currentSub?.status === 'expired' || currentSub?.status === 'pending_payment') {
+      const newEnd = new Date();
+      if (plan === 'annual') {
+        newEnd.setFullYear(newEnd.getFullYear() + 1);
+        newEnd.setDate(newEnd.getDate() + 3); // +3 days tolerance
+      } else {
+        newEnd.setMonth(newEnd.getMonth() + 1);
+        newEnd.setDate(newEnd.getDate() + 3); // +3 days tolerance
+      }
+      currentPeriodEnd = newEnd.toISOString();
     }
 
-    // Update/create subscription in database
+    // Update/create subscription in database with pending_payment status
     await supabase
       .from('subscriptions')
       .upsert({
@@ -102,11 +116,11 @@ Deno.serve(async (req) => {
         payment_method: 'pix',
         plan: plan,
         status: 'pending_payment',
-        pix_invoice_id: paymentIntent.id, // Store PaymentIntent ID instead of Invoice ID
+        pix_invoice_id: paymentIntent.id,
         pix_qr_code_url: pixQrCode,
         pix_code: pixCode,
         pix_expires_at: pixExpiresAt.toISOString(),
-        current_period_end: currentPeriodEnd.toISOString(),
+        current_period_end: currentPeriodEnd,
       }, { onConflict: 'store_id' });
 
     return new Response(

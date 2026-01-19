@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Check, Shield, Zap, Crown, Star, ArrowLeft, Loader2, Settings, ExternalLink, CreditCard } from "lucide-react";
+import { Check, Shield, Zap, Crown, Star, ArrowLeft, Loader2, Settings, ExternalLink, CreditCard, QrCode, Copy, RefreshCw, Smartphone, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,8 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const COLORS = {
   background: "#FDFDFD",
@@ -31,6 +33,8 @@ export default function SubscriptionPage() {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState<"monthly" | "annual" | null>(null);
   const [isPortalLoading, setIsPortalLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "pix">("card");
+  const [isRegeneratingPix, setIsRegeneratingPix] = useState(false);
   const [subscription, setSubscription] = useState<{
     status: string;
     plan?: string;
@@ -40,6 +44,13 @@ export default function SubscriptionPage() {
     pix_qr_code_url?: string;
     pix_code?: string;
     pix_expires_at?: string;
+  } | null>(null);
+  
+  const [pixData, setPixData] = useState<{
+    qrCode: string;
+    code: string;
+    expiresAt: string;
+    amount: number;
   } | null>(null);
 
   // Check for success/cancel from Stripe
@@ -65,12 +76,46 @@ export default function SubscriptionPage() {
     
     if (data) {
       setSubscription(data as typeof subscription);
+      // If there's pending PIX data, set it
+      if (data.pix_qr_code_url && data.pix_code && data.pix_expires_at) {
+        setPixData({
+          qrCode: data.pix_qr_code_url,
+          code: data.pix_code,
+          expiresAt: data.pix_expires_at,
+          amount: data.plan === 'annual' ? 1716 : 179.90,
+        });
+        setPaymentMethod('pix');
+      }
     }
   };
 
   useEffect(() => {
     fetchSubscription();
   }, [restaurantId]);
+
+  // Check if PIX is expired
+  const isPixExpired = () => {
+    if (!pixData?.expiresAt) return false;
+    return new Date(pixData.expiresAt) < new Date();
+  };
+
+  // Check if subscription is near expiry (show renewal option)
+  const isNearExpiry = () => {
+    if (!subscription?.current_period_end) return false;
+    const endDate = new Date(subscription.current_period_end);
+    const now = new Date();
+    const daysUntilExpiry = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    return daysUntilExpiry <= 7 && daysUntilExpiry > -3; // Show 7 days before until 3 days after
+  };
+
+  // Check if blocked (past 3 days tolerance)
+  const isBlocked = () => {
+    if (!subscription?.current_period_end) return false;
+    const endDate = new Date(subscription.current_period_end);
+    const now = new Date();
+    const daysPastExpiry = Math.ceil((now.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24));
+    return daysPastExpiry > 0 && subscription.status === 'expired';
+  };
 
   const handleSubscribe = async (plan: "monthly" | "annual") => {
     if (!restaurantId) {
@@ -84,25 +129,63 @@ export default function SubscriptionPage() {
       // Get user email
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Card/Boleto flow - redirect to Stripe Checkout
-      const { data, error } = await supabase.functions.invoke('stripe-checkout', {
-        body: {
-          plan,
-          storeId: restaurantId,
-          email: user?.email,
-        },
-      });
+      if (paymentMethod === 'pix') {
+        // PIX flow - generate QR code
+        const { data, error } = await supabase.functions.invoke('pix-create-subscription', {
+          body: {
+            plan,
+            storeId: restaurantId,
+            email: user?.email,
+          },
+        });
 
-      if (error) throw error;
-      
-      if (data?.url) {
-        window.location.href = data.url;
+        if (error) throw error;
+        
+        if (data?.success) {
+          setPixData({
+            qrCode: data.pixQrCode,
+            code: data.pixCode,
+            expiresAt: data.expiresAt,
+            amount: data.amount,
+          });
+          toast.success('QR Code PIX gerado! Escaneie para pagar.');
+          fetchSubscription();
+        }
+      } else {
+        // Card/Boleto flow - redirect to Stripe Checkout
+        const { data, error } = await supabase.functions.invoke('stripe-checkout', {
+          body: {
+            plan,
+            storeId: restaurantId,
+            email: user?.email,
+          },
+        });
+
+        if (error) throw error;
+        
+        if (data?.url) {
+          window.location.href = data.url;
+        }
       }
     } catch (error) {
       console.error('Checkout error:', error);
       toast.error(t('subscription.error'));
     } finally {
       setIsLoading(null);
+    }
+  };
+
+  const handleRegeneratePix = async () => {
+    if (!subscription?.plan) return;
+    setIsRegeneratingPix(true);
+    await handleSubscribe(subscription.plan as "monthly" | "annual");
+    setIsRegeneratingPix(false);
+  };
+
+  const copyPixCode = () => {
+    if (pixData?.code) {
+      navigator.clipboard.writeText(pixData.code);
+      toast.success('Código PIX copiado!');
     }
   };
 
@@ -361,18 +444,204 @@ export default function SubscriptionPage() {
           </motion.div>
         </div>
 
-        {/* Payment Info - Card and Boleto via Stripe Checkout */}
+        {/* Payment Method Selection & PIX QR Code */}
         {!isActive && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            className="mt-8 max-w-md mx-auto space-y-4"
+          >
+            {/* Payment Method Radio */}
+            <Card className="p-4">
+              <h4 className="text-sm font-medium mb-3">Forma de Pagamento</h4>
+              <RadioGroup
+                value={paymentMethod}
+                onValueChange={(value) => {
+                  setPaymentMethod(value as "card" | "pix");
+                  setPixData(null);
+                }}
+                className="space-y-2"
+              >
+                <div className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="card" id="card" />
+                  <Label htmlFor="card" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <CreditCard className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm">Cartão de Crédito ou Boleto</span>
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="pix" id="pix" />
+                  <Label htmlFor="pix" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <QrCode className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm">PIX (Créditos)</span>
+                    <Badge variant="outline" className="text-[10px] ml-auto">30 dias</Badge>
+                  </Label>
+                </div>
+              </RadioGroup>
+            </Card>
+
+            {/* PIX QR Code Display */}
+            {pixData && paymentMethod === 'pix' && (
+              <Card className="p-5">
+                <div className="text-center space-y-4">
+                  <div className="flex items-center justify-center gap-2 text-sm font-medium">
+                    <Smartphone className="w-4 h-4" />
+                    <span>Escaneie o QR Code para pagar</span>
+                  </div>
+
+                  {isPixExpired() ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-center gap-2 text-amber-600">
+                        <AlertTriangle className="w-5 h-5" />
+                        <span className="text-sm font-medium">QR Code expirado</span>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRegeneratePix}
+                        disabled={isRegeneratingPix}
+                      >
+                        {isRegeneratingPix ? (
+                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        ) : (
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                        )}
+                        Gerar novo QR Code
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex justify-center">
+                        <img 
+                          src={pixData.qrCode} 
+                          alt="PIX QR Code" 
+                          className="w-48 h-48 rounded-lg border"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <p className="text-2xl font-bold" style={{ color: COLORS.foreground }}>
+                          R$ {pixData.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Expira em {formatDistanceToNow(new Date(pixData.expiresAt), { 
+                            locale: ptBR, 
+                            addSuffix: true 
+                          })}
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <p className="text-xs text-muted-foreground">Ou copie o código:</p>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={pixData.code}
+                            readOnly
+                            className="flex-1 text-xs p-2 border rounded-lg bg-muted/50 font-mono truncate"
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={copyPixCode}
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleRegeneratePix}
+                          disabled={isRegeneratingPix}
+                          className="text-xs text-muted-foreground"
+                        >
+                          {isRegeneratingPix ? (
+                            <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                          ) : (
+                            <RefreshCw className="w-3 h-3 mr-1" />
+                          )}
+                          Gerar novo código
+                        </Button>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="pt-3 border-t">
+                    <p className="text-[11px] text-muted-foreground">
+                      ✅ Após o pagamento, seu acesso será liberado automaticamente por{' '}
+                      <strong>{subscription?.plan === 'annual' ? '1 ano + 3 dias' : '30 dias + 3 dias'}</strong> de tolerância.
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            )}
+          </motion.div>
+        )}
+
+        {/* Renewal Alert for Active Users Near Expiry */}
+        {isActive && isNearExpiry() && subscription?.payment_method === 'pix' && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35 }}
             className="mt-8 max-w-md mx-auto"
           >
-            <Card className="p-4 text-center">
-              <div className="flex items-center justify-center gap-3 text-muted-foreground">
-                <CreditCard className="w-5 h-5" />
-                <span className="text-sm">Pagamento via Cartão de Crédito ou Boleto</span>
+            <Card className="p-4 border-amber-200 bg-amber-50">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-amber-800">
+                    Sua assinatura expira em breve!
+                  </p>
+                  <p className="text-xs text-amber-700">
+                    Renove agora para evitar interrupção no serviço. Após 3 dias de atraso, o acesso será bloqueado.
+                  </p>
+                  <Button
+                    size="sm"
+                    className="mt-2"
+                    onClick={() => {
+                      setPaymentMethod('pix');
+                      handleSubscribe(subscription?.plan as "monthly" | "annual");
+                    }}
+                    disabled={isLoading !== null}
+                    style={{ backgroundColor: COLORS.primary, color: COLORS.foreground }}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="w-3 h-3 animate-spin mr-2" />
+                    ) : (
+                      <QrCode className="w-3 h-3 mr-2" />
+                    )}
+                    Renovar com PIX
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Blocked Alert */}
+        {isBlocked() && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            className="mt-8 max-w-md mx-auto"
+          >
+            <Card className="p-4 border-red-200 bg-red-50">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-red-800">
+                    Acesso bloqueado por falta de pagamento
+                  </p>
+                  <p className="text-xs text-red-700">
+                    Seu período de tolerância expirou. Realize o pagamento abaixo para reativar o acesso.
+                  </p>
+                </div>
               </div>
             </Card>
           </motion.div>
