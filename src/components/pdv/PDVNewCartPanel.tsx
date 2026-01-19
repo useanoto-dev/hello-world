@@ -1,4 +1,4 @@
-import { Plus, Minus, ShoppingCart, Trash2, CreditCard, Printer, X, MessageSquare, Gift, Tag, Maximize, History } from "lucide-react";
+import { Plus, Minus, ShoppingCart, Trash2, CreditCard, Printer, X, MessageSquare, Gift, Tag, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -23,10 +23,6 @@ interface PDVNewCartPanelProps {
   finalTotal: number;
   onFinishOrder: () => void;
   onViewOrderHistory?: () => void;
-  // Fullscreen controls
-  isFullscreen?: boolean;
-  onToggleFullscreen?: () => void;
-  fullscreenSupported?: boolean;
 }
 
 export function PDVNewCartPanel({
@@ -43,9 +39,6 @@ export function PDVNewCartPanel({
   finalTotal,
   onFinishOrder,
   onViewOrderHistory,
-  isFullscreen,
-  onToggleFullscreen,
-  fullscreenSupported,
 }: PDVNewCartPanelProps) {
   return (
     <div className="w-80 flex-shrink-0 flex flex-col bg-card border rounded-lg">
@@ -57,24 +50,6 @@ export function PDVNewCartPanel({
             <span className="font-semibold">Pedido Atual</span>
           </div>
           <div className="flex items-center gap-1">
-            {/* Fullscreen button */}
-            {!isFullscreen && fullscreenSupported && onToggleFullscreen && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={onToggleFullscreen}
-                    className="h-8 w-8"
-                  >
-                    <Maximize className="w-4 h-4 text-muted-foreground" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  Modo Tela Cheia (F11)
-                </TooltipContent>
-              </Tooltip>
-            )}
             {/* Order History button */}
             {onViewOrderHistory && (
               <Tooltip>

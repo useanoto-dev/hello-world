@@ -34,7 +34,6 @@ import { getMenuThemeClasses, getCustomColorStyles, MENU_THEMES } from "@/compon
 import { preloadDashboardRoutes } from "@/hooks/useRoutePreloader";
 import { useStockNotifications } from "@/hooks/useStockNotifications";
 import { usePendingOrdersCount } from "@/hooks/usePendingOrdersCount";
-import { useFullscreen } from "@/hooks/useFullscreen";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useStaffAuth, canAccessRoute, getDefaultRouteForRole, type StaffRole } from "@/hooks/useStaffAuth";
 
@@ -99,7 +98,6 @@ export default function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { isFullscreen, toggleFullscreen, isSupported: fullscreenSupported } = useFullscreen();
   const { isStaffLoggedIn, role, name: staffName, logout: staffLogout, loading: staffLoading } = useStaffAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -187,22 +185,18 @@ export default function DashboardLayout() {
     };
   }, [store?.id]);
 
-  // Atalho de teclado para PDV (Shift+F8) e Fullscreen (F11)
+  // Atalho de teclado para PDV (Shift+F8)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.shiftKey && e.key === 'F8') {
         e.preventDefault();
         navigate('/dashboard/pdv');
       }
-      if (e.key === 'F11' && isPDVPage) {
-        e.preventDefault();
-        toggleFullscreen();
-      }
     };
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [navigate, isPDVPage, toggleFullscreen]);
+  }, [navigate]);
 
   // Load sidebar state from localStorage
   useEffect(() => {
@@ -585,10 +579,10 @@ export default function DashboardLayout() {
 
   // Hide sidebar on mobile completely (use bottom nav instead)
   // Show mobile bottom nav on ALL mobile pages including PDV - always visible for quick access
-  const showMobileNav = isMobile && !isFullscreen;
+  const showMobileNav = isMobile;
   
-  // Hide sidebar only when in fullscreen mode OR on mobile (mobile uses bottom nav)
-  const hideSidebar = isFullscreen || isMobile;
+  // Hide sidebar only on mobile (mobile uses bottom nav)
+  const hideSidebar = isMobile;
 
   return (
     <TooltipProvider>
@@ -889,10 +883,7 @@ export default function DashboardLayout() {
         {/* Mobile navigation now handled by MobileMoreDrawer */}
 
         {/* Main Content - Independent Scroll */}
-        <main className={cn(
-          "flex-1 h-screen overflow-y-auto bg-background relative",
-          isFullscreen && "md:ml-0"
-        )}>
+        <main className="flex-1 h-screen overflow-y-auto bg-background relative">
           {/* Quick Action Buttons - Top Right */}
           <QuickActionButtons 
             store={store} 

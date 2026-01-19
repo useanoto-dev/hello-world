@@ -105,15 +105,18 @@ export function useOfflineSync() {
       try {
         switch (operation.type) {
           case 'insert':
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             await supabase.from(operation.table as any).insert(operation.data);
             break;
           case 'update':
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             await supabase
               .from(operation.table as any)
               .update(operation.data.updates)
               .eq('id', operation.data.id);
             break;
           case 'delete':
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             await supabase
               .from(operation.table as any)
               .delete()
@@ -122,8 +125,7 @@ export function useOfflineSync() {
         }
         removePendingOperation(operation.id);
         successCount++;
-      } catch (error) {
-        console.error('Sync error:', error);
+      } catch {
         errorCount++;
       }
     }

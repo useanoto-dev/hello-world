@@ -1,10 +1,9 @@
 import { useEffect, useCallback } from "react";
 
 // All dashboard routes for preloading
-const dashboardRoutes = {
+const dashboardRoutes: Record<string, () => Promise<unknown>> = {
   "/dashboard": () => import("@/pages/dashboard/DashboardHome"),
   "/dashboard/pdv": () => import("@/pages/dashboard/PDVPage"),
-  "/dashboard/tables": () => import("@/pages/dashboard/TablesPage"),
   "/dashboard/comandas": () => import("@/pages/dashboard/ComandaPanel"),
   "/dashboard/orders": () => import("@/pages/dashboard/OrdersPage"),
   "/dashboard/analytics": () => import("@/pages/dashboard/AnalyticsPage"),
@@ -15,23 +14,22 @@ const dashboardRoutes = {
   "/dashboard/settings": () => import("@/pages/dashboard/SettingsPage"),
 };
 
-// Storefront routes
-const storefrontRoutes = {
-  "/storefront": () => import("@/pages/storefront/StorefrontPage"),
-  "/cart": () => import("@/pages/storefront/CartPage"),
+// Storefront routes (using dynamic slug pattern)
+const storefrontRoutes: Record<string, () => Promise<unknown>> = {
+  "/cardapio": () => import("@/pages/storefront/StorefrontPage"),
   "/order-tracking": () => import("@/pages/storefront/OrderTrackingPage"),
   "/order-history": () => import("@/pages/storefront/OrderHistoryPage"),
 };
 
-// Checkout routes
-const checkoutRoutes = {
-  "/checkout/service": () => import("@/pages/CheckoutService"),
-  "/checkout/address": () => import("@/pages/CheckoutAddress"),
-  "/checkout/payment": () => import("@/pages/CheckoutPayment"),
-  "/checkout/summary": () => import("@/pages/CheckoutSummary"),
+// Checkout routes (using dynamic slug pattern)
+const checkoutRoutes: Record<string, () => Promise<unknown>> = {
+  "/finalizar/servico": () => import("@/pages/CheckoutService"),
+  "/finalizar/endereco": () => import("@/pages/CheckoutAddress"),
+  "/finalizar/pagamento": () => import("@/pages/CheckoutPayment"),
+  "/finalizar/resumo": () => import("@/pages/CheckoutSummary"),
 };
 
-const allRouteLoaders = {
+const allRouteLoaders: Record<string, () => Promise<unknown>> = {
   ...dashboardRoutes,
   ...storefrontRoutes,
   ...checkoutRoutes,
