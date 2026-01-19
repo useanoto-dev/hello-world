@@ -57,6 +57,15 @@ const AuditLogsPage = lazy(() => import("@/pages/dashboard/AuditLogsPage"));
 const StaffLoginPage = lazy(() => import("@/pages/StaffLoginPage"));
 const WaiterOrdersPage = lazy(() => import("@/pages/dashboard/WaiterOrdersPage"));
 const WaiterPOSPage = lazy(() => import("@/pages/dashboard/WaiterPOSPage"));
+
+// Super Admin Pages
+const SuperAdminLayout = lazy(() => import("@/pages/superadmin/SuperAdminLayout"));
+const SuperAdminDashboard = lazy(() => import("@/pages/superadmin/SuperAdminDashboard"));
+const SuperAdminStores = lazy(() => import("@/pages/superadmin/SuperAdminStores"));
+const SuperAdminUsers = lazy(() => import("@/pages/superadmin/SuperAdminUsers"));
+const SuperAdminUsage = lazy(() => import("@/pages/superadmin/SuperAdminUsage"));
+const SuperAdminActivity = lazy(() => import("@/pages/superadmin/SuperAdminActivity"));
+const SuperAdminSettings = lazy(() => import("@/pages/superadmin/SuperAdminSettings"));
 const StaffProfilePage = lazy(() => import("@/pages/dashboard/StaffProfilePage"));
 
 // Storefront Pages
@@ -118,6 +127,16 @@ function AnimatedRoutes() {
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/instalar" element={<InstallPWA />} />
           <Route path="/funcionario" element={<StaffLoginPage />} />
+          
+          {/* Super Admin Routes */}
+          <Route path="/superadmin" element={<SuperAdminLayout />}>
+            <Route index element={<SuperAdminDashboard />} />
+            <Route path="stores" element={<SuperAdminStores />} />
+            <Route path="users" element={<SuperAdminUsers />} />
+            <Route path="usage" element={<SuperAdminUsage />} />
+            <Route path="activity" element={<SuperAdminActivity />} />
+            <Route path="settings" element={<SuperAdminSettings />} />
+          </Route>
           
           {/* Dashboard Fullscreen Pages - MUST be before DashboardLayout */}
           <Route path="/dashboard/onboarding" element={<OnboardingWizard />} />
