@@ -511,16 +511,11 @@ export default function CheckoutSummary() {
       try {
         supabase.functions.invoke("notificarNovoPedido", {
           body: { pedido_id: insertedOrder.id }
-        }).then(({ data, error }) => {
-          if (error) {
-            console.log("WhatsApp notification not sent:", error);
-          } else if (data?.success) {
-            console.log("WhatsApp notification sent successfully", data.usou_mensagem_personalizada ? "(mensagem personalizada)" : "(mensagem padrão)");
-          }
+        }).catch(() => {
+          // WhatsApp notification failed silently - order still succeeded
         });
-      } catch (whatsappError) {
+      } catch {
         // Don't fail the order if WhatsApp fails
-        console.log("WhatsApp notification skipped:", whatsappError);
       }
 
       // Marca como completo ANTES de limpar (para evitar redirects dos guards)

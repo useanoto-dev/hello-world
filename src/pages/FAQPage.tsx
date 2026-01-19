@@ -52,7 +52,7 @@ const faqCategories: FAQCategory[] = [
       },
       {
         question: "O Anotô? funciona offline?",
-        answer: "O cardápio pode ser instalado como um app (PWA) e funciona parcialmente offline para visualização. Porém, para realizar pedidos e sincronizar dados, é necessária conexão com a internet."
+        answer: "O Anotô? requer conexão com a internet para funcionar. Isso garante que os pedidos, pagamentos e atualizações de estoque sejam sempre sincronizados em tempo real entre você e seus clientes."
       }
     ]
   },

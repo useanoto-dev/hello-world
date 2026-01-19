@@ -27,8 +27,8 @@ export function useOrderNotificationSound() {
 
       oscillator.start(ctx.currentTime);
       oscillator.stop(ctx.currentTime + 0.5);
-    } catch (error) {
-      console.log("Could not play notification sound:", error);
+    } catch {
+      // Audio not available
     }
   }, []);
 

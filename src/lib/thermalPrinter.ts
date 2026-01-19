@@ -648,10 +648,8 @@ export class ThermalPrinter {
         this.writer = this.port.writable.getWriter();
       }
       
-      console.log('Printer connected');
       return true;
-    } catch (error) {
-      console.error('Error connecting to printer:', error);
+    } catch {
       return false;
     }
   }
@@ -667,27 +665,22 @@ export class ThermalPrinter {
         await this.port.close();
         this.port = null;
       }
-      
-      console.log('Printer disconnected');
-    } catch (error) {
-      console.error('Error disconnecting printer:', error);
+    } catch {
+      // Ignore disconnect errors
     }
   }
   
   async print(data: string): Promise<boolean> {
     try {
       if (!this.writer) {
-        console.error('Printer not connected');
         return false;
       }
       
       const bytes = stringToBytes(data);
       await this.writer.write(bytes);
       
-      console.log('Print job sent');
       return true;
-    } catch (error) {
-      console.error('Error printing:', error);
+    } catch {
       return false;
     }
   }

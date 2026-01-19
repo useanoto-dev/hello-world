@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {
   BarChart,
   Bar,
@@ -41,7 +41,7 @@ export default function TopProductsChart({ data }: TopProductsChartProps) {
   const isDark = theme === "dark";
   const COLORS = isDark ? COLORS_DARK : COLORS_LIGHT;
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const renderTooltipContent = useCallback(({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const item = payload[0].payload;
       return (
@@ -57,7 +57,7 @@ export default function TopProductsChart({ data }: TopProductsChartProps) {
       );
     }
     return null;
-  };
+  }, []);
 
   const truncateName = (name: string) => {
     return name.length > 12 ? name.substring(0, 12) + "…" : name;
@@ -85,7 +85,7 @@ export default function TopProductsChart({ data }: TopProductsChartProps) {
           tickLine={false}
           width={55}
         />
-        <Tooltip content={<CustomTooltip />} />
+        <Tooltip content={renderTooltipContent} />
         <Bar dataKey="quantity" radius={[0, 3, 3, 0]}>
           {data.map((_, index) => (
             <Cell 
