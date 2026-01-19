@@ -82,12 +82,12 @@ const CheckoutSummary = lazy(() => import("@/pages/CheckoutSummary"));
 // PWA Install Page
 const InstallPWA = lazy(() => import("@/pages/InstallPWA"));
 
-// Aggressive caching for instant second-visit loading
+// Aggressive caching for instant loading - static data cached longer
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh
-      gcTime: 30 * 60 * 1000, // 30 minutes - cache persists
+      staleTime: 10 * 60 * 1000, // 10 minutes - data stays fresh longer
+      gcTime: 60 * 60 * 1000, // 1 hour - cache persists much longer
       refetchOnWindowFocus: false, // Don't refetch on tab focus
       refetchOnReconnect: false, // Don't refetch on reconnect
       retry: 1, // Only retry once on failure
