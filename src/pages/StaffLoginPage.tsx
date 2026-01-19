@@ -34,11 +34,11 @@ export default function StaffLoginPage() {
     const actualCpf = inputValue || stateValue;
     const actualCleanCpf = actualCpf.replace(/\D/g, "");
     
-    console.log("Login attempt - Input value:", inputValue, "State value:", stateValue, "Clean CPF:", actualCleanCpf);
+    // CPF validation
     
     if (!actualCleanCpf || actualCleanCpf.length !== 11) {
       toast.error("CPF inválido");
-      console.log("CPF validation failed - length:", actualCleanCpf.length);
+      
       return;
     }
 
@@ -50,7 +50,7 @@ export default function StaffLoginPage() {
     setIsLoading(true);
 
     try {
-      console.log("Attempting login with CPF:", actualCleanCpf);
+      // Use server-side authentication via edge function
       
       // Use server-side authentication via edge function
       const { data, error } = await supabase.functions.invoke('staff-auth', {
@@ -58,10 +58,10 @@ export default function StaffLoginPage() {
         headers: { 'Content-Type': 'application/json' }
       });
 
-      console.log("Auth result:", { data, error });
+      
 
       if (error) {
-        console.error("Auth error:", error);
+        
         toast.error("Erro ao fazer login");
         setIsLoading(false);
         return;

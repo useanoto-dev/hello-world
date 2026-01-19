@@ -244,15 +244,12 @@ export default function InventoryPage() {
           created_by: 'admin',
         });
 
-      if (movementError) {
-        console.warn("Could not log movement:", movementError);
-      }
+      // Movement logged silently
 
       toast.success("Estoque atualizado!");
       setAdjustmentOpen(false);
       loadData(storeId);
-    } catch (error: any) {
-      console.error("Error updating stock:", error);
+    } catch {
       toast.error("Erro ao atualizar estoque");
     } finally {
       setSaving(false);

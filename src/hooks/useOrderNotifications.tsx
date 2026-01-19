@@ -21,7 +21,6 @@ export function useOrderNotifications() {
   // Request notification permission
   const requestNotificationPermission = useCallback(async () => {
     if (!('Notification' in window)) {
-      console.log('Browser does not support notifications');
       return;
     }
 
@@ -115,7 +114,7 @@ export function useOrderNotifications() {
           table: 'orders' 
         },
         (payload) => {
-          console.log('New order received:', payload);
+          
           const order = payload.new as any;
           
           // Play notification sound
@@ -137,9 +136,7 @@ export function useOrderNotifications() {
           });
         }
       )
-      .subscribe((status) => {
-        console.log('Realtime subscription status:', status);
-      });
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);

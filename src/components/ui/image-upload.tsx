@@ -111,9 +111,7 @@ export function ImageUpload({
       const contentType = isPng ? "image/png" : "image/jpeg";
       const fileName = `${folder}/${Date.now()}.${extension}`;
 
-      console.log(
-        `Image compressed: ${(file.size / 1024).toFixed(1)}KB → ${(compressedBlob.size / 1024).toFixed(1)}KB (${isPng ? 'PNG' : 'JPEG'})`
-      );
+      // Image compression completed silently
 
       const { error: uploadError } = await supabase.storage
         .from(bucket)
