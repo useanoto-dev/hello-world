@@ -2638,6 +2638,11 @@ export type Database = {
           current_period_end: string | null
           current_period_start: string | null
           id: string
+          payment_method: string | null
+          pix_code: string | null
+          pix_expires_at: string | null
+          pix_invoice_id: string | null
+          pix_qr_code_url: string | null
           plan: string | null
           status: Database["public"]["Enums"]["subscription_status"] | null
           store_id: string
@@ -2652,6 +2657,11 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          payment_method?: string | null
+          pix_code?: string | null
+          pix_expires_at?: string | null
+          pix_invoice_id?: string | null
+          pix_qr_code_url?: string | null
           plan?: string | null
           status?: Database["public"]["Enums"]["subscription_status"] | null
           store_id: string
@@ -2666,6 +2676,11 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          payment_method?: string | null
+          pix_code?: string | null
+          pix_expires_at?: string | null
+          pix_invoice_id?: string | null
+          pix_qr_code_url?: string | null
           plan?: string | null
           status?: Database["public"]["Enums"]["subscription_status"] | null
           store_id?: string

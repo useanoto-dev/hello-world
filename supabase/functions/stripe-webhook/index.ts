@@ -107,8 +107,38 @@ Deno.serve(async (req) => {
       case 'invoice.paid': {
         const invoice = event.data.object as Stripe.Invoice;
         const subscriptionId = invoice.subscription as string;
+        const invoiceMetadata = invoice.metadata;
         
-        if (subscriptionId) {
+        // Check if this is a PIX payment (via invoice metadata)
+        const isPix = invoiceMetadata?.payment_method === 'pix';
+        const storeIdFromInvoice = invoiceMetadata?.store_id;
+        const planFromInvoice = invoiceMetadata?.plan;
+        
+        if (isPix && storeIdFromInvoice) {
+          // PIX payment - manual invoice, no Stripe subscription
+          const newPeriodEnd = new Date();
+          if (planFromInvoice === 'annual') {
+            newPeriodEnd.setFullYear(newPeriodEnd.getFullYear() + 1);
+          } else {
+            newPeriodEnd.setMonth(newPeriodEnd.getMonth() + 1);
+          }
+
+          await supabase
+            .from('subscriptions')
+            .update({
+              status: 'active',
+              current_period_start: new Date().toISOString(),
+              current_period_end: newPeriodEnd.toISOString(),
+              pix_invoice_id: null,
+              pix_qr_code_url: null,
+              pix_code: null,
+              pix_expires_at: null,
+            })
+            .eq('store_id', storeIdFromInvoice);
+
+          console.log(`PIX payment confirmed for store ${storeIdFromInvoice}`);
+        } else if (subscriptionId) {
+          // Regular card/boleto subscription payment
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
           const storeId = subscription.metadata?.store_id;
           
