@@ -25,7 +25,7 @@ const COLORS = {
 export default function SubscriptionPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { activeRestaurant } = useActiveRestaurant();
+  const { restaurantId } = useActiveRestaurant();
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState<"monthly" | "annual" | null>(null);
   const [isPortalLoading, setIsPortalLoading] = useState(false);
@@ -49,12 +49,12 @@ export default function SubscriptionPage() {
 
   // Fetch subscription status
   const fetchSubscription = async () => {
-    if (!activeRestaurant?.id) return;
+    if (!restaurantId) return;
     
     const { data } = await supabase
       .from('subscriptions')
       .select('status, plan, trial_ends_at, current_period_end')
-      .eq('store_id', activeRestaurant.id)
+      .eq('store_id', restaurantId)
       .single();
     
     if (data) {
@@ -64,10 +64,10 @@ export default function SubscriptionPage() {
 
   useEffect(() => {
     fetchSubscription();
-  }, [activeRestaurant?.id]);
+  }, [restaurantId]);
 
   const handleSubscribe = async (plan: "monthly" | "annual") => {
-    if (!activeRestaurant?.id) {
+    if (!restaurantId) {
       toast.error(t('subscription.noStore'));
       return;
     }
@@ -81,7 +81,7 @@ export default function SubscriptionPage() {
       const { data, error } = await supabase.functions.invoke('stripe-checkout', {
         body: {
           plan,
-          storeId: activeRestaurant.id,
+          storeId: restaurantId,
           email: user?.email,
         },
       });
@@ -100,14 +100,14 @@ export default function SubscriptionPage() {
   };
 
   const handleManageSubscription = async () => {
-    if (!activeRestaurant?.id) return;
+    if (!restaurantId) return;
 
     setIsPortalLoading(true);
 
     try {
       const { data, error } = await supabase.functions.invoke('stripe-portal', {
         body: {
-          storeId: activeRestaurant.id,
+          storeId: restaurantId,
         },
       });
 
