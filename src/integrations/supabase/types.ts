@@ -3248,6 +3248,43 @@ export type Database = {
           whatsapp: string
         }[]
       }
+      get_safe_store_data: {
+        Args: { p_store_id: string }
+        Returns: {
+          about_us: string
+          address: string
+          banner_url: string
+          close_hour: number
+          created_at: string
+          delivery_fee: number
+          font_family: string
+          google_maps_link: string
+          id: string
+          instagram: string
+          is_active: boolean
+          is_open_override: boolean
+          logo_url: string
+          name: string
+          onboarding_completed: boolean
+          open_hour: number
+          phone: string
+          pix_key: string
+          primary_color: string
+          print_footer_message: string
+          printer_width: string
+          printnode_printer_id: string
+          secondary_color: string
+          sidebar_color: string
+          slug: string
+          uazapi_instance_name: string
+          uazapi_instance_token: string
+          updated_at: string
+          whatsapp: string
+          whatsapp_name: string
+          whatsapp_number: string
+          whatsapp_status: string
+        }[]
+      }
       get_user_store_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
