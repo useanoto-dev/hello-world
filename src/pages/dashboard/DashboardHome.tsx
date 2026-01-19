@@ -8,6 +8,7 @@ import {
   BarChart3, Calendar, ArrowUpRight, ArrowDownRight,
   ChefHat, UtensilsCrossed, CreditCard, CalendarRange
 } from "lucide-react";
+import TrialExpiringAlert from "@/components/admin/TrialExpiringAlert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -348,6 +349,10 @@ export default function DashboardHome() {
 
   return (
     <div className="space-y-3 md:space-y-4">
+      {/* Trial Expiring Alert */}
+      {subscription?.status === "trial" && trialDaysLeft <= 3 && trialDaysLeft >= 0 && (
+        <TrialExpiringAlert daysRemaining={trialDaysLeft} />
+      )}
       {/* Header Compacto */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
         <div>
