@@ -444,7 +444,7 @@ export default function SubscriptionPage() {
           </motion.div>
         </div>
 
-        {/* Payment Method Selection */}
+        {/* Payment Method Selection - PIX disabled until enabled in Stripe */}
         {!isActive && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -472,14 +472,13 @@ export default function SubscriptionPage() {
                 </Label>
                 <Label
                   htmlFor="pix"
-                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    paymentMethod === 'pix' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-                  }`}
+                  className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-not-allowed transition-all opacity-50 border-border"
+                  title="PIX não disponível - entre em contato com o suporte"
                 >
-                  <RadioGroupItem value="pix" id="pix" className="sr-only" />
-                  <Smartphone className="w-6 h-6" />
-                  <span className="text-xs font-medium">PIX</span>
-                  <span className="text-[10px] text-muted-foreground">QR Code</span>
+                  <RadioGroupItem value="pix" id="pix" className="sr-only" disabled />
+                  <Smartphone className="w-6 h-6 text-muted-foreground" />
+                  <span className="text-xs font-medium text-muted-foreground">PIX</span>
+                  <span className="text-[10px] text-muted-foreground">Em breve</span>
                 </Label>
               </RadioGroup>
             </Card>
