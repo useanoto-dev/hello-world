@@ -7,12 +7,11 @@ import { ptBR } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Clock, CheckCircle, ChefHat, Truck, Package, 
-  ArrowLeft, Phone, MapPin, ShoppingBag, XCircle, Timer, MessageCircle, Gamepad2, Star, Gift, Coins
+  ArrowLeft, Phone, MapPin, ShoppingBag, XCircle, Timer, MessageCircle, Star, Gift, Coins
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
-import GameSelector from "@/components/games/GameSelector";
 import { PostOrderReviewModal } from "@/components/storefront/PostOrderReviewModal";
 
 interface OrderItem {
@@ -144,7 +143,7 @@ export default function OrderTrackingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [showGame, setShowGame] = useState(false);
+  
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [hasShownReviewPrompt, setHasShownReviewPrompt] = useState(false);
   const [loyaltyInfo, setLoyaltyInfo] = useState<LoyaltyInfo | null>(null);
@@ -805,30 +804,6 @@ export default function OrderTrackingPage() {
               Avaliar Estabelecimento
             </Button>
           </motion.section>
-        )}
-
-        {/* Play Game Button */}
-        {currentStatus !== "completed" && currentStatus !== "cancelled" && (
-          <AnimatePresence>
-            {!showGame ? (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-              >
-                <Button
-                  variant="outline"
-                  className="w-full gap-2 border-dashed"
-                  onClick={() => setShowGame(true)}
-                >
-                  <Gamepad2 className="w-4 h-4" />
-                  Jogar enquanto espera
-                </Button>
-              </motion.div>
-            ) : (
-              <GameSelector standalone onClose={() => setShowGame(false)} />
-            )}
-          </AnimatePresence>
         )}
 
         {/* WhatsApp Button */}
