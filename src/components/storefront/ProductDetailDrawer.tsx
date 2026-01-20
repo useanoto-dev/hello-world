@@ -1,13 +1,16 @@
-// Product Detail Drawer - For simple products without customization groups
+// Product Detail Drawer - FSW Style
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ChevronDown, Minus, Plus, Share2, Search } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/formatters";
-import { cn } from "@/lib/utils";
 import DynamicUpsellModal from "./DynamicUpsellModal";
 
 interface Product {
@@ -38,7 +41,6 @@ export default function ProductDetailDrawer({
   onNavigateToCategory,
 }: Props) {
   const [quantity, setQuantity] = useState(1);
-  const [notes, setNotes] = useState("");
   const [showUpsell, setShowUpsell] = useState(false);
   const { addToCart } = useCart();
 
@@ -46,56 +48,14 @@ export default function ProductDetailDrawer({
   useEffect(() => {
     if (isOpen) {
       setQuantity(1);
-      setNotes("");
       setShowUpsell(false);
     }
   }, [isOpen, product.id]);
 
-  // Block body scroll when open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = "";
-      };
-    }
-  }, [isOpen]);
-
   const basePrice = product.promotional_price ?? product.price;
-  const originalPrice = product.promotional_price ? product.price : null;
-  const hasPromotion = product.promotional_price !== null && product.promotional_price < product.price;
   const totalPrice = basePrice * quantity;
 
-  const handleShare = async () => {
-    const shareData = {
-      title: product.name,
-      text: `Confira ${product.name}!`,
-      url: window.location.href,
-    };
-
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch {
-        // User cancelled or error
-      }
-    } else {
-      // Fallback: copy to clipboard
-      try {
-        await navigator.clipboard.writeText(window.location.href);
-        toast.success("Link copiado!");
-      } catch {
-        toast.error("Não foi possível compartilhar");
-      }
-    }
-  };
-
   const handleAddToCart = () => {
-    let description = product.description || undefined;
-    if (notes.trim()) {
-      description = description ? `${description} | Obs: ${notes.trim()}` : `Obs: ${notes.trim()}`;
-    }
-
     addToCart({
       id: `${product.id}-${Date.now()}`,
       product_id: product.id,
@@ -103,7 +63,7 @@ export default function ProductDetailDrawer({
       price: basePrice,
       quantity: quantity,
       category: categoryName,
-      description,
+      description: product.description || undefined,
       image_url: product.image_url || undefined,
     });
 
@@ -122,225 +82,93 @@ export default function ProductDetailDrawer({
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        initial={{ opacity: 0, y: "100%" }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: "100%" }}
-        transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="fixed inset-0 z-50 bg-white"
-      >
-        {/* Desktop Header - Sticky com fundo branco */}
-        <header className="hidden lg:flex items-center justify-between px-6 py-4 border-b border-border bg-white sticky top-0 z-20">
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={onClose}
-              className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-foreground" />
-            </button>
-            <span className="text-lg font-semibold text-foreground">Detalhes do produto</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors">
-              <Search className="w-5 h-5 text-foreground" />
-            </button>
-            <button 
-              onClick={handleShare}
-              className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
-            >
-              <Share2 className="w-5 h-5 text-foreground" />
-            </button>
-          </div>
-        </header>
-
-        {/* Mobile Header - Floating buttons over image */}
-        <div className="lg:hidden fixed top-0 inset-x-0 z-20 flex items-center justify-between p-4">
-          <button 
-            onClick={onClose}
-            className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 text-gray-700" />
-          </button>
-          <button 
-            onClick={handleShare}
-            className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-white transition-colors"
-          >
-            <Share2 className="w-5 h-5 text-gray-700" />
-          </button>
-        </div>
-
-        {/* Scrollable Content */}
-        <main className="h-full overflow-y-auto pb-32 lg:pb-24">
-          {/* Mobile Hero Image Section */}
-          <div className="lg:hidden relative">
-            <div className="relative h-64 sm:h-80 bg-gray-900">
+    <>
+      <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl">
+          <div className="flex flex-col h-full">
+            {/* Product Image */}
+            <div className="relative -mx-6 -mt-6">
               {product.image_url ? (
-                <img 
-                  src={product.image_url} 
+                <img
+                  src={product.image_url}
                   alt={product.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-56 object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                  <span className="text-7xl">🍽️</span>
+                <div className="w-full h-56 bg-muted flex items-center justify-center">
+                  <span className="text-6xl">🍽️</span>
                 </div>
               )}
-              
-              {/* Gradient overlay at bottom */}
-              <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background via-background/80 to-transparent" />
-              
-              {/* Pull indicator */}
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
-                <ChevronDown className="w-6 h-6 text-muted-foreground animate-bounce" />
-              </div>
             </div>
-          </div>
 
-          {/* Content */}
-          <div className="px-4 py-4 lg:max-w-2xl lg:mx-auto lg:px-6 lg:py-6">
-            {/* Desktop Hero - Horizontal layout com imagem quadrada */}
-            <div className="hidden lg:flex gap-6 mb-6 items-start">
-              {/* Product Image - Square with rounded corners */}
-              <div className="w-44 h-44 rounded-2xl overflow-hidden flex-shrink-0">
-                {product.image_url ? (
-                  <img 
-                    src={product.image_url} 
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                    <span className="text-5xl">🍽️</span>
-                  </div>
-                )}
-              </div>
-              
-              {/* Product Info */}
-              <div className="flex-1 min-w-0 pt-2">
-                <h1 className="text-xl font-medium text-gray-800 leading-tight">
-                  {product.name}
-                </h1>
-                <div className="flex items-center gap-2 mt-2">
-                  {hasPromotion && (
-                    <span className="text-sm text-gray-400 line-through">
-                      {formatCurrency(originalPrice!)}
-                    </span>
-                  )}
-                  <span className={cn(
-                    "text-lg font-normal",
-                    hasPromotion ? "text-green-600" : "text-gray-500"
-                  )}>
-                    {formatCurrency(basePrice)}
+            {/* Header */}
+            <SheetHeader className="mt-4 text-left">
+              <SheetTitle className="text-xl">{product.name}</SheetTitle>
+            </SheetHeader>
+
+            {/* Description */}
+            {product.description && (
+              <p className="text-muted-foreground text-sm mt-2">
+                {product.description}
+              </p>
+            )}
+
+            {/* Spacer */}
+            <div className="flex-1" />
+
+            {/* Footer with quantity and add button */}
+            <div className="border-t pt-4 mt-4">
+              <div className="flex items-center justify-between mb-4">
+                {/* Quantity controls */}
+                <div className="flex items-center gap-4">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="text-lg font-semibold w-8 text-center">
+                    {quantity}
                   </span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full"
+                    onClick={() => setQuantity(quantity + 1)}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
                 </div>
-                {product.description && (
-                  <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
-                    {product.description}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Mobile Product Info */}
-            <div className="lg:hidden mb-6">
-              <h1 className="text-2xl font-medium text-gray-800 leading-tight">
-                {product.name}
-              </h1>
-              <div className="flex items-center gap-2 mt-2">
-                {hasPromotion && (
-                  <span className="text-sm text-gray-400 line-through">
-                    {formatCurrency(originalPrice!)}
-                  </span>
-                )}
-                <span className={cn(
-                  "text-lg font-normal",
-                  hasPromotion ? "text-green-600" : "text-gray-500"
-                )}>
-                  {formatCurrency(basePrice)}
+                
+                {/* Price */}
+                <span className="text-xl font-bold text-primary">
+                  {formatCurrency(totalPrice)}
                 </span>
               </div>
-              {product.description && (
-                <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
-                  {product.description}
-                </p>
-              )}
-            </div>
 
-            {/* Quantity Selector */}
-            <div className="bg-muted/30 rounded-xl p-4 mb-6">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-foreground">Quantidade</span>
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    disabled={quantity <= 1}
-                    className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <Minus className="w-5 h-5 text-gray-600" />
-                  </button>
-                  <span className="w-8 text-center text-xl font-bold">{quantity}</span>
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="w-10 h-10 rounded-full border-2 border-amber-500 bg-amber-500 flex items-center justify-center hover:bg-amber-600 hover:border-amber-600 transition-colors"
-                  >
-                    <Plus className="w-5 h-5 text-white" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Observations */}
-            <div>
-              <label className="text-sm font-semibold text-foreground">
-                Observações
-              </label>
-              <Textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Ex: Sem cebola, bem passado, etc."
-                className="mt-2 min-h-[80px] resize-none border-border bg-muted/30"
-              />
+              <Button
+                className="w-full h-12 text-lg font-semibold"
+                onClick={handleAddToCart}
+              >
+                Adicionar ao carrinho
+              </Button>
             </div>
           </div>
-        </main>
+        </SheetContent>
+      </Sheet>
 
-        {/* Footer - Fixed bottom */}
-        <motion.footer
-          initial={{ y: 60, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2, type: "spring", damping: 25, stiffness: 400 }}
-          className="fixed bottom-0 inset-x-0 bg-white border-t border-border p-4 z-10"
-        >
-          <div className="lg:max-w-2xl lg:mx-auto lg:px-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-muted-foreground">Total</span>
-              <span className="text-lg font-normal text-gray-500">
-                {formatCurrency(totalPrice)}
-              </span>
-            </div>
-            <Button
-              onClick={handleAddToCart}
-              className="w-full h-12 text-base font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-lg"
-            >
-              Adicionar ao Carrinho
-            </Button>
-          </div>
-        </motion.footer>
-
-        {/* Upsell Modal */}
-        {showUpsell && product.category_id && storeId && (
-          <DynamicUpsellModal
-            storeId={storeId}
-            triggerCategoryId={product.category_id}
-            onClose={handleUpsellClose}
-            onNavigateToCategory={onNavigateToCategory}
-          />
-        )}
-      </motion.div>
-    </AnimatePresence>
+      {/* Upsell Modal */}
+      {showUpsell && product.category_id && storeId && (
+        <DynamicUpsellModal
+          storeId={storeId}
+          triggerCategoryId={product.category_id}
+          onClose={handleUpsellClose}
+          onNavigateToCategory={onNavigateToCategory}
+        />
+      )}
+    </>
   );
 }
