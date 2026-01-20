@@ -1,7 +1,5 @@
 // Product Grid - FSW Style - Horizontal Card Layout
 import { formatCurrency } from "@/lib/formatters";
-import { motion } from "framer-motion";
-import { Settings2, Tag, AlertTriangle } from "lucide-react";
 import { memo, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { FavoriteButton } from "./FavoriteButton";
@@ -31,7 +29,7 @@ interface ProductGridProps {
   filterFavoritesOnly?: boolean;
 }
 
-// Memoized product card - FSW horizontal style
+// Memoized product card - FSW style
 const ProductCard = memo(function ProductCard({
   product,
   index,
@@ -39,7 +37,6 @@ const ProductCard = memo(function ProductCard({
   isFavorite,
   onToggleFavorite,
   showFavorites,
-  isPriceUpdated,
 }: {
   product: Product;
   index: number;
@@ -47,7 +44,6 @@ const ProductCard = memo(function ProductCard({
   isFavorite: boolean;
   onToggleFavorite: () => void;
   showFavorites: boolean;
-  isPriceUpdated: boolean;
 }) {
   const hasPromo = product.promotional_price !== null && product.promotional_price < product.price;
   const displayPrice = hasPromo ? product.promotional_price! : product.price;
@@ -62,15 +58,14 @@ const ProductCard = memo(function ProductCard({
   return (
     <Card
       className={`
-        flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-100 
-        hover:shadow-md transition-all duration-200 cursor-pointer
-        ${isPriceUpdated ? 'ring-2 ring-green-500/50' : ''}
+        flex items-center gap-3 p-3 bg-card rounded-lg border border-border 
+        hover:shadow-md transition-shadow cursor-pointer
         ${isOutOfStock ? 'opacity-60 cursor-not-allowed' : ''}
       `}
       onClick={() => !isOutOfStock && onClick()}
     >
       {/* Product Image */}
-      <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+      <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
         {product.image_url ? (
           <img
             src={product.image_url}
@@ -79,22 +74,15 @@ const ProductCard = memo(function ProductCard({
             loading={index < 6 ? "eager" : "lazy"}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400">
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
             🍽️
-          </div>
-        )}
-        
-        {/* Virtual Product Badge */}
-        {isVirtual && (
-          <div className="absolute top-1 right-1 flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary text-primary-foreground shadow">
-            <Settings2 className="w-2.5 h-2.5" />
           </div>
         )}
         
         {/* Out of Stock Overlay */}
         {isOutOfStock && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <span className="text-white text-[10px] font-bold bg-red-600 px-1.5 py-0.5 rounded">
+            <span className="text-white text-[10px] font-bold bg-destructive px-1.5 py-0.5 rounded">
               Esgotado
             </span>
           </div>
@@ -104,7 +92,7 @@ const ProductCard = memo(function ProductCard({
       {/* Product Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-gray-900 text-[15px] line-clamp-1">
+          <h3 className="font-semibold text-foreground text-[15px] truncate">
             {product.name}
           </h3>
           
@@ -121,7 +109,7 @@ const ProductCard = memo(function ProductCard({
         </div>
         
         {product.description && (
-          <p className="text-gray-500 text-sm line-clamp-2 mt-0.5">
+          <p className="text-muted-foreground text-sm line-clamp-2 mt-0.5">
             {product.description}
           </p>
         )}
@@ -129,11 +117,11 @@ const ProductCard = memo(function ProductCard({
         {/* Price */}
         <div className="mt-2 flex items-center gap-2">
           {hasPromo && (
-            <span className="text-xs text-gray-400 line-through">
+            <span className="text-xs text-muted-foreground line-through">
               {formatCurrency(product.price)}
             </span>
           )}
-          <span className={`font-bold text-base ${hasPromo ? 'text-green-600' : 'text-primary'}`}>
+          <span className="font-bold text-primary text-base">
             {formatCurrency(displayPrice)}
           </span>
         </div>
@@ -160,37 +148,30 @@ function ProductGrid({
 
   if (displayProducts.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500 px-4">
+      <div className="text-center py-12 text-muted-foreground px-4">
         <div className="text-4xl mb-2">{filterFavoritesOnly ? "💔" : "🍽️"}</div>
         <p className="font-medium">
           {filterFavoritesOnly ? "Nenhum favorito ainda" : "Nenhum produto encontrado nesta categoria."}
         </p>
         {filterFavoritesOnly && (
-          <p className="text-sm text-gray-400 mt-1">Toque no ❤️ para adicionar favoritos</p>
+          <p className="text-sm text-muted-foreground mt-1">Toque no ❤️ para adicionar favoritos</p>
         )}
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-3 px-4 pb-32">
+    <div className="flex flex-col gap-3 px-5 pb-24">
       {displayProducts.map((product, index) => (
-        <motion.div
+        <ProductCard
           key={product.id}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: Math.min(index * 0.03, 0.15), duration: 0.2 }}
-        >
-          <ProductCard
-            product={product}
-            index={index}
-            onClick={() => onProductClick(product)}
-            isFavorite={isFavorite(product.id)}
-            onToggleFavorite={() => toggleFavorite(product.id)}
-            showFavorites={showFavorites}
-            isPriceUpdated={updatedProductIds?.has(product.id) || false}
-          />
-        </motion.div>
+          product={product}
+          index={index}
+          onClick={() => onProductClick(product)}
+          isFavorite={isFavorite(product.id)}
+          onToggleFavorite={() => toggleFavorite(product.id)}
+          showFavorites={showFavorites}
+        />
       ))}
     </div>
   );
