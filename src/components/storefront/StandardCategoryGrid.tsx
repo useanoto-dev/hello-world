@@ -250,7 +250,7 @@ export function StandardCategoryGrid({
                             {size.description}
                           </p>
                         )}
-                        <p className="mt-2 font-bold text-primary text-lg">
+                        <p className="mt-2 font-semibold text-gray-900 text-base">
                           {formatCurrency(size.base_price)}
                         </p>
                       </div>
@@ -431,7 +431,7 @@ export function StandardCategoryGrid({
                         {item.description}
                       </p>
                     )}
-                    <p className="mt-2 font-bold text-primary text-lg">
+                    <p className="mt-2 font-semibold text-gray-900 text-base">
                       {formatCurrency(displayPrice)}
                     </p>
                   </div>
