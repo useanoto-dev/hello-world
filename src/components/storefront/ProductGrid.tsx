@@ -113,14 +113,14 @@ const ProductCard = memo(function ProductCard({
           </p>
         )}
         
-        {/* Price */}
+        {/* Price - Minimalist dark style */}
         <div className="mt-2 flex items-center gap-2">
           {hasPromo && (
             <span className="text-xs text-gray-400 line-through">
               {formatCurrency(product.price)}
             </span>
           )}
-          <span className="font-bold text-primary text-lg">
+          <span className="font-semibold text-gray-900 text-base">
             {formatCurrency(displayPrice)}
           </span>
         </div>
