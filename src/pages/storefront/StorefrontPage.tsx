@@ -1207,7 +1207,7 @@ export default function StorefrontPage() {
 
   return (
     <div 
-      className="min-h-dvh bg-white flex flex-col light" 
+      className="min-h-dvh bg-background flex flex-col light font-storefront antialiased" 
       data-theme="light"
       style={storeThemeStyles}
     >

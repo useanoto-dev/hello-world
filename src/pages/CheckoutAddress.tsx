@@ -264,7 +264,7 @@ export default function CheckoutAddress() {
     (cpfRaw.length === 0 || isCpfValid);
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-24 font-storefront antialiased">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm border-b border-border">
         <div className="max-w-lg mx-auto px-4 py-3">
