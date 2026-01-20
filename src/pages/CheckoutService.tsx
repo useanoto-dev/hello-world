@@ -41,7 +41,7 @@ export default function CheckoutService() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background font-storefront antialiased">
       <header className="sticky top-0 z-10 bg-card border-b border-border p-4 flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate(`/cardapio/${slug}/carrinho`)}>
           <ArrowLeft className="w-5 h-5" />

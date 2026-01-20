@@ -103,7 +103,7 @@ export default function CartPage() {
 
   if (cart.length === 0) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen bg-background flex flex-col font-storefront antialiased">
         <header className="sticky top-0 z-10 bg-card border-b border-border p-4 flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate(`/cardapio/${slug}`)}>
             <ArrowLeft className="w-5 h-5" />
@@ -130,7 +130,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-40">
+    <div className="min-h-screen bg-background pb-40 font-storefront antialiased">
       <header className="sticky top-0 z-10 bg-card border-b border-border p-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate(`/cardapio/${slug}`)}>

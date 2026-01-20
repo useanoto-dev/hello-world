@@ -258,7 +258,7 @@ export default function ReviewsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-6">
+    <div className="min-h-screen bg-background pb-6 font-storefront antialiased">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white border-b border-border">
         <div className="flex items-center gap-3 px-4 py-3">
