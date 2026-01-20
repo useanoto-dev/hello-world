@@ -22,7 +22,6 @@ import OrderHistoryContent from "@/components/storefront/OrderHistoryContent";
 import CardapioSkeleton from "@/components/storefront/skeletons/CardapioSkeleton";
 import PedidosSkeleton from "@/components/storefront/skeletons/PedidosSkeleton";
 import SobreSkeleton from "@/components/storefront/skeletons/SobreSkeleton";
-import InstallPrompt from "@/components/storefront/InstallPrompt";
 import DynamicUpsellModal, { usePrefetchUpsellModals } from "@/components/storefront/DynamicUpsellModal";
 import { LoyaltyWidget } from "@/components/storefront/LoyaltyWidget";
 import { PizzaSizeGrid } from "@/components/storefront/PizzaSizeGrid";

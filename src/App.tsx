@@ -70,7 +70,6 @@ const StaffProfilePage = lazy(() => import("@/pages/dashboard/StaffProfilePage")
 
 // Storefront Pages
 const StorefrontPage = lazy(() => import("@/pages/storefront/StorefrontPage"));
-const FSWMenuPage = lazy(() => import("@/pages/storefront/FSWMenuPage"));
 const CartPage = lazy(() => import("@/pages/storefront/CartPage"));
 const OrderTrackingPage = lazy(() => import("@/pages/storefront/OrderTrackingPage"));
 const OrderHistoryPage = lazy(() => import("@/pages/storefront/OrderHistoryPage"));
@@ -181,7 +180,6 @@ function AnimatedRoutes() {
           
           {/* Public Storefront */}
           <Route path="/cardapio/:slug" element={<StorefrontPage />} />
-          <Route path="/menu/:slug" element={<FSWMenuPage />} />
           <Route path="/cardapio/:slug/carrinho" element={<CartPage />} />
           <Route path="/cardapio/:slug/pedido/:orderNumber" element={<OrderTrackingPage />} />
           <Route path="/cardapio/:slug/meus-pedidos" element={<OrderHistoryPage />} />
