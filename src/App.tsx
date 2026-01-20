@@ -180,8 +180,7 @@ function AnimatedRoutes() {
           </Route>
           
           {/* Public Storefront */}
-          <Route path="/cardapio/:slug" element={<StorefrontPage />} />
-          <Route path="/menu/:slug" element={<FSWMenuPage />} />
+          <Route path="/cardapio/:slug" element={<FSWMenuPage />} />
           <Route path="/cardapio/:slug/carrinho" element={<CartPage />} />
           <Route path="/cardapio/:slug/pedido/:orderNumber" element={<OrderTrackingPage />} />
           <Route path="/cardapio/:slug/meus-pedidos" element={<OrderHistoryPage />} />
