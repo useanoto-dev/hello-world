@@ -1,7 +1,6 @@
-// Product Grid - FSW Style - Horizontal Card Layout
+// Product Grid - FSW Style - Horizontal Card Layout (Image Left, Text Right)
 import { formatCurrency } from "@/lib/formatters";
 import { memo, useMemo } from "react";
-import { Card } from "@/components/ui/card";
 import { FavoriteButton } from "./FavoriteButton";
 import { useFavorites } from "@/hooks/useFavorites";
 
@@ -29,7 +28,7 @@ interface ProductGridProps {
   filterFavoritesOnly?: boolean;
 }
 
-// Memoized product card - FSW style
+// Memoized product card - FSW horizontal style
 const ProductCard = memo(function ProductCard({
   product,
   index,
@@ -56,16 +55,16 @@ const ProductCard = memo(function ProductCard({
     product.stock_quantity <= 0;
 
   return (
-    <Card
+    <div
       className={`
-        flex items-center gap-3 p-3 bg-card rounded-lg border border-border 
-        hover:shadow-md transition-shadow cursor-pointer
+        flex items-center gap-4 p-3 bg-white rounded-xl border border-gray-100 
+        hover:shadow-md transition-all duration-200 cursor-pointer
         ${isOutOfStock ? 'opacity-60 cursor-not-allowed' : ''}
       `}
       onClick={() => !isOutOfStock && onClick()}
     >
-      {/* Product Image */}
-      <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
+      {/* Product Image - Square, left side */}
+      <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
         {product.image_url ? (
           <img
             src={product.image_url}
@@ -74,7 +73,7 @@ const ProductCard = memo(function ProductCard({
             loading={index < 6 ? "eager" : "lazy"}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+          <div className="w-full h-full flex items-center justify-center text-gray-400 text-2xl">
             🍽️
           </div>
         )}
@@ -89,10 +88,10 @@ const ProductCard = memo(function ProductCard({
         )}
       </div>
 
-      {/* Product Info */}
-      <div className="flex-1 min-w-0">
+      {/* Product Info - Right side */}
+      <div className="flex-1 min-w-0 py-1">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-foreground text-[15px] truncate">
+          <h3 className="font-semibold text-gray-900 text-base leading-tight line-clamp-2">
             {product.name}
           </h3>
           
@@ -109,7 +108,7 @@ const ProductCard = memo(function ProductCard({
         </div>
         
         {product.description && (
-          <p className="text-muted-foreground text-sm line-clamp-2 mt-0.5">
+          <p className="text-gray-500 text-sm line-clamp-2 mt-1">
             {product.description}
           </p>
         )}
@@ -117,16 +116,16 @@ const ProductCard = memo(function ProductCard({
         {/* Price */}
         <div className="mt-2 flex items-center gap-2">
           {hasPromo && (
-            <span className="text-xs text-muted-foreground line-through">
+            <span className="text-xs text-gray-400 line-through">
               {formatCurrency(product.price)}
             </span>
           )}
-          <span className="font-bold text-primary text-base">
+          <span className="font-bold text-primary text-lg">
             {formatCurrency(displayPrice)}
           </span>
         </div>
       </div>
-    </Card>
+    </div>
   );
 });
 
@@ -161,7 +160,7 @@ function ProductGrid({
   }
 
   return (
-    <div className="flex flex-col gap-3 px-5 pb-24">
+    <div className="flex flex-col gap-3 px-5 pb-32">
       {displayProducts.map((product, index) => (
         <ProductCard
           key={product.id}

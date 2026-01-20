@@ -227,35 +227,32 @@ export function StandardCategoryGrid({
                     }, size, size.base_price, allowQuantitySelector ? quantity : 1)}
                     className="cursor-pointer"
                   >
-                    {/* Mobile: só linha divisória / Desktop: card com borda fina */}
-                    <div className="flex items-start gap-3 py-3 border-b border-border lg:border lg:border-border/80 lg:rounded-md lg:p-4 lg:my-2 hover:bg-muted/20 transition-colors">
-                      {/* Info - Left side */}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-foreground text-xs lg:text-sm uppercase leading-tight line-clamp-2">
-                          {size.name}
-                        </h3>
-                        {size.description && (
-                          <p className="text-muted-foreground text-[11px] lg:text-xs leading-relaxed mt-0.5 lg:mt-1 line-clamp-2">
-                            {size.description}
-                          </p>
-                        )}
-                        <div className="mt-1 lg:mt-2">
-                          <span className="text-[11px] text-gray-400">A partir de</span>
-                          <p className="text-sm font-normal text-gray-500">
-                            {formatCurrency(size.base_price)}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Image - Right side */}
-                      <div className="relative w-20 h-20 lg:w-24 lg:h-24 rounded-md overflow-hidden bg-muted shrink-0">
+                    {/* FSW Style: Image LEFT, Text RIGHT */}
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-xl border border-gray-100 hover:shadow-md transition-all">
+                      {/* Image - Left side */}
+                      <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-gray-100 shrink-0">
                         <OptimizedImage
                           src={size.image_url}
                           alt={size.name}
                           aspectRatio="auto"
                           className="w-full h-full object-cover"
-                          fallbackIcon={<span className="text-xl lg:text-2xl opacity-50">🍽️</span>}
+                          fallbackIcon={<span className="text-2xl text-gray-400">🍽️</span>}
                         />
+                      </div>
+
+                      {/* Info - Right side */}
+                      <div className="flex-1 min-w-0 py-1">
+                        <h3 className="font-semibold text-gray-900 text-base leading-tight line-clamp-2">
+                          {size.name}
+                        </h3>
+                        {size.description && (
+                          <p className="text-gray-500 text-sm line-clamp-2 mt-1">
+                            {size.description}
+                          </p>
+                        )}
+                        <p className="mt-2 font-bold text-primary text-lg">
+                          {formatCurrency(size.base_price)}
+                        </p>
                       </div>
                     </div>
                   </motion.div>
@@ -408,38 +405,35 @@ export function StandardCategoryGrid({
                 onClick={() => handleItemClick(item)}
                 className="cursor-pointer"
               >
-                {/* Mobile: só linha divisória / Desktop: card com borda fina */}
-                <div className="flex items-start gap-3 py-3 border-b border-border lg:border lg:border-border/80 lg:rounded-md lg:p-4 lg:my-2 hover:bg-muted/20 transition-colors">
-                  {/* Info - Left side */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-foreground text-xs lg:text-sm uppercase leading-tight line-clamp-2">
-                      {item.name}
-                      {item.is_premium && (
-                        <Crown className="w-3 h-3 lg:w-3.5 lg:h-3.5 inline-block ml-1 lg:ml-1.5 text-amber-500" />
-                      )}
-                    </h3>
-                    {item.description && (
-                      <p className="text-muted-foreground text-[11px] lg:text-xs leading-relaxed mt-0.5 lg:mt-1 line-clamp-2">
-                        {item.description}
-                      </p>
-                    )}
-                    <div className="mt-1 lg:mt-2">
-                      <span className="text-[11px] text-gray-400">A partir de</span>
-                      <p className="text-sm font-normal text-gray-500">
-                        {formatCurrency(displayPrice)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Image - Right side */}
-                  <div className="relative w-20 h-20 lg:w-24 lg:h-24 rounded-md overflow-hidden bg-muted shrink-0">
+                {/* FSW Style: Image LEFT, Text RIGHT */}
+                <div className="flex items-center gap-4 p-3 bg-white rounded-xl border border-gray-100 hover:shadow-md transition-all">
+                  {/* Image - Left side */}
+                  <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-gray-100 shrink-0">
                     <OptimizedImage
                       src={item.image_url}
                       alt={item.name}
                       aspectRatio="auto"
                       className="w-full h-full object-cover"
-                      fallbackIcon={<span className="text-xl lg:text-2xl opacity-50">🍽️</span>}
+                      fallbackIcon={<span className="text-2xl text-gray-400">🍽️</span>}
                     />
+                  </div>
+
+                  {/* Info - Right side */}
+                  <div className="flex-1 min-w-0 py-1">
+                    <h3 className="font-semibold text-gray-900 text-base leading-tight line-clamp-2">
+                      {item.name}
+                      {item.is_premium && (
+                        <Crown className="w-3.5 h-3.5 inline-block ml-1.5 text-amber-500" />
+                      )}
+                    </h3>
+                    {item.description && (
+                      <p className="text-gray-500 text-sm line-clamp-2 mt-1">
+                        {item.description}
+                      </p>
+                    )}
+                    <p className="mt-2 font-bold text-primary text-lg">
+                      {formatCurrency(displayPrice)}
+                    </p>
                   </div>
                 </div>
               </motion.div>

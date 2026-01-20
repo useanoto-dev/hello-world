@@ -20,7 +20,6 @@ export default function CategoryTabs({
   categories, 
   activeCategory, 
   onCategoryChange,
-  enableMorphAnimation = true
 }: CategoryTabsProps) {
   const tabsRef = useRef<(HTMLButtonElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -36,7 +35,6 @@ export default function CategoryTabs({
         const tabRect = tab.getBoundingClientRect();
         const containerRect = container.getBoundingClientRect();
         
-        // Calculate the scroll position to center the tab
         const scrollLeft = tab.offsetLeft - (containerRect.width / 2) + (tabRect.width / 2);
         
         container.scrollTo({
@@ -51,7 +49,7 @@ export default function CategoryTabs({
 
   return (
     <ScrollArea className="w-full">
-      <div ref={containerRef} className="flex gap-2 p-4">
+      <div ref={containerRef} className="flex gap-3 px-5 py-4">
         {categories.map((category, index) => {
           const isActive = activeCategory === category.id;
           
@@ -59,12 +57,15 @@ export default function CategoryTabs({
             <Button
               key={category.id}
               ref={(el) => { tabsRef.current[index] = el; }}
-              variant={isActive ? "default" : "secondary"}
-              className={`rounded-full whitespace-nowrap min-w-fit transition-all duration-200 ${
-                isActive
-                  ? "bg-primary text-primary-foreground shadow-md"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+              variant="outline"
+              className={`
+                rounded-full whitespace-nowrap min-w-fit px-5 h-10 text-sm font-medium
+                transition-all duration-200
+                ${isActive
+                  ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90"
+                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                }
+              `}
               onClick={() => onCategoryChange(category.id)}
             >
               {category.name}
