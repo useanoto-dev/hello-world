@@ -216,7 +216,7 @@ export default function UpsellModalEditorPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const editId = searchParams.get("edit");
-  const { restaurantId } = useActiveRestaurant();
+  const { restaurantId, isLoading: isRestaurantLoading } = useActiveRestaurant();
   
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -1115,7 +1115,7 @@ export default function UpsellModalEditorPage() {
     </div>
   );
 
-  if (loading) {
+  if (loading || isRestaurantLoading || !restaurantId) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -1125,22 +1125,24 @@ export default function UpsellModalEditorPage() {
 
   return (
     <>
-      <ComboUpsellModal
-        open={fullscreenPreviewOpen && selectedTemplate === "combo"}
-        storeId={restaurantId || ""}
-        categoryId={selectedCategories[0] || ""}
-        sizeId={previewSize?.id || ""}
-        sizeName={previewSize?.name || "Pizza"}
-        sizeImageUrl={previewSize?.image_url || null}
-        title={formData.title || "Personalize sua pizza ✨"}
-        description={formData.description || undefined}
-        buttonText={formData.button_text || "Confirmar"}
-        showEdges={formData.combo_show_edges}
-        showDoughs={formData.combo_show_doughs}
-        showAdditionals={formData.combo_show_additionals}
-        onClose={() => setFullscreenPreviewOpen(false)}
-        onComplete={() => setFullscreenPreviewOpen(false)}
-      />
+      {fullscreenPreviewOpen && selectedTemplate === "combo" && restaurantId && selectedCategories[0] && (
+        <ComboUpsellModal
+          open={true}
+          storeId={restaurantId}
+          categoryId={selectedCategories[0]}
+          sizeId={previewSize?.id || ""}
+          sizeName={previewSize?.name || "Pizza"}
+          sizeImageUrl={previewSize?.image_url || null}
+          title={formData.title || "Personalize sua pizza ✨"}
+          description={formData.description || undefined}
+          buttonText={formData.button_text || "Confirmar"}
+          showEdges={formData.combo_show_edges}
+          showDoughs={formData.combo_show_doughs}
+          showAdditionals={formData.combo_show_additionals}
+          onClose={() => setFullscreenPreviewOpen(false)}
+          onComplete={() => setFullscreenPreviewOpen(false)}
+        />
+      )}
 
       <div className="min-h-screen bg-white flex flex-col">
         {/* Header */}
