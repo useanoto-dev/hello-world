@@ -103,11 +103,11 @@ interface StandardItemPrice {
   is_available: boolean;
 }
 
-// Fetch store data
+// Fetch store data using secure public view (excludes sensitive fields like pix_key, api tokens)
 async function fetchStoreData(slug: string) {
   const { data, error } = await supabase
-    .from("stores")
-    .select("id, name, slug, logo_url, banner_url, primary_color, secondary_color, font_family, address, phone, whatsapp, instagram, open_hour, close_hour, is_open_override, about_us, estimated_prep_time, estimated_delivery_time, google_maps_link, schedule, min_order_value, use_comanda_mode")
+    .from("v_public_stores")
+    .select("id, name, slug, logo_url, banner_url, primary_color, secondary_color, font_family, address, phone, whatsapp, instagram, open_hour, close_hour, is_open_override, about_us, estimated_prep_time, estimated_delivery_time, google_maps_link, schedule, min_order_value")
     .eq("slug", slug)
     .eq("is_active", true)
     .maybeSingle();
