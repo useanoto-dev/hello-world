@@ -3242,6 +3242,19 @@ export type Database = {
         Returns: string
       }
       generate_access_code: { Args: never; Returns: string }
+      get_public_reviews: {
+        Args: { p_store_id: string }
+        Returns: {
+          created_at: string
+          customer_name: string
+          feedback: string
+          id: string
+          rating: number
+          response_at: string
+          store_id: string
+          store_response: string
+        }[]
+      }
       get_public_store_info: {
         Args: { p_slug: string }
         Returns: {
