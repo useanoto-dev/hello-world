@@ -168,3 +168,6 @@ Este documento lista todas as tabelas do banco de dados que contêm Dados Pessoa
 | 2026-01-22 | Implementação das views públicas |
 | 2026-01-22 | Hardening de políticas RLS |
 | 2026-01-22 | Criação de rate limiting e PII access logs |
+| 2026-01-22 | Remoção de políticas permissivas de customer_points e point_transactions |
+| 2026-01-22 | Frontend atualizado para usar v_public_stores em vez de acesso direto |
+| 2026-01-22 | BannerCarousel e ReviewsSection atualizados para usar v_public_* views |
