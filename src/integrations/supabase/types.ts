@@ -70,6 +70,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "access_codes_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
         ]
       }
       audit_logs: {
@@ -130,6 +137,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "audit_logs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
         ]
       }
       banners: {
@@ -169,6 +183,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "banners_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -236,6 +257,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "categories_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
         ]
       }
       category_option_groups: {
@@ -299,10 +327,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "category_option_groups_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_categories"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "category_option_groups_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_option_groups_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -362,10 +404,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "category_option_items_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_option_groups"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "category_option_items_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_option_items_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -404,6 +460,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "coupon_usages_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_coupons"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "coupon_usages_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
@@ -411,10 +474,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "coupon_usages_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "v_order_tracking"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "coupon_usages_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupon_usages_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -476,6 +553,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "coupons_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
         ]
       }
       customer_points: {
@@ -521,6 +605,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_points_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -576,6 +667,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "customers_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
         ]
       }
       delivery_areas: {
@@ -620,6 +718,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "delivery_areas_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
         ]
       }
       financial_categories: {
@@ -662,6 +767,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_categories_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -723,6 +835,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "financial_transactions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
         ]
       }
       historico_whatsapp_pedido: {
@@ -759,6 +878,13 @@ export type Database = {
             columns: ["pedido_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "historico_whatsapp_pedido_pedido_id_fkey"
+            columns: ["pedido_id"]
+            isOneToOne: false
+            referencedRelation: "v_order_tracking"
             referencedColumns: ["id"]
           },
         ]
@@ -963,6 +1089,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "loyalty_rewards_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
         ]
       }
       loyalty_settings: {
@@ -1025,6 +1158,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "loyalty_settings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
         ]
       }
       mensagens_automaticas_whatsapp: {
@@ -1063,6 +1203,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "mensagens_automaticas_whatsapp_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
         ]
       }
       order_status_history: {
@@ -1093,6 +1240,13 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_status_history_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "v_order_tracking"
             referencedColumns: ["id"]
           },
         ]
@@ -1192,6 +1346,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "orders_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "orders_table_id_fkey"
             columns: ["table_id"]
             isOneToOne: false
@@ -1242,7 +1403,56 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "payment_methods_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      pii_access_logs: {
+        Row: {
+          accessed_at: string | null
+          action: string
+          id: string
+          ip_address: string | null
+          justification: string | null
+          record_id: string | null
+          staff_id: string | null
+          store_id: string | null
+          table_name: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          accessed_at?: string | null
+          action: string
+          id?: string
+          ip_address?: string | null
+          justification?: string | null
+          record_id?: string | null
+          staff_id?: string | null
+          store_id?: string | null
+          table_name: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          accessed_at?: string | null
+          action?: string
+          id?: string
+          ip_address?: string | null
+          justification?: string | null
+          record_id?: string | null
+          staff_id?: string | null
+          store_id?: string | null
+          table_name?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       pizza_dough_prices: {
         Row: {
@@ -1275,6 +1485,13 @@ export type Database = {
             columns: ["dough_id"]
             isOneToOne: false
             referencedRelation: "pizza_doughs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pizza_dough_prices_dough_id_fkey"
+            columns: ["dough_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_pizza_doughs"
             referencedColumns: ["id"]
           },
           {
@@ -1326,10 +1543,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "pizza_doughs_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_categories"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pizza_doughs_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pizza_doughs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -1365,6 +1596,13 @@ export type Database = {
             columns: ["edge_id"]
             isOneToOne: false
             referencedRelation: "pizza_edges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pizza_edge_prices_edge_id_fkey"
+            columns: ["edge_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_pizza_edges"
             referencedColumns: ["id"]
           },
           {
@@ -1413,10 +1651,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "pizza_edges_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_categories"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pizza_edges_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pizza_edges_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -1455,6 +1707,13 @@ export type Database = {
             columns: ["flavor_id"]
             isOneToOne: false
             referencedRelation: "pizza_flavors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pizza_flavor_prices_flavor_id_fkey"
+            columns: ["flavor_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_pizza_flavors"
             referencedColumns: ["id"]
           },
           {
@@ -1518,10 +1777,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "pizza_flavors_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_categories"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pizza_flavors_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pizza_flavors_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -1575,10 +1848,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "pizza_flow_steps_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_categories"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pizza_flow_steps_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pizza_flow_steps_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -1644,10 +1931,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "pizza_sizes_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_categories"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pizza_sizes_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pizza_sizes_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -1698,6 +1999,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "point_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "v_order_tracking"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "point_transactions_reward_id_fkey"
             columns: ["reward_id"]
             isOneToOne: false
@@ -1709,6 +2017,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "point_transactions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -1771,10 +2086,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "print_jobs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "v_order_tracking"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "print_jobs_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "print_jobs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -1834,10 +2163,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "product_option_groups_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_products"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "product_option_groups_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_option_groups_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -1901,6 +2244,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_option_items_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -1981,10 +2331,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_categories"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "products_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -2040,6 +2404,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "profiles_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
         ]
       }
       push_subscriptions: {
@@ -2075,7 +2446,41 @@ export type Database = {
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "push_subscriptions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "v_order_tracking"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      rate_limits: {
+        Row: {
+          created_at: string | null
+          endpoint: string
+          id: string
+          key: string
+          request_count: number | null
+          window_start: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          endpoint: string
+          id?: string
+          key: string
+          request_count?: number | null
+          window_start?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          endpoint?: string
+          id?: string
+          key?: string
+          request_count?: number | null
+          window_start?: string | null
+        }
+        Relationships: []
       }
       reviews: {
         Row: {
@@ -2120,6 +2525,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -2177,6 +2589,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_permissions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -2272,10 +2691,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "standard_addons_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_categories"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "standard_addons_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "standard_addons_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -2374,10 +2807,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "standard_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_categories"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "standard_items_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "standard_items_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -2431,10 +2878,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "standard_sizes_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_categories"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "standard_sizes_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "standard_sizes_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -2501,6 +2962,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_staff_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -2697,6 +3165,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "subscriptions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
         ]
       }
       table_reservations: {
@@ -2754,6 +3229,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "table_reservations_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "table_reservations_table_id_fkey"
             columns: ["table_id"]
             isOneToOne: false
@@ -2805,6 +3287,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tables_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -2888,10 +3377,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "upsell_modals_primary_redirect_category_id_fkey"
+            columns: ["primary_redirect_category_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_categories"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "upsell_modals_secondary_redirect_category_id_fkey"
             columns: ["secondary_redirect_category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "upsell_modals_secondary_redirect_category_id_fkey"
+            columns: ["secondary_redirect_category_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_categories"
             referencedColumns: ["id"]
           },
           {
@@ -2902,8 +3405,29 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "upsell_modals_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "upsell_modals_target_category_id_fkey"
             columns: ["target_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "upsell_modals_target_category_id_fkey"
+            columns: ["target_category_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "upsell_modals_trigger_category_id_fkey"
+            columns: ["trigger_category_id"]
             isOneToOne: false
             referencedRelation: "categories"
             referencedColumns: ["id"]
@@ -2912,7 +3436,7 @@ export type Database = {
             foreignKeyName: "upsell_modals_trigger_category_id_fkey"
             columns: ["trigger_category_id"]
             isOneToOne: false
-            referencedRelation: "categories"
+            referencedRelation: "v_public_categories"
             referencedColumns: ["id"]
           },
         ]
@@ -3055,6 +3579,13 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "whatsapp_campaigns_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
         ]
       }
       whatsapp_instances: {
@@ -3103,6 +3634,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: true
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_instances_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -3172,10 +3710,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "whatsapp_messages_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "v_order_tracking"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "whatsapp_messages_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_messages_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
             referencedColumns: ["id"]
           },
         ]
@@ -3225,11 +3777,707 @@ export type Database = {
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "whatsapp_templates_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      v_order_tracking: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          order_number: number | null
+          order_type: string | null
+          status: string | null
+          store_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          order_number?: number | null
+          order_type?: string | null
+          status?: string | null
+          store_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          order_number?: number | null
+          order_type?: string | null
+          status?: string | null
+          store_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_public_banners: {
+        Row: {
+          display_order: number | null
+          id: string | null
+          image_url: string | null
+          is_active: boolean | null
+          link_url: string | null
+          store_id: string | null
+          title: string | null
+        }
+        Insert: {
+          display_order?: number | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          link_url?: string | null
+          store_id?: string | null
+          title?: string | null
+        }
+        Update: {
+          display_order?: number | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          link_url?: string | null
+          store_id?: string | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "banners_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "banners_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_public_categories: {
+        Row: {
+          category_type: string | null
+          description: string | null
+          display_mode: string | null
+          display_order: number | null
+          icon: string | null
+          id: string | null
+          image_url: string | null
+          is_active: boolean | null
+          name: string | null
+          slug: string | null
+          store_id: string | null
+        }
+        Insert: {
+          category_type?: string | null
+          description?: string | null
+          display_mode?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          slug?: string | null
+          store_id?: string | null
+        }
+        Update: {
+          category_type?: string | null
+          description?: string | null
+          display_mode?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          slug?: string | null
+          store_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "categories_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_public_coupons: {
+        Row: {
+          code: string | null
+          discount_type: string | null
+          discount_value: number | null
+          id: string | null
+          is_active: boolean | null
+          max_uses: number | null
+          min_order_value: number | null
+          store_id: string | null
+          uses_count: number | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          code?: string | null
+          discount_type?: string | null
+          discount_value?: number | null
+          id?: string | null
+          is_active?: boolean | null
+          max_uses?: number | null
+          min_order_value?: number | null
+          store_id?: string | null
+          uses_count?: number | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          code?: string | null
+          discount_type?: string | null
+          discount_value?: number | null
+          id?: string | null
+          is_active?: boolean | null
+          max_uses?: number | null
+          min_order_value?: number | null
+          store_id?: string | null
+          uses_count?: number | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupons_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupons_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_public_option_groups: {
+        Row: {
+          category_id: string | null
+          display_order: number | null
+          id: string | null
+          is_active: boolean | null
+          is_required: boolean | null
+          max_selections: number | null
+          min_selections: number | null
+          name: string | null
+          selection_type: string | null
+          store_id: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          display_order?: number | null
+          id?: string | null
+          is_active?: boolean | null
+          is_required?: boolean | null
+          max_selections?: number | null
+          min_selections?: number | null
+          name?: string | null
+          selection_type?: string | null
+          store_id?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          display_order?: number | null
+          id?: string | null
+          is_active?: boolean | null
+          is_required?: boolean | null
+          max_selections?: number | null
+          min_selections?: number | null
+          name?: string | null
+          selection_type?: string | null
+          store_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_option_groups_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_option_groups_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_option_groups_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_option_groups_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_public_option_items: {
+        Row: {
+          additional_price: number | null
+          description: string | null
+          display_order: number | null
+          group_id: string | null
+          id: string | null
+          image_url: string | null
+          is_active: boolean | null
+          name: string | null
+          store_id: string | null
+        }
+        Insert: {
+          additional_price?: number | null
+          description?: string | null
+          display_order?: number | null
+          group_id?: string | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          store_id?: string | null
+        }
+        Update: {
+          additional_price?: number | null
+          description?: string | null
+          display_order?: number | null
+          group_id?: string | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          store_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_option_items_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "category_option_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_option_items_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_option_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_option_items_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_option_items_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_public_pizza_doughs: {
+        Row: {
+          category_id: string | null
+          description: string | null
+          display_order: number | null
+          id: string | null
+          is_active: boolean | null
+          name: string | null
+          store_id: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          store_id?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          store_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pizza_doughs_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pizza_doughs_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pizza_doughs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pizza_doughs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_public_pizza_edges: {
+        Row: {
+          category_id: string | null
+          display_order: number | null
+          id: string | null
+          is_active: boolean | null
+          name: string | null
+          store_id: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          display_order?: number | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          store_id?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          display_order?: number | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          store_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pizza_edges_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pizza_edges_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pizza_edges_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pizza_edges_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_public_pizza_flavors: {
+        Row: {
+          category_id: string | null
+          description: string | null
+          display_order: number | null
+          id: string | null
+          image_url: string | null
+          is_active: boolean | null
+          name: string | null
+          store_id: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          store_id?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          store_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pizza_flavors_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pizza_flavors_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pizza_flavors_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pizza_flavors_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_public_products: {
+        Row: {
+          category_id: string | null
+          category_name: string | null
+          category_slug: string | null
+          description: string | null
+          display_order: number | null
+          id: string | null
+          image_url: string | null
+          is_available: boolean | null
+          is_featured: boolean | null
+          name: string | null
+          price: number | null
+          promotional_price: number | null
+          store_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_public_reviews: {
+        Row: {
+          created_at: string | null
+          customer_name: string | null
+          feedback: string | null
+          id: string | null
+          rating: number | null
+          response_at: string | null
+          store_id: string | null
+          store_response: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          customer_name?: never
+          feedback?: string | null
+          id?: string | null
+          rating?: number | null
+          response_at?: string | null
+          store_id?: string | null
+          store_response?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          customer_name?: never
+          feedback?: string | null
+          id?: string | null
+          rating?: number | null
+          response_at?: string | null
+          store_id?: string | null
+          store_response?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_public_stores: {
+        Row: {
+          about_us: string | null
+          address: string | null
+          banner_url: string | null
+          close_hour: number | null
+          created_at: string | null
+          delivery_fee: number | null
+          estimated_delivery_time: number | null
+          estimated_prep_time: number | null
+          font_family: string | null
+          google_maps_link: string | null
+          id: string | null
+          instagram: string | null
+          is_active: boolean | null
+          is_open_override: boolean | null
+          logo_url: string | null
+          min_order_value: number | null
+          name: string | null
+          open_hour: number | null
+          phone: string | null
+          primary_color: string | null
+          schedule: Json | null
+          secondary_color: string | null
+          slug: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          about_us?: string | null
+          address?: string | null
+          banner_url?: string | null
+          close_hour?: number | null
+          created_at?: string | null
+          delivery_fee?: number | null
+          estimated_delivery_time?: number | null
+          estimated_prep_time?: number | null
+          font_family?: string | null
+          google_maps_link?: string | null
+          id?: string | null
+          instagram?: string | null
+          is_active?: boolean | null
+          is_open_override?: boolean | null
+          logo_url?: string | null
+          min_order_value?: number | null
+          name?: string | null
+          open_hour?: number | null
+          phone?: string | null
+          primary_color?: string | null
+          schedule?: Json | null
+          secondary_color?: string | null
+          slug?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          about_us?: string | null
+          address?: string | null
+          banner_url?: string | null
+          close_hour?: number | null
+          created_at?: string | null
+          delivery_fee?: number | null
+          estimated_delivery_time?: number | null
+          estimated_prep_time?: number | null
+          font_family?: string | null
+          google_maps_link?: string | null
+          id?: string | null
+          instagram?: string | null
+          is_active?: boolean | null
+          is_open_override?: boolean | null
+          logo_url?: string | null
+          min_order_value?: number | null
+          name?: string | null
+          open_hour?: number | null
+          phone?: string | null
+          primary_color?: string | null
+          schedule?: Json | null
+          secondary_color?: string | null
+          slug?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_customer_tier: {
@@ -3240,6 +4488,15 @@ export type Database = {
           p_silver_min: number
         }
         Returns: string
+      }
+      check_rate_limit: {
+        Args: {
+          p_endpoint: string
+          p_key: string
+          p_max_requests?: number
+          p_window_seconds?: number
+        }
+        Returns: Json
       }
       generate_access_code: { Args: never; Returns: string }
       get_public_reviews: {
@@ -3329,6 +4586,16 @@ export type Database = {
         Returns: boolean
       }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      log_pii_access: {
+        Args: {
+          p_action?: string
+          p_justification?: string
+          p_record_id?: string
+          p_store_id?: string
+          p_table_name: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "super_admin" | "admin" | "user"
