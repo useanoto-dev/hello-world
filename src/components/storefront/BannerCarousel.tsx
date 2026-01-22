@@ -25,8 +25,9 @@ export default function BannerCarousel({ storeId }: BannerCarouselProps) {
 
   useEffect(() => {
     async function loadBanners() {
+      // Use secure public view instead of direct table access
       const { data } = await supabase
-        .from("banners")
+        .from("v_public_banners")
         .select("id, title, image_url, link_url")
         .eq("store_id", storeId)
         .eq("is_active", true)
