@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Clock, Calendar, Rocket } from "lucide-react";
@@ -13,6 +14,20 @@ interface TrialInfoModalProps {
   onGoToSubscription: () => void;
 }
 
+function calculateTimeRemaining(endDate: Date | null) {
+  if (!endDate) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+  
+  const now = new Date();
+  const diff = Math.max(0, endDate.getTime() - now.getTime());
+  
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  
+  return { days, hours, minutes, seconds };
+}
+
 export function TrialInfoModal({
   open,
   onOpenChange,
@@ -20,21 +35,25 @@ export function TrialInfoModal({
   createdAt,
   onGoToSubscription,
 }: TrialInfoModalProps) {
-  const now = new Date();
   const endDate = trialEndsAt ? new Date(trialEndsAt) : null;
   const startDate = createdAt ? new Date(createdAt) : null;
   
-  // Calculate days remaining (cap at 7)
-  const msRemaining = endDate ? endDate.getTime() - now.getTime() : 0;
-  const daysRemaining = Math.min(7, Math.max(0, Math.ceil(msRemaining / (1000 * 60 * 60 * 24))));
+  const [timeRemaining, setTimeRemaining] = useState(() => calculateTimeRemaining(endDate));
   
-  // Calculate hours remaining for the current day
-  const hoursRemaining = endDate
-    ? Math.max(0, Math.floor((endDate.getTime() - now.getTime()) / (1000 * 60 * 60)) % 24)
-    : 0;
+  // Update countdown every second when modal is open
+  useEffect(() => {
+    if (!open || !endDate) return;
+    
+    const interval = setInterval(() => {
+      setTimeRemaining(calculateTimeRemaining(endDate));
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [open, endDate]);
 
   // Calculate progress (7 days trial)
   const totalTrialDays = 7;
+  const now = new Date();
   const msUsed = startDate ? now.getTime() - startDate.getTime() : 0;
   const daysUsed = Math.min(totalTrialDays, Math.max(0, Math.floor(msUsed / (1000 * 60 * 60 * 24))));
   const progressPercent = Math.min(100, (daysUsed / totalTrialDays) * 100);
@@ -59,18 +78,13 @@ export function TrialInfoModal({
             <Progress value={progressPercent} className="h-2" />
           </div>
 
-          {/* Time Remaining */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-primary/5 rounded-lg p-4 text-center">
-              <Clock className="w-6 h-6 mx-auto mb-2 text-primary" />
-              <p className="text-2xl font-bold text-primary">{daysRemaining}</p>
-              <p className="text-xs text-muted-foreground">dias restantes</p>
-            </div>
-            <div className="bg-amber-500/10 rounded-lg p-4 text-center">
-              <Clock className="w-6 h-6 mx-auto mb-2 text-amber-600" />
-              <p className="text-2xl font-bold text-amber-600">{hoursRemaining}</p>
-              <p className="text-xs text-muted-foreground">horas restantes</p>
-            </div>
+          {/* Countdown Timer */}
+          <div className="bg-primary/5 rounded-lg p-5 text-center">
+            <Clock className="w-8 h-8 mx-auto mb-3 text-primary" />
+            <p className="text-2xl font-bold text-primary">
+              {timeRemaining.days} dias, {timeRemaining.hours}h, {timeRemaining.minutes}min e {timeRemaining.seconds}s
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">restantes para ativar seu plano</p>
           </div>
 
           {/* Dates */}
