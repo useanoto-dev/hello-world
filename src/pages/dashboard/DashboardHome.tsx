@@ -1,6 +1,6 @@
 // Dashboard Home - Anotô SaaS - Professional Design
 import { useEffect, useState } from "react";
-import { useOutletContext, Link } from "react-router-dom";
+import { useOutletContext, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
   ShoppingBag, Package, DollarSign, TrendingUp, 
@@ -9,6 +9,7 @@ import {
   ChefHat, UtensilsCrossed, CreditCard, CalendarRange
 } from "lucide-react";
 import TrialExpiringAlert from "@/components/admin/TrialExpiringAlert";
+import { TrialInfoModal } from "@/components/admin/TrialInfoModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -72,6 +73,7 @@ export default function DashboardHome() {
     store: any; 
     subscription: any; 
   }>();
+  const navigate = useNavigate();
   
   const [stats, setStats] = useState<DashboardStats>({
     todayOrders: 0,
@@ -90,6 +92,7 @@ export default function DashboardHome() {
   const [tempDateRange, setTempDateRange] = useState<DateRange>({ from: undefined, to: undefined });
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [trialModalOpen, setTrialModalOpen] = useState(false);
 
   useEffect(() => {
     if (store?.id) {
@@ -349,6 +352,15 @@ export default function DashboardHome() {
 
   return (
     <div className="space-y-3 md:space-y-4">
+      {/* Trial Info Modal */}
+      <TrialInfoModal
+        open={trialModalOpen}
+        onOpenChange={setTrialModalOpen}
+        trialEndsAt={subscription?.trial_ends_at}
+        createdAt={subscription?.created_at}
+        onGoToSubscription={() => navigate("/dashboard/subscription")}
+      />
+
       {/* Trial Expiring Alert */}
       {subscription?.status === "trial" && trialDaysLeft <= 3 && trialDaysLeft >= 0 && (
         <TrialExpiringAlert daysRemaining={trialDaysLeft} />
@@ -363,11 +375,14 @@ export default function DashboardHome() {
         
         <div className="flex items-center gap-1">
           {subscription?.status === "trial" && trialDaysLeft > 0 && (
-            <div className="px-1.5 py-0.5 bg-amber-200 rounded-md">
+            <button 
+              onClick={() => setTrialModalOpen(true)}
+              className="px-1.5 py-0.5 bg-amber-200 hover:bg-amber-300 rounded-md transition-colors cursor-pointer"
+            >
               <span className="text-[9px] text-black font-medium">
                 {trialDaysLeft}d trial
               </span>
-            </div>
+            </button>
           )}
           <Button variant="outline" size="sm" onClick={copyStoreLink} className="h-6 text-[9px] px-1.5 bg-[#fafafa] dark:bg-neutral-700 border-gray-300 dark:border-neutral-600 hover:bg-[#fafafa] dark:hover:bg-neutral-700">
             <Copy className="w-2.5 h-2.5 mr-0.5" />
