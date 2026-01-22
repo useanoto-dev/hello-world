@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Clock, Calendar, Rocket, X } from "lucide-react";
+import { Clock, Calendar, Rocket } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -24,10 +24,9 @@ export function TrialInfoModal({
   const endDate = trialEndsAt ? new Date(trialEndsAt) : null;
   const startDate = createdAt ? new Date(createdAt) : null;
   
-  // Calculate days remaining
-  const daysRemaining = endDate 
-    ? Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
-    : 0;
+  // Calculate days remaining (cap at 7)
+  const msRemaining = endDate ? endDate.getTime() - now.getTime() : 0;
+  const daysRemaining = Math.min(7, Math.max(0, Math.ceil(msRemaining / (1000 * 60 * 60 * 24))));
   
   // Calculate hours remaining for the current day
   const hoursRemaining = endDate
@@ -36,9 +35,8 @@ export function TrialInfoModal({
 
   // Calculate progress (7 days trial)
   const totalTrialDays = 7;
-  const daysUsed = startDate 
-    ? Math.ceil((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
-    : 0;
+  const msUsed = startDate ? now.getTime() - startDate.getTime() : 0;
+  const daysUsed = Math.min(totalTrialDays, Math.max(0, Math.floor(msUsed / (1000 * 60 * 60 * 24))));
   const progressPercent = Math.min(100, (daysUsed / totalTrialDays) * 100);
 
   return (
