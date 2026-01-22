@@ -70,7 +70,7 @@ const quickAccessItems: MenuItemWithRoles[] = [
 const operationalItems: MenuItemWithRoles[] = [
   { title: "Mesas", url: "/dashboard/tables", icon: UtensilsCrossed, allowedRoles: ['admin', 'garcom'] },
   { title: "Cozinha", url: "/dashboard/comandas", icon: ChefHat, allowedRoles: ['admin'] },
-  { title: "Meus Pedidos", url: "/dashboard/my-orders", icon: Receipt, allowedRoles: ['garcom'], staffOnly: true },
+  { title: "Meus Pedidos", url: "/dashboard/waiter-orders", icon: Receipt, allowedRoles: ['garcom'], staffOnly: true },
 ];
 
 // Submenu do Gestor de Cardápio - only admin
