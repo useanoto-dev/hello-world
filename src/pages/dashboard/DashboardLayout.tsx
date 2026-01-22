@@ -53,6 +53,7 @@ interface Store {
 interface Subscription {
   status: string;
   trial_ends_at: string | null;
+  created_at: string | null;
 }
 
 interface MenuItem {
@@ -267,7 +268,7 @@ export default function DashboardLayout() {
 
             const { data: subData } = await supabase
               .from("subscriptions")
-              .select("status, trial_ends_at")
+              .select("status, trial_ends_at, created_at")
               .eq("store_id", staffStoreId)
               .maybeSingle();
 
@@ -316,7 +317,7 @@ export default function DashboardLayout() {
 
       const { data: subData } = await supabase
         .from("subscriptions")
-        .select("status, trial_ends_at")
+        .select("status, trial_ends_at, created_at")
         .eq("store_id", profile.store_id)
         .maybeSingle();
 
