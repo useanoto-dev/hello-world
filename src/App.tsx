@@ -154,10 +154,9 @@ function AnimatedRoutes() {
             <Route index element={<DashboardHome />} />
             <Route path="comandas" element={<ComandaPanel />} />
             <Route path="pdv" element={<PDVPage />} />
+            <Route path="tables" element={<TablesPage />} />
             <Route path="products" element={<MenuManagerPage />} />
-            <Route path="menu-manager" element={<MenuManagerPage />} />
             <Route path="menu-images" element={<UpsellModalsPage />} />
-            <Route path="upsell-modals" element={<UpsellModalsPage />} />
             <Route path="menu-bulk-edit" element={<MenuBulkEditPage />} />
             
             <Route path="orders" element={<OrdersPage />} />
@@ -184,7 +183,6 @@ function AnimatedRoutes() {
           <Route path="/cardapio/:slug/pedido/:orderNumber" element={<OrderTrackingPage />} />
           <Route path="/cardapio/:slug/meus-pedidos" element={<OrderHistoryPage />} />
           <Route path="/cardapio/:slug/avaliacoes" element={<ReviewsPage />} />
-          <Route path="/cardapio/:slug/checkout/servico" element={<CheckoutService />} />
           <Route path="/cardapio/:slug/finalizar" element={<CheckoutService />} />
           <Route path="/cardapio/:slug/finalizar/endereco" element={<CheckoutAddress />} />
           <Route path="/cardapio/:slug/finalizar/pagamento" element={<CheckoutPayment />} />
