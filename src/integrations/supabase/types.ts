@@ -467,6 +467,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "coupon_usages_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_coupons_validation"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "coupon_usages_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
@@ -3788,6 +3795,36 @@ export type Database = {
       }
     }
     Views: {
+      v_customer_loyalty: {
+        Row: {
+          created_at: string | null
+          customer_cpf_masked: string | null
+          customer_name: string | null
+          customer_phone_masked: string | null
+          id: string | null
+          lifetime_points: number | null
+          store_id: string | null
+          tier: string | null
+          total_points: number | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_points_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_points_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       v_order_tracking: {
         Row: {
           created_at: string | null
@@ -3974,6 +4011,38 @@ export type Database = {
           uses_count?: number | null
           valid_from?: string | null
           valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupons_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupons_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_public_coupons_validation: {
+        Row: {
+          code: string | null
+          discount_type: string | null
+          discount_value: number | null
+          id: string | null
+          is_active: boolean | null
+          is_currently_valid: boolean | null
+          max_uses: number | null
+          min_order_value: number | null
+          store_id: string | null
+          uses_count: number | null
+          valid_from: string | null
+          valid_until: string | null
         }
         Relationships: [
           {
@@ -4499,6 +4568,15 @@ export type Database = {
         Returns: Json
       }
       generate_access_code: { Args: never; Returns: string }
+      get_my_loyalty_points: {
+        Args: { p_customer_phone: string; p_store_id: string }
+        Returns: {
+          customer_name: string
+          lifetime_points: number
+          tier: string
+          total_points: number
+        }[]
+      }
       get_public_reviews: {
         Args: { p_store_id: string }
         Returns: {

@@ -63,13 +63,14 @@ export function ReviewsSection({ storeId, storeName }: ReviewsSectionProps) {
   }, [storeId]);
 
   const fetchReviews = async () => {
+    // Use secure public view with masked customer names
     const { data } = await supabase
-      .from("reviews")
-      .select("id, customer_name, rating, feedback, store_response, response_at, created_at, updated_at")
+      .from("v_public_reviews")
+      .select("id, customer_name, rating, feedback, store_response, response_at, created_at")
       .eq("store_id", storeId)
       .order("created_at", { ascending: false });
 
-    setReviews(data || []);
+    setReviews((data || []).map(r => ({ ...r, updated_at: r.created_at })));
     setLoading(false);
   };
 
