@@ -36,6 +36,7 @@ import { useStockNotifications } from "@/hooks/useStockNotifications";
 import { usePendingOrdersCount } from "@/hooks/usePendingOrdersCount";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useStaffAuth, canAccessRoute, getDefaultRouteForRole, type StaffRole } from "@/hooks/useStaffAuth";
+import { SubscriptionBlockOverlay } from "@/components/admin/SubscriptionBlockOverlay";
 
 interface Store {
   id: string;
@@ -385,7 +386,22 @@ export default function DashboardLayout() {
 
   const isSubscriptionInactive = subscription?.status === "canceled" || 
     subscription?.status === "unpaid" || 
+    subscription?.status === "expired" ||
+    subscription?.status === "past_due" ||
     isTrialExpired;
+
+  // Block access to dashboard if subscription is inactive (except subscription page)
+  const isOnSubscriptionPage = location.pathname === "/dashboard/subscription";
+  
+  if (isSubscriptionInactive && !isOnSubscriptionPage && !isStaffLoggedIn) {
+    return (
+      <SubscriptionBlockOverlay
+        isTrialExpired={isTrialExpired}
+        onGoToSubscription={() => navigate("/dashboard/subscription")}
+        onLogout={handleLogout}
+      />
+    );
+  }
 
   const toggleMenuExpand = (path: string) => {
     setExpandedMenus(prev => 
