@@ -1,6 +1,6 @@
 // Standard Category Editor - Universal model for any business type
 import { useState, useEffect } from "react";
-import { ArrowLeft, Plus, Trash2, AlertCircle, GripVertical, ChevronDown, ChevronUp, Layers, IceCream, Sandwich, UtensilsCrossed, Coffee, Sparkles, Check, Image as ImageIcon, GlassWater, LayoutGrid, List } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, AlertCircle, GripVertical, ChevronDown, ChevronUp, Layers, IceCream, Sandwich, UtensilsCrossed, Coffee, Sparkles, Check, Image as ImageIcon, GlassWater } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -920,7 +920,8 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
   const [optionGroups, setOptionGroups] = useState<OptionGroup[]>([]);
 
   // Display settings
-  const [displayMode, setDisplayMode] = useState<"cards" | "list">("cards");
+  // Always use list mode - FSW style
+  const displayMode = "list" as const;
   const [allowQuantitySelector, setAllowQuantitySelector] = useState(true);
 
   // Sensors for drag and drop
@@ -953,7 +954,7 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
         setIsPromotion(!!categoryData.description);
         setPromotionMessage(categoryData.description ?? "");
         setAvailability(categoryData.is_active ? "always" : "paused");
-        setDisplayMode((categoryData.display_mode as "cards" | "list") ?? "cards");
+        // displayMode is always "list" - no need to set from database
         setAllowQuantitySelector(categoryData.allow_quantity_selector ?? true);
 
         const [{ data: sizesData, error: sizesError }, { data: groupsData, error: groupsError }] = await Promise.all([
@@ -1643,40 +1644,7 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
                 )}
               </div>
 
-              {/* Display Mode */}
-              <div className="space-y-3">
-                <Label className="text-sm font-semibold text-foreground">Modo de exibição no cardápio</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setDisplayMode("cards")}
-                    className={cn(
-                      "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
-                      displayMode === "cards"
-                        ? "border-primary bg-primary/10"
-                        : "border-border hover:border-primary/50"
-                    )}
-                  >
-                    <LayoutGrid className={cn("w-8 h-8", displayMode === "cards" ? "text-primary" : "text-muted-foreground")} />
-                    <span className={cn("text-sm font-medium", displayMode === "cards" ? "text-primary" : "text-foreground")}>Cards (Grade)</span>
-                    <span className="text-xs text-muted-foreground text-center">Itens em formato de cards lado a lado</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDisplayMode("list")}
-                    className={cn(
-                      "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
-                      displayMode === "list"
-                        ? "border-primary bg-primary/10"
-                        : "border-border hover:border-primary/50"
-                    )}
-                  >
-                    <List className={cn("w-8 h-8", displayMode === "list" ? "text-primary" : "text-muted-foreground")} />
-                    <span className={cn("text-sm font-medium", displayMode === "list" ? "text-primary" : "text-foreground")}>Lista</span>
-                    <span className="text-xs text-muted-foreground text-center">Itens empilhados verticalmente</span>
-                  </button>
-                </div>
-              </div>
+              {/* Display mode is now always "list" - no selector needed */}
 
               {/* Quantity Selector Option */}
               <div className="flex items-center justify-between p-3 bg-muted rounded-lg border border-border">
