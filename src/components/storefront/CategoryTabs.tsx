@@ -65,7 +65,7 @@ export default function CategoryTabs({
                 px-5 py-2.5 text-sm font-semibold rounded-full transition-all whitespace-nowrap
                 ${isActive
                   ? "bg-primary text-primary-foreground shadow-sm"
-                  : "bg-transparent border border-gray-300 text-gray-700 hover:border-gray-400"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }
               `}
               onClick={() => onCategoryChange(category.id)}
