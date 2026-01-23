@@ -3,10 +3,10 @@ import { useEffect, useState } from "react";
 import { useOutletContext, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
-  ShoppingBag, Package, DollarSign, TrendingUp, 
+  ShoppingBag, Package,
   ExternalLink, Copy, TicketPercent,
-  BarChart3, Calendar, ArrowUpRight, ArrowDownRight,
-  ChefHat, UtensilsCrossed, CreditCard, CalendarRange
+  BarChart3, Calendar, ArrowUpRight,
+  CalendarRange
 } from "lucide-react";
 import TrialExpiringAlert from "@/components/admin/TrialExpiringAlert";
 import { TrialInfoModal } from "@/components/admin/TrialInfoModal";
@@ -17,7 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, subDays, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import CouponsChart from "@/components/admin/charts/CouponsChart";
+// CouponsChart removed - not currently used in main dashboard
 import SalesPeriodChart from "@/components/admin/charts/SalesPeriodChart";
 import TopProductsChart from "@/components/admin/charts/TopProductsChart";
 import { cn } from "@/lib/utils";

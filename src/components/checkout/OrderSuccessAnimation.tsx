@@ -133,8 +133,8 @@ export function OrderSuccessAnimation({ isVisible, onComplete, orderNumber, isSi
       createBell(now + 0.3);
       createSecondBell(now + 0.5);
       
-    } catch (error) {
-      console.log("Could not play kitchen sound:", error);
+    } catch {
+      // Audio API not available - silent fail
     }
   }, []);
 
@@ -146,8 +146,8 @@ export function OrderSuccessAnimation({ isVisible, onComplete, orderNumber, isSi
         // Creates a "celebration" feeling vibration
         navigator.vibrate([200, 100, 200, 100, 300]);
       }
-    } catch (error) {
-      console.log("Vibration not supported:", error);
+    } catch {
+      // Vibration API not available - silent fail
     }
   }, []);
 

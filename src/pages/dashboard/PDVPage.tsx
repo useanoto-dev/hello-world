@@ -1,7 +1,7 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import { 
-  Plus, Minus, Check, X, Tag, Printer, Monitor, Users
+  Plus, Minus, Check, Tag, Monitor, Users
 } from "lucide-react";
 import { PDVLoyaltyRedemption } from "@/components/pdv/PDVLoyaltyRedemption";
 import { PDVPaymentSection } from "@/components/pdv/PDVPaymentSection";

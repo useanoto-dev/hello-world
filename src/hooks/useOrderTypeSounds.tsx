@@ -78,8 +78,8 @@ export function useOrderTypeSounds() {
           osc2.stop(ctx.currentTime + config.duration);
         }, 300);
       }
-    } catch (error) {
-      console.log("Could not play order sound:", error);
+    } catch {
+      // Audio API not available - silent fail
     }
   }, []);
 
