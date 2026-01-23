@@ -1340,19 +1340,11 @@ export default function MenuManagerPage() {
                       
                       {/* Standard Items Section - Compact cards */}
                       <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Itens</span>
-                            <span className="text-[10px] text-muted-foreground/60">
-                              {categoryStandardItems[category.id]?.length || 0}
-                            </span>
-                          </div>
-                          <button
-                            onClick={() => openAddItemTypeModal(category.id, category.name, false, true)}
-                            className="text-[10px] text-primary hover:underline font-medium"
-                          >
-                            + Novo
-                          </button>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Itens</span>
+                          <span className="text-[10px] text-muted-foreground/60">
+                            {categoryStandardItems[category.id]?.length || 0}
+                          </span>
                         </div>
                         
                         {categoryStandardItems[category.id]?.length > 0 ? (
