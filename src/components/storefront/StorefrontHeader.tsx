@@ -57,15 +57,6 @@ export default function StorefrontHeader({ store }: StorefrontHeaderProps) {
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:rounded-2xl" />
         
-        {/* Back button - white circle */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute left-4 top-4 bg-white/90 hover:bg-white rounded-full shadow-md"
-          onClick={() => navigate(-1)}
-        >
-          <ChevronLeft className="h-5 w-5 text-gray-800" />
-        </Button>
 
         {/* Orders button - white circle */}
         <Button
