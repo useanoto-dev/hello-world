@@ -1428,17 +1428,7 @@ export default function MenuManagerPage() {
                               </div>
                             ))}
                           </div>
-                        ) : (
-                          <div className="text-center py-4 bg-card/50 rounded-lg border border-dashed border-border/50">
-                            <p className="text-muted-foreground text-xs">Nenhum item cadastrado</p>
-                            <button
-                              onClick={() => openAddItemTypeModal(category.id, category.name, false, true)}
-                              className="mt-1.5 text-xs text-primary hover:underline font-medium"
-                            >
-                              + Adicionar item
-                            </button>
-                          </div>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   ) : categoryProducts[category.id]?.length > 0 ? (
