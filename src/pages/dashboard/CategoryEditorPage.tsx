@@ -1383,7 +1383,12 @@ export default function CategoryEditorPage() {
                 onClick={() => setModelo("padrao")}
                 className="group p-6 bg-card border-2 border-border rounded-xl hover:border-primary transition-all text-left"
               >
-                <div className="text-4xl mb-3">🍔</div>
+                <div className="flex items-center gap-1.5 mb-3">
+                  <span className="text-2xl">🍔</span>
+                  <span className="text-xl">🍨</span>
+                  <span className="text-xl">🥤</span>
+                  <span className="text-xl">🍽️</span>
+                </div>
                 <h3 className="text-base font-semibold text-foreground mb-1">Padrão</h3>
                 <p className="text-xs text-muted-foreground">
                   Para hambúrgueres, açaí, bebidas, sobremesas e outros produtos com tamanhos e adicionais
