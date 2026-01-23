@@ -194,6 +194,167 @@ export type Database = {
           },
         ]
       }
+      beverage_products: {
+        Row: {
+          beverage_type_id: string
+          category_id: string
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          name: string
+          price: number | null
+          promotion_end_at: string | null
+          promotion_start_at: string | null
+          promotional_price: number | null
+          store_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          beverage_type_id: string
+          category_id: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name: string
+          price?: number | null
+          promotion_end_at?: string | null
+          promotion_start_at?: string | null
+          promotional_price?: number | null
+          store_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          beverage_type_id?: string
+          category_id?: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string
+          price?: number | null
+          promotion_end_at?: string | null
+          promotion_start_at?: string | null
+          promotional_price?: number | null
+          store_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "beverage_products_beverage_type_id_fkey"
+            columns: ["beverage_type_id"]
+            isOneToOne: false
+            referencedRelation: "beverage_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "beverage_products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "beverage_products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "beverage_products_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "beverage_products_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      beverage_types: {
+        Row: {
+          category_id: string
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          icon: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          name: string
+          store_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          category_id: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name: string
+          store_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          category_id?: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string
+          store_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "beverage_types_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "beverage_types_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "beverage_types_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "beverage_types_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           allow_quantity_selector: boolean | null
