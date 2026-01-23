@@ -1290,13 +1290,16 @@ export function StandardCategoryEditor({ editId, storeId, onClose, initialStep }
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)/g, "-");
 
+      // Determine category_type based on template
+      const categoryType = selectedTemplate === "bebidas" ? "beverages" : "standard";
+
       const categoryPayload = {
         store_id: storeId,
         name: name.trim(),
         slug,
         description: isPromotion ? promotionMessage : null,
         is_active: availability !== "paused",
-        category_type: "standard" as const,
+        category_type: categoryType as "standard" | "beverages",
         display_mode: displayMode,
         allow_quantity_selector: allowQuantitySelector,
       };
