@@ -601,9 +601,15 @@ export default function ProductCustomizationModal({
                                 return (
                                   <div 
                                     key={item.id}
+                                    onClick={() => {
+                                      // Only toggle if not showing quantity controls
+                                      if (!(isSelected && allowOptionItemQuantity && group.selection_type === "multiple")) {
+                                        handleItemSelect(group.id, item.id, group);
+                                      }
+                                    }}
                                     className={cn(
-                                      "flex items-center gap-3 py-2.5 px-2 rounded-lg transition-colors",
-                                      isSelected && "bg-amber-50"
+                                      "flex items-center gap-3 py-2.5 px-2 rounded-lg transition-colors cursor-pointer",
+                                      isSelected ? "bg-amber-50" : "hover:bg-muted/50"
                                     )}
                                   >
                                     {/* Item Image */}
@@ -637,7 +643,8 @@ export default function ProductCustomizationModal({
                                       {isSelected && allowOptionItemQuantity && group.selection_type === "multiple" ? (
                                         <div className="flex items-center gap-2">
                                           <button
-                                            onClick={() => {
+                                            onClick={(e) => {
+                                              e.stopPropagation();
                                               if (qty <= 1) {
                                                 handleItemSelect(group.id, item.id, group);
                                               } else {
@@ -650,7 +657,10 @@ export default function ProductCustomizationModal({
                                           </button>
                                           <span className="w-5 text-center text-sm font-semibold">{qty}</span>
                                           <button
-                                            onClick={() => handleQuantityChange(item.id, 1)}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleQuantityChange(item.id, 1);
+                                            }}
                                             className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
                                           >
                                             <Plus className="w-4 h-4 text-gray-600" />
@@ -658,7 +668,10 @@ export default function ProductCustomizationModal({
                                         </div>
                                       ) : (
                                         <button
-                                          onClick={() => handleItemSelect(group.id, item.id, group)}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleItemSelect(group.id, item.id, group);
+                                          }}
                                           className={cn(
                                             "w-8 h-8 rounded-full flex items-center justify-center transition-colors",
                                             isSelected 
