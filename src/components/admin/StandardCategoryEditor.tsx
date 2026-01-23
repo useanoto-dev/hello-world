@@ -1,6 +1,8 @@
 // Standard Category Editor - Universal model for any business type
 import { useState, useEffect } from "react";
 import { ArrowLeft, Plus, Trash2, AlertCircle, GripVertical, ChevronDown, ChevronUp, Layers, IceCream, Sandwich, UtensilsCrossed, Coffee, Sparkles, Check, Image as ImageIcon, GlassWater } from "lucide-react";
+import { BeverageTypesEditor, BeverageType } from "./BeverageTypesEditor";
+import { BeverageProductsManager } from "./BeverageProductsManager";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -917,6 +919,10 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
   const [hasSizes, setHasSizes] = useState<"yes" | "no">("no");
   const [sizes, setSizes] = useState<StandardSize[]>([]);
 
+  // Beverage types state (for Bebidas template)
+  const [beverageTypes, setBeverageTypes] = useState<BeverageType[]>([]);
+  const [managingBeverageType, setManagingBeverageType] = useState<{ id: string; name: string } | null>(null);
+
   // Option Groups state
   const [hasOptionGroups, setHasOptionGroups] = useState<"yes" | "no">("no");
   const [optionGroups, setOptionGroups] = useState<OptionGroup[]>([]);
@@ -1028,6 +1034,25 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
           setHasOptionGroups("no");
           setOptionGroups([]);
         }
+
+        // Load beverage types if any exist
+        const { data: beverageTypesData } = await supabase
+          .from("beverage_types")
+          .select("id, name, description, icon, image_url, is_active")
+          .eq("category_id", editId)
+          .order("display_order");
+
+        if (beverageTypesData && beverageTypesData.length > 0) {
+          setSelectedTemplate("bebidas");
+          setBeverageTypes(beverageTypesData.map((bt: any) => ({
+            id: bt.id,
+            name: bt.name,
+            description: bt.description,
+            icon: bt.icon,
+            imageUrl: bt.image_url,
+            isActive: bt.is_active,
+          })));
+        }
       } catch (e) {
         console.error("Error loading standard category:", e);
         toast.error("Erro ao carregar categoria");
@@ -1045,18 +1070,32 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
     const template = BUSINESS_TEMPLATES.find(t => t.id === templateId);
     if (!template) return;
 
-    // Apply sizes
-    if (template.hasSizes && template.sizes) {
-      setHasSizes("yes");
-      setSizes(template.sizes.map(s => ({
-        id: crypto.randomUUID(),
-        name: s.name,
-        basePrice: s.price,
-        isActive: true,
-      })));
-    } else {
+    // For Bebidas template, initialize beverage types instead of sizes
+    if (templateId === "bebidas") {
       setHasSizes("no");
       setSizes([]);
+      // Initialize with example beverage types
+      setBeverageTypes([
+        { id: crypto.randomUUID(), name: "Refrigerantes", isActive: true },
+        { id: crypto.randomUUID(), name: "Sucos", isActive: true },
+        { id: crypto.randomUUID(), name: "Águas", isActive: true },
+        { id: crypto.randomUUID(), name: "Cervejas", isActive: true },
+      ]);
+    } else {
+      // Apply sizes for other templates
+      setBeverageTypes([]);
+      if (template.hasSizes && template.sizes) {
+        setHasSizes("yes");
+        setSizes(template.sizes.map(s => ({
+          id: crypto.randomUUID(),
+          name: s.name,
+          basePrice: s.price,
+          isActive: true,
+        })));
+      } else {
+        setHasSizes("no");
+        setSizes([]);
+      }
     }
 
     // Apply option groups
@@ -1391,6 +1430,43 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
         if (error) throw error;
       }
 
+      // ===== BEVERAGE TYPES (for Bebidas template) =====
+      if (selectedTemplate === "bebidas") {
+        const validBeverageTypes = beverageTypes.filter((bt) => bt.name.trim());
+        
+        if (validBeverageTypes.length > 0) {
+          const upsertPayload = validBeverageTypes.map((bt, index) => ({
+            id: bt.id,
+            store_id: storeId,
+            category_id: categoryId,
+            name: bt.name.trim(),
+            description: bt.description || null,
+            icon: bt.icon || null,
+            image_url: bt.imageUrl || null,
+            is_active: bt.isActive,
+            display_order: index,
+          }));
+
+          const { error: upsertError } = await supabase
+            .from("beverage_types")
+            .upsert(upsertPayload as any, { onConflict: "id" });
+
+          if (upsertError) throw upsertError;
+
+          const keepIds = validBeverageTypes.map((bt) => bt.id);
+          const { error: deleteRemovedError } = await supabase
+            .from("beverage_types")
+            .delete()
+            .eq("category_id", categoryId)
+            .not("id", "in", inList(keepIds));
+
+          if (deleteRemovedError) throw deleteRemovedError;
+        } else {
+          const { error } = await supabase.from("beverage_types").delete().eq("category_id", categoryId);
+          if (error) throw error;
+        }
+      }
+
       toast.success(editId ? "Categoria atualizada com sucesso!" : "Categoria criada com sucesso!");
       onClose();
     } catch (error) {
@@ -1667,80 +1743,93 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
             </div>
           )}
 
-          {/* Step 3: Itens/Tamanhos */}
+          {/* Step 3: Itens/Tamanhos or Beverage Types */}
           {currentStep === 3 && (
             <div className="bg-card rounded-lg shadow-sm border border-border p-4 space-y-4">
-              <div className="flex items-center gap-4">
-                <Label className="text-sm font-medium text-foreground">Os produtos têm itens/tamanhos?</Label>
-                <div className="flex items-center gap-3">
-                  {["yes", "no"].map((opt) => (
-                    <label key={opt} className="flex items-center gap-1.5 cursor-pointer">
-                      <div 
-                        className={cn(
-                          "w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors",
-                          hasSizes === opt ? "border-primary bg-primary" : "border-muted-foreground"
-                        )}
-                        onClick={() => {
-                          setHasSizes(opt as typeof hasSizes);
-                          if (opt === "yes" && sizes.length === 0) {
-                            setSizes([{ id: crypto.randomUUID(), name: "", basePrice: 0, isActive: true }]);
-                          }
-                        }}
-                      >
-                        {hasSizes === opt && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />}
-                      </div>
-                      <span className="text-sm">{opt === "yes" ? "Sim" : "Não"}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {hasSizes === "no" && (
-                <div className="p-3 bg-muted rounded-lg border border-border">
-                  <p className="text-xs text-muted-foreground">
-                    ✓ Os produtos terão preço único, definido no cadastro de cada item.
-                  </p>
-                </div>
-              )}
-
-              {hasSizes === "yes" && (
+              {/* Beverage-specific flow */}
+              {selectedTemplate === "bebidas" ? (
+                <BeverageTypesEditor
+                  beverageTypes={beverageTypes}
+                  setBeverageTypes={setBeverageTypes}
+                  storeId={storeId}
+                  categoryId={editId}
+                  onManageProducts={editId ? (typeId, typeName) => setManagingBeverageType({ id: typeId, name: typeName }) : undefined}
+                />
+              ) : (
                 <>
-                  <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
-                    <p className="text-xs text-foreground">
-                      💡 Exemplos de itens/tamanhos:
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      • Açaí: 300ml, 500ml, 700ml, 1L<br/>
-                      • Hambúrguer: Simples, Duplo, Triplo<br/>
-                      • Marmita: P, M, G, GG
-                    </p>
+                  <div className="flex items-center gap-4">
+                    <Label className="text-sm font-medium text-foreground">Os produtos têm itens/tamanhos?</Label>
+                    <div className="flex items-center gap-3">
+                      {["yes", "no"].map((opt) => (
+                        <label key={opt} className="flex items-center gap-1.5 cursor-pointer">
+                          <div 
+                            className={cn(
+                              "w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors",
+                              hasSizes === opt ? "border-primary bg-primary" : "border-muted-foreground"
+                            )}
+                            onClick={() => {
+                              setHasSizes(opt as typeof hasSizes);
+                              if (opt === "yes" && sizes.length === 0) {
+                                setSizes([{ id: crypto.randomUUID(), name: "", basePrice: 0, isActive: true }]);
+                              }
+                            }}
+                          >
+                            {hasSizes === opt && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />}
+                          </div>
+                          <span className="text-sm">{opt === "yes" ? "Sim" : "Não"}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
 
-                  <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSizeDragEnd}>
-                    <SortableContext items={sizes.map(s => s.id)} strategy={verticalListSortingStrategy}>
-                      <div className="space-y-2">
-                        {sizes.map((size) => (
-                          <SortableSizeItem
-                            key={size.id}
-                            size={size}
-                            onUpdate={updateSize}
-                            onRemove={removeSize}
-                            canRemove={sizes.length > 1}
-                            storeId={storeId}
-                          />
-                        ))}
-                      </div>
-                    </SortableContext>
-                  </DndContext>
+                  {hasSizes === "no" && (
+                    <div className="p-3 bg-muted rounded-lg border border-border">
+                      <p className="text-xs text-muted-foreground">
+                        ✓ Os produtos terão preço único, definido no cadastro de cada item.
+                      </p>
+                    </div>
+                  )}
 
-                  <button
-                    type="button"
-                    onClick={addSize}
-                    className="flex items-center gap-1.5 text-primary hover:text-primary/80 text-sm font-medium"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Adicionar item/tamanho
-                  </button>
+                  {hasSizes === "yes" && (
+                    <>
+                      <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+                        <p className="text-xs text-foreground">
+                          💡 Exemplos de itens/tamanhos:
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          • Açaí: 300ml, 500ml, 700ml, 1L<br/>
+                          • Hambúrguer: Simples, Duplo, Triplo<br/>
+                          • Marmita: P, M, G, GG
+                        </p>
+                      </div>
+
+                      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSizeDragEnd}>
+                        <SortableContext items={sizes.map(s => s.id)} strategy={verticalListSortingStrategy}>
+                          <div className="space-y-2">
+                            {sizes.map((size) => (
+                              <SortableSizeItem
+                                key={size.id}
+                                size={size}
+                                onUpdate={updateSize}
+                                onRemove={removeSize}
+                                canRemove={sizes.length > 1}
+                                storeId={storeId}
+                              />
+                            ))}
+                          </div>
+                        </SortableContext>
+                      </DndContext>
+
+                      <button
+                        type="button"
+                        onClick={addSize}
+                        className="flex items-center gap-1.5 text-primary hover:text-primary/80 text-sm font-medium"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Adicionar item/tamanho
+                      </button>
+                    </>
+                  )}
                 </>
               )}
             </div>
@@ -1894,6 +1983,18 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
           )}
         </div>
       </div>
+
+      {/* Beverage Products Manager Modal */}
+      {managingBeverageType && editId && (
+        <BeverageProductsManager
+          open={!!managingBeverageType}
+          onClose={() => setManagingBeverageType(null)}
+          storeId={storeId}
+          categoryId={editId}
+          beverageTypeId={managingBeverageType.id}
+          beverageTypeName={managingBeverageType.name}
+        />
+      )}
     </div>
   );
 }
