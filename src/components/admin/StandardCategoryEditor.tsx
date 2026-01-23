@@ -1433,9 +1433,11 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
               <button
                 key={step.id}
                 onClick={() => {
-                  if (step.id <= currentStep) setCurrentStep(step.id);
+                  // In edit mode, don't allow going back to step 1 (template selection)
+                  const minStep = editId ? 2 : 1;
+                  if (step.id <= currentStep && step.id >= minStep) setCurrentStep(step.id);
                 }}
-                disabled={isDisabled}
+                disabled={isDisabled || (editId && step.id === 1)}
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors whitespace-nowrap border-b-2",
                   isCurrent ? "text-primary border-primary" 
@@ -1864,14 +1866,16 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
           <Button
             variant="outline"
             onClick={() => {
-              if (currentStep > 1) {
+              // In edit mode, minimum step is 2 (skip template selection)
+              const minStep = editId ? 2 : 1;
+              if (currentStep > minStep) {
                 setCurrentStep(currentStep - 1);
               } else {
                 onClose();
               }
             }}
           >
-            {currentStep > 1 ? "Voltar" : "Cancelar"}
+            {currentStep > (editId ? 2 : 1) ? "Voltar" : "Cancelar"}
           </Button>
 
           {currentStep < STEPS.length ? (
