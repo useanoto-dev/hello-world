@@ -84,12 +84,12 @@ const allMenuItems: MenuItem[] = [
     showAlways: true,
     allowedRoles: ['admin'],
     subItems: [
-      { icon: Image, label: "Modais", path: "/dashboard/menu-images" }
+      { icon: Image, label: "Modais", path: "/dashboard/menu-images" },
+      { icon: Warehouse, label: "Estoque", path: "/dashboard/inventory" },
+      { icon: TicketPercent, label: "Cupons", path: "/dashboard/coupons" },
+      { icon: Image, label: "Banners", path: "/dashboard/banners" },
     ]
   },
-  { icon: Warehouse, label: "Estoque", path: "/dashboard/inventory", showAlways: true, allowedRoles: ['admin'] },
-  { icon: TicketPercent, label: "Cupons", path: "/dashboard/coupons", showAlways: true, allowedRoles: ['admin'] },
-  { icon: Image, label: "Banners", path: "/dashboard/banners", showAlways: true, allowedRoles: ['admin'] },
   { icon: Plug, label: "Integrações", path: "/dashboard/integrations", showAlways: true, allowedRoles: ['admin'] },
   { icon: Settings, label: "Configurações", path: "/dashboard/settings", showAlways: true, allowedRoles: ['admin'] },
   { icon: CreditCard, label: "Assinatura", path: "/dashboard/subscription", showAlways: true, allowedRoles: ['admin'] },
