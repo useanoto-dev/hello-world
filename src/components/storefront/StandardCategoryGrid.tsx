@@ -205,144 +205,53 @@ export function StandardCategoryGrid({
     if (sizes && sizes.length > 0) {
       return (
         <div className="px-5 pb-6">
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 font-storefront">
             {sizes.map((size, index) => {
               const badge = getBadgeForIndex(index);
               const quantity = getQuantity(size.id);
               
-              if (displayMode === "list") {
-                return (
-                  <motion.div
-                    key={size.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.02, duration: 0.2 }}
-                    onClick={() => onItemSelect({ 
-                      id: size.id, 
-                      name: size.name, 
-                      description: size.description,
-                      image_url: size.image_url,
-                      item_type: 'standard',
-                      is_premium: false 
-                    }, size, size.base_price, allowQuantitySelector ? quantity : 1)}
-                    className="cursor-pointer"
-                  >
-                    {/* FSW Style: Image LEFT, Text RIGHT */}
-                    <div className="flex items-center gap-4 p-3 bg-white rounded-xl border border-gray-100 hover:shadow-md transition-all">
-                      {/* Image - Left side */}
-                      <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-gray-100 shrink-0">
-                        <OptimizedImage
-                          src={size.image_url}
-                          alt={size.name}
-                          aspectRatio="auto"
-                          className="w-full h-full object-cover"
-                          fallbackIcon={<span className="text-2xl text-gray-400">🍽️</span>}
-                        />
-                      </div>
-
-                      {/* Info - Right side */}
-                      <div className="flex-1 min-w-0 py-1">
-                        <h3 className="font-semibold text-gray-900 text-base leading-tight line-clamp-2">
-                          {size.name}
-                        </h3>
-                        {size.description && (
-                          <p className="text-gray-500 text-sm line-clamp-2 mt-1">
-                            {size.description}
-                          </p>
-                        )}
-                        <p className="mt-2 font-semibold text-gray-900 text-base">
-                          {formatCurrency(size.base_price)}
-                        </p>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              }
-
-              // Card mode (matching PizzaSizeCard exactly)
               return (
                 <motion.div
                   key={size.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.03, duration: 0.3 }}
+                  transition={{ delay: index * 0.02, duration: 0.2 }}
+                  onClick={() => onItemSelect({ 
+                    id: size.id, 
+                    name: size.name, 
+                    description: size.description,
+                    image_url: size.image_url,
+                    item_type: 'standard',
+                    is_premium: false 
+                  }, size, size.base_price, allowQuantitySelector ? quantity : 1)}
+                  className="cursor-pointer"
                 >
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => onItemSelect({ 
-                      id: size.id, 
-                      name: size.name, 
-                      description: size.description,
-                      image_url: size.image_url,
-                      item_type: 'standard',
-                      is_premium: false 
-                    }, size, size.base_price, allowQuantitySelector ? quantity : 1)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        onItemSelect({
-                          id: size.id,
-                          name: size.name,
-                          description: size.description,
-                          image_url: size.image_url,
-                          item_type: "standard",
-                          is_premium: false,
-                        }, size, size.base_price, allowQuantitySelector ? quantity : 1);
-                      }
-                    }}
-                    className="w-full text-left bg-card rounded-xl lg:rounded-2xl overflow-hidden border border-border transition-all duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary group hover:shadow-lg hover:border-primary/30 active:scale-[0.98]"
-                  >
-                    {/* Image - Aspect 4/3 */}
-                    <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                  {/* FSW Style: flex gap-3 p-3 border rounded-xl */}
+                  <div className="flex gap-3 p-3 border border-border rounded-xl hover:bg-muted/50 transition-colors">
+                    {/* Image - h-24 w-24 rounded-lg */}
+                    <div className="relative h-24 w-24 rounded-lg overflow-hidden bg-muted shrink-0">
                       <OptimizedImage
                         src={size.image_url}
                         alt={size.name}
                         aspectRatio="auto"
-                        className="w-full h-full transition-transform duration-300 group-hover:scale-105"
-                        fallbackIcon={<span className="text-4xl">🍽️</span>}
-                        priority={index < 6}
+                        className="w-full h-full object-cover"
+                        fallbackIcon={<span className="text-2xl text-muted-foreground">🍽️</span>}
                       />
-                      
-                      {/* Badge - Top Left */}
-                      {badge && (
-                        <div className={`absolute top-2 left-2 px-2 py-0.5 rounded text-xs font-bold ${badge.color} shadow-sm`}>
-                          {badge.label}
-                        </div>
-                      )}
-
-                      {/* Favorite button - Top Right */}
-                      {showFavorites && (
-                        <div className="absolute top-2 right-2 z-10">
-                          <FavoriteButton
-                            isFavorite={isFavorite(size.id)}
-                            onToggle={() => toggleFavorite(size.id)}
-                            size="sm"
-                          />
-                        </div>
-                      )}
                     </div>
 
-                    {/* Info - Compact */}
-                    <div className="p-3 lg:p-4">
-                      <h3 className="font-semibold text-foreground text-sm lg:text-base leading-tight line-clamp-2 min-h-[2.5rem]">
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-foreground line-clamp-1">
                         {size.name}
                       </h3>
-                      
                       {size.description && (
-                        <p className="text-muted-foreground text-xs lg:text-sm line-clamp-1 mt-1">
+                        <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
                           {size.description}
                         </p>
                       )}
-                      
-                      {/* Price */}
-                      <div className="mt-2">
-                        <span className="text-[11px] text-gray-400">A partir de</span>
-                        <p className="text-sm font-normal text-gray-500">
-                          {formatCurrency(size.base_price)}
-                        </p>
-                      </div>
-
+                      <p className="mt-2 text-sm font-semibold text-primary">
+                        {formatCurrency(size.base_price)}
+                      </p>
                     </div>
                   </div>
                 </motion.div>
@@ -387,7 +296,7 @@ export function StandardCategoryGrid({
       )}
 
       {/* Items list - FSW style */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 font-storefront">
         {items.map((item, index) => {
           const selectedSize = sizes?.find(s => s.id === effectiveSize);
           const itemPrice = priceMap.get(item.id)?.get(effectiveSize || '');
@@ -395,132 +304,47 @@ export function StandardCategoryGrid({
           const badge = getBadgeForIndex(index);
           const quantity = getQuantity(item.id);
 
-          if (displayMode === "list") {
-            return (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.02, duration: 0.2 }}
-                onClick={() => handleItemClick(item)}
-                className="cursor-pointer"
-              >
-                {/* FSW Style: Image LEFT, Text RIGHT */}
-                <div className="flex items-center gap-4 p-3 bg-white rounded-xl border border-gray-100 hover:shadow-md transition-all">
-                  {/* Image - Left side */}
-                  <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-gray-100 shrink-0">
-                    <OptimizedImage
-                      src={item.image_url}
-                      alt={item.name}
-                      aspectRatio="auto"
-                      className="w-full h-full object-cover"
-                      fallbackIcon={<span className="text-2xl text-gray-400">🍽️</span>}
-                    />
-                  </div>
-
-                  {/* Info - Right side */}
-                  <div className="flex-1 min-w-0 py-1">
-                    <h3 className="font-semibold text-gray-900 text-base leading-tight line-clamp-2">
-                      {item.name}
-                      {item.is_premium && (
-                        <Crown className="w-3.5 h-3.5 inline-block ml-1.5 text-amber-500" />
-                      )}
-                    </h3>
-                    {item.description && (
-                      <p className="text-gray-500 text-sm line-clamp-2 mt-1">
-                        {item.description}
-                      </p>
-                    )}
-                    <p className="mt-2 font-semibold text-gray-900 text-base">
-                      {formatCurrency(displayPrice)}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          }
-
-          // Card mode (matching PizzaSizeCard exactly)
           return (
             <motion.div
               key={item.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.03, duration: 0.3 }}
+              transition={{ delay: index * 0.02, duration: 0.2 }}
+              onClick={() => handleItemClick(item)}
+              className="cursor-pointer"
             >
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={() => handleItemClick(item)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    handleItemClick(item);
-                  }
-                }}
-                className="w-full text-left bg-card rounded-xl lg:rounded-2xl overflow-hidden border border-border transition-all duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary group hover:shadow-lg hover:border-primary/30 active:scale-[0.98]"
-              >
-                {/* Image - Aspect 4/3 */}
-                <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+              {/* FSW Style: flex gap-3 p-3 border rounded-xl */}
+              <div className="flex gap-3 p-3 border border-border rounded-xl hover:bg-muted/50 transition-colors">
+                {/* Image - h-24 w-24 rounded-lg */}
+                <div className="relative h-24 w-24 rounded-lg overflow-hidden bg-muted shrink-0">
                   <OptimizedImage
                     src={item.image_url}
                     alt={item.name}
                     aspectRatio="auto"
-                    className="w-full h-full transition-transform duration-300 group-hover:scale-105"
-                    fallbackIcon={<span className="text-4xl opacity-50">🍽️</span>}
-                    priority={index < 6}
+                    className="w-full h-full object-cover"
+                    fallbackIcon={<span className="text-2xl text-muted-foreground">🍽️</span>}
                   />
-
-                  {/* Badge - Top Left */}
-                  {badge && (
-                    <div className={`absolute top-2 left-2 px-2 py-0.5 rounded text-xs font-bold ${badge.color} shadow-sm`}>
-                      {badge.label}
-                    </div>
-                  )}
-
-                  {/* Premium badge */}
-                  {item.is_premium && !badge && (
-                    <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-amber-500 text-white shadow-sm">
-                      <Crown className="w-3 h-3" />
-                      Premium
-                    </div>
-                  )}
-
-                  {/* Favorite button - Top Right */}
-                  {showFavorites && (
-                    <div className="absolute top-2 right-2 z-10">
-                      <FavoriteButton
-                        isFavorite={isFavorite(item.id)}
-                        onToggle={() => toggleFavorite(item.id)}
-                        size="sm"
-                      />
-                    </div>
-                  )}
                 </div>
 
-                {/* Info - Compact */}
-                <div className="p-3 lg:p-4">
-                  <h3 className="font-semibold text-foreground text-sm lg:text-base leading-tight line-clamp-2 min-h-[2.5rem]">
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium text-foreground line-clamp-1">
                     {item.name}
+                    {item.is_premium && (
+                      <Crown className="w-3.5 h-3.5 inline-block ml-1.5 text-amber-500" />
+                    )}
                   </h3>
-                  
                   {item.description && (
-                    <p className="text-muted-foreground text-xs lg:text-sm line-clamp-1 mt-1">
+                    <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
                       {item.description}
                     </p>
                   )}
-                  
-                  {/* Price */}
-                  <div className="mt-2">
-                    <span className="text-[11px] text-gray-400">A partir de</span>
-                    <p className="text-sm font-normal text-gray-500">
-                      {formatCurrency(displayPrice)}
-                    </p>
-                  </div>
-
+                  <p className="mt-2 text-sm font-semibold text-primary">
+                    {formatCurrency(displayPrice)}
+                  </p>
                 </div>
               </div>
-            </motion.div>
+          </motion.div>
           );
         })}
       </div>

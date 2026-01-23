@@ -41,9 +41,9 @@ export default function StorefrontHeader({ store }: StorefrontHeaderProps) {
   const { isOpen } = useStoreStatus();
 
   return (
-    <div className="relative">
-      {/* Cover Image - rounded corners on desktop */}
-      <div className="relative h-48 w-full md:mx-auto md:max-w-5xl md:mt-4 md:rounded-2xl md:overflow-hidden">
+    <div className="relative font-storefront">
+      {/* Cover Image - FSW h-52 */}
+      <div className="relative h-52 w-full md:mx-auto md:max-w-5xl md:mt-4 md:rounded-2xl md:overflow-hidden">
         {store.banner_url ? (
           <img
             src={store.banner_url}
@@ -78,10 +78,10 @@ export default function StorefrontHeader({ store }: StorefrontHeaderProps) {
         </Button>
       </div>
 
-      {/* Store info with avatar - FSW layout: avatar left, text beside it */}
-      <div className="relative -mt-10 px-5 md:max-w-5xl md:mx-auto">
+      {/* Store info - FSW layout: -mt-14, avatar left, text beside it */}
+      <div className="relative -mt-14 px-5 md:max-w-5xl md:mx-auto">
         <div className="flex items-end gap-3">
-          {/* Avatar - circular, overlapping banner */}
+          {/* Avatar - h-20 w-20, border-4 border-white, shadow-lg */}
           <div className="h-20 w-20 rounded-full border-4 border-white shadow-lg overflow-hidden flex-shrink-0 bg-white">
             {store.logo_url ? (
               <img
@@ -98,10 +98,10 @@ export default function StorefrontHeader({ store }: StorefrontHeaderProps) {
             )}
           </div>
           
-          {/* Store name, description and status badge */}
+          {/* Store name and description */}
           <div className="flex-1 min-w-0 pb-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl font-bold text-gray-900 truncate">{store.name}</h1>
+              <h1 className="text-xl font-bold text-foreground truncate">{store.name}</h1>
               {/* Open/Closed Badge */}
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold shrink-0 ${
                 isOpen 
@@ -113,7 +113,7 @@ export default function StorefrontHeader({ store }: StorefrontHeaderProps) {
               </span>
             </div>
             {store.about_us && (
-              <p className="text-sm text-gray-500 line-clamp-1 mt-0.5">{store.about_us}</p>
+              <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{store.about_us}</p>
             )}
           </div>
         </div>
