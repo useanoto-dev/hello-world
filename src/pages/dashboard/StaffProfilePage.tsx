@@ -13,6 +13,8 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { PasswordStrengthIndicator } from "@/components/ui/password-strength-indicator";
+import { validateStrongPassword } from "@/lib/validators";
 
 const roleLabels: Record<string, { label: string; color: string }> = {
   admin: { label: "Administrador", color: "bg-purple-500" },
@@ -71,8 +73,9 @@ export default function StaffProfilePage() {
       return;
     }
     
-    if (newPassword.length < 6) {
-      toast.error("A nova senha deve ter pelo menos 6 caracteres");
+    const passwordValidation = validateStrongPassword(newPassword);
+    if (!passwordValidation.isValid) {
+      toast.error("A senha não atende aos requisitos de segurança");
       return;
     }
     
@@ -255,7 +258,7 @@ export default function StaffProfilePage() {
                   type={showNewPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Senha forte"
                   className="pr-10"
                 />
                 <button
@@ -270,10 +273,8 @@ export default function StaffProfilePage() {
                   )}
                 </button>
               </div>
-              {newPassword && newPassword.length < 6 && (
-                <p className="text-xs text-destructive">
-                  A senha deve ter pelo menos 6 caracteres
-                </p>
+              {newPassword && (
+                <PasswordStrengthIndicator password={newPassword} />
               )}
             </div>
 
@@ -310,7 +311,7 @@ export default function StaffProfilePage() {
 
             <Button
               onClick={handleChangePassword}
-              disabled={changingPassword || !currentPassword || newPassword.length < 6 || newPassword !== confirmPassword}
+              disabled={changingPassword || !currentPassword || !validateStrongPassword(newPassword).isValid || newPassword !== confirmPassword}
               className="w-full"
             >
               {changingPassword ? (

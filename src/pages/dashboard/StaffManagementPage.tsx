@@ -55,6 +55,8 @@ import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useActiveRestaurant } from "@/hooks/useActiveRestaurant";
 import { MaskedInput } from "@/components/ui/masked-input";
+import { PasswordStrengthIndicator } from "@/components/ui/password-strength-indicator";
+import { validateStrongPassword } from "@/lib/validators";
 
 interface StaffMember {
   id: string;
@@ -579,9 +581,11 @@ export default function StaffManagementPage() {
                 type="text"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="Mínimo 6 caracteres"
-                minLength={6}
+                placeholder="Senha forte"
               />
+              {formData.password && (
+                <PasswordStrengthIndicator password={formData.password} />
+              )}
               <p className="text-xs text-muted-foreground">
                 O garçom usará esta senha para fazer login no App do Garçom
               </p>
@@ -593,7 +597,7 @@ export default function StaffManagementPage() {
             </Button>
             <Button 
               onClick={() => createStaffMutation.mutate(formData)}
-              disabled={!formData.name || !formData.cpf || !formData.password || formData.password.length < 6 || createStaffMutation.isPending}
+              disabled={!formData.name || !formData.cpf || !validateStrongPassword(formData.password).isValid || createStaffMutation.isPending}
             >
               {createStaffMutation.isPending ? "Criando..." : "Criar garçom"}
             </Button>
@@ -654,8 +658,11 @@ export default function StaffManagementPage() {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 placeholder="Digite para redefinir a senha"
               />
+              {formData.password && (
+                <PasswordStrengthIndicator password={formData.password} />
+              )}
               <p className="text-xs text-muted-foreground">
-                Mínimo 6 caracteres. Deixe em branco para manter a senha atual.
+                Deixe em branco para manter a senha atual.
               </p>
             </div>
           </div>
@@ -670,7 +677,7 @@ export default function StaffManagementPage() {
                   name: formData.name, 
                   role: formData.role 
                 };
-                if (formData.password && formData.password.length >= 6) {
+                if (formData.password && validateStrongPassword(formData.password).isValid) {
                   updateData.password = formData.password;
                 }
                 updateStaffMutation.mutate({
@@ -678,7 +685,7 @@ export default function StaffManagementPage() {
                   data: updateData as Partial<StaffMember> & { password?: string }
                 });
               }}
-              disabled={updateStaffMutation.isPending || (formData.password.length > 0 && formData.password.length < 6)}
+              disabled={updateStaffMutation.isPending || (formData.password.length > 0 && !validateStrongPassword(formData.password).isValid)}
             >
               {updateStaffMutation.isPending ? "Salvando..." : "Salvar"}
             </Button>
