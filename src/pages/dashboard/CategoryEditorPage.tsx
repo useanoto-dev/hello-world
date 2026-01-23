@@ -1367,17 +1367,6 @@ export default function CategoryEditorPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Pizza Model */}
-              <button
-                onClick={() => setModelo("pizza")}
-                className="group p-6 bg-card border-2 border-border rounded-xl hover:border-primary transition-all text-left"
-              >
-                <div className="text-4xl mb-3">🍕</div>
-                <h3 className="text-base font-semibold text-foreground mb-1">Pizzas</h3>
-                <p className="text-xs text-muted-foreground">
-                  Ideal para pizzas com tamanhos, sabores, bordas e massas personalizáveis
-                </p>
-              </button>
-
               {/* Standard Model */}
               <button
                 onClick={() => setModelo("padrao")}
@@ -1392,6 +1381,18 @@ export default function CategoryEditorPage() {
                 <h3 className="text-base font-semibold text-foreground mb-1">Padrão</h3>
                 <p className="text-xs text-muted-foreground">
                   Para hambúrgueres, açaí, bebidas, sobremesas e outros produtos com tamanhos e adicionais
+                </p>
+              </button>
+
+              {/* Pizza Model */}
+              <button
+                onClick={() => setModelo("pizza")}
+                className="group p-6 bg-card border-2 border-border rounded-xl hover:border-primary transition-all text-left"
+              >
+                <div className="text-4xl mb-3">🍕</div>
+                <h3 className="text-base font-semibold text-foreground mb-1">Pizzas</h3>
+                <p className="text-xs text-muted-foreground">
+                  Ideal para pizzas com tamanhos, sabores, bordas e massas personalizáveis
                 </p>
               </button>
             </div>
