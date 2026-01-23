@@ -365,6 +365,7 @@ interface StandardCategoryEditorProps {
   editId?: string | null;
   storeId: string;
   onClose: () => void;
+  initialStep?: number;
 }
 
 const DAYS = [
@@ -907,10 +908,10 @@ function SortableOptionGroup({
 
 // ============= MAIN COMPONENT =============
 
-export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCategoryEditorProps) {
+export function StandardCategoryEditor({ editId, storeId, onClose, initialStep }: StandardCategoryEditorProps) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(initialStep || 1);
   const [showSaveDropdown, setShowSaveDropdown] = useState(false);
   const [savedCategoryId, setSavedCategoryId] = useState<string | null>(null);
   
@@ -956,9 +957,12 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
     const loadExisting = async () => {
       setLoading(true);
       try {
-        // In edit mode we skip template selection
+        // In edit mode we skip template selection - go to step from URL or default to step 2
         setSelectedTemplate("personalizado");
-        setCurrentStep(2);
+        // initialStep is already set in useState, only override if not provided
+        if (!initialStep) {
+          setCurrentStep(2);
+        }
 
         const { data: categoryData, error: categoryError } = await supabase
           .from("categories")
