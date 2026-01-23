@@ -1703,16 +1703,27 @@ export default function MenuManagerPage() {
                   {/* Add Item Button - Compact */}
                   <div className="mt-3 pt-2 border-t border-border/30 flex items-center gap-3">
                     <button 
-                      onClick={() => openAddItemTypeModal(
-                        category.id, 
-                        category.name, 
-                        category.category_type === 'pizza',
-                        category.category_type === 'standard'
-                      )}
+                      onClick={() => {
+                        // For beverage categories, go directly to beverage wizard
+                        if (categoryBeverageTypes[category.id]?.length > 0) {
+                          navigate(`/dashboard/beverage/new?categoryId=${category.id}`);
+                        } else {
+                          openAddItemTypeModal(
+                            category.id, 
+                            category.name, 
+                            category.category_type === 'pizza',
+                            category.category_type === 'standard'
+                          );
+                        }
+                      }}
                       className="flex items-center gap-1.5 text-primary hover:text-primary/80 font-medium text-xs transition-colors"
                     >
                       <Plus className="w-3.5 h-3.5" />
-                      {category.category_type === 'pizza' ? 'Adicionar Sabor' : 'Adicionar Item'}
+                      {category.category_type === 'pizza' 
+                        ? 'Adicionar Sabor' 
+                        : categoryBeverageTypes[category.id]?.length > 0 
+                          ? 'Adicionar Bebida'
+                          : 'Adicionar Item'}
                     </button>
                     {category.category_type === 'pizza' && (
                       <button 
@@ -1720,6 +1731,14 @@ export default function MenuManagerPage() {
                         className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                       >
                         Ver sabores
+                      </button>
+                    )}
+                    {categoryBeverageTypes[category.id]?.length > 0 && (
+                      <button 
+                        onClick={() => navigate(`/dashboard/beverages?categoryId=${category.id}`)}
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        Ver bebidas
                       </button>
                     )}
                   </div>

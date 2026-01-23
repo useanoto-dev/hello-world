@@ -40,6 +40,7 @@ export default function BeverageProductWizard() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const categoryId = searchParams.get('categoryId');
+  const typeId = searchParams.get('typeId');
   const editId = searchParams.get('edit');
   
   const [loading, setLoading] = useState(false);
@@ -50,7 +51,7 @@ export default function BeverageProductWizard() {
   
   // Form state - Step 1 (Bebida)
   const [selectedCategoryId, setSelectedCategoryId] = useState(categoryId || "");
-  const [selectedBeverageTypeId, setSelectedBeverageTypeId] = useState("");
+  const [selectedBeverageTypeId, setSelectedBeverageTypeId] = useState(typeId || "");
   const [productName, setProductName] = useState("");
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);

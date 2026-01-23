@@ -1996,24 +1996,16 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
               Continuar
             </Button>
           ) : selectedTemplate === "bebidas" ? (
-            // Bebidas template: dropdown with two save options
+            // Bebidas template: click anywhere opens dropdown with two save options
             <div className="relative">
-              <div className="flex">
-                <Button 
-                  onClick={() => handleSave(false)} 
-                  disabled={loading || !name.trim()}
-                  className="rounded-r-none"
-                >
-                  {loading ? "Salvando..." : "Salvar"}
-                </Button>
-                <Button
-                  onClick={() => setShowSaveDropdown(!showSaveDropdown)}
-                  disabled={loading || !name.trim()}
-                  className="rounded-l-none border-l border-primary-foreground/20 px-2"
-                >
-                  <ChevronUp className="w-4 h-4" />
-                </Button>
-              </div>
+              <Button 
+                onClick={() => setShowSaveDropdown(!showSaveDropdown)} 
+                disabled={loading || !name.trim()}
+                className="gap-2"
+              >
+                {loading ? "Salvando..." : "Salvar"}
+                <ChevronUp className={cn("w-4 h-4 transition-transform", showSaveDropdown && "rotate-180")} />
+              </Button>
               
               {showSaveDropdown && (
                 <div className="absolute bottom-full mb-1 right-0 w-56 bg-card border border-border rounded-lg shadow-lg overflow-hidden z-50">
