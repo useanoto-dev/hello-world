@@ -1315,13 +1315,13 @@ export default function MenuManagerPage() {
                         
                         <div className="flex flex-wrap gap-1.5">
                           <button
-                            onClick={() => navigate(`/dashboard/category/edit?edit=${category.id}&tab=options&group=temperatura`)}
+                            onClick={() => navigate(`/dashboard/category/edit?edit=${category.id}&step=4`)}
                             className="inline-flex items-center gap-1.5 bg-card hover:bg-muted rounded-md border border-border/50 hover:border-primary/30 px-3 py-2 text-xs transition-all cursor-pointer"
                           >
                             <span className="font-medium text-foreground">🌡️ Temperatura</span>
                           </button>
                           <button
-                            onClick={() => navigate(`/dashboard/category/edit?edit=${category.id}&tab=options&group=adicionais`)}
+                            onClick={() => navigate(`/dashboard/category/edit?edit=${category.id}&step=4`)}
                             className="inline-flex items-center gap-1.5 bg-card hover:bg-muted rounded-md border border-border/50 hover:border-primary/30 px-3 py-2 text-xs transition-all cursor-pointer"
                           >
                             <span className="font-medium text-foreground">➕ Adicionais</span>

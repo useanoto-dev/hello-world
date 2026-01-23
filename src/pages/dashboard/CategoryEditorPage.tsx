@@ -72,6 +72,7 @@ export default function CategoryEditorPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('edit');
+  const stepParam = searchParams.get('step');
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(!!searchParams.get('edit'));
   const [storeId, setStoreId] = useState<string | null>(null);
@@ -1409,6 +1410,7 @@ export default function CategoryEditorPage() {
         editId={editId}
         storeId={storeId}
         onClose={handleClose}
+        initialStep={stepParam ? parseInt(stepParam) : undefined}
       />
     );
   }
