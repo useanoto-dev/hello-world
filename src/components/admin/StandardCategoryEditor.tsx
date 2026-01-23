@@ -1,5 +1,6 @@
 // Standard Category Editor - Universal model for any business type
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Trash2, AlertCircle, GripVertical, ChevronDown, ChevronUp, Layers, IceCream, Sandwich, UtensilsCrossed, Coffee, Sparkles, Check, Image as ImageIcon, GlassWater } from "lucide-react";
 import { BeverageTypesEditor, BeverageType } from "./BeverageTypesEditor";
 import { Button } from "@/components/ui/button";
@@ -383,26 +384,13 @@ const STEPS = [
   { id: 4, label: "Personalização" },
 ];
 
-// Beverage-specific steps (replaces steps 3 and 4)
+// Beverage-specific steps (removes step 4 - products are added on separate page)
 const BEVERAGE_STEPS = [
   { id: 1, label: "Modelo" },
   { id: 2, label: "Categoria" },
   { id: 3, label: "Tipos" },
-  { id: 4, label: "Bebidas" },
-  { id: 5, label: "Personalização" },
+  { id: 4, label: "Personalização" },
 ];
-
-// Beverage product for inline editing
-interface BeverageProduct {
-  id: string;
-  name: string;
-  description?: string;
-  price: number;
-  promotionalPrice?: number;
-  imageUrl?: string;
-  beverageTypeId: string;
-  isActive: boolean;
-}
 
 // ============= SORTABLE COMPONENTS =============
 
@@ -920,8 +908,11 @@ function SortableOptionGroup({
 // ============= MAIN COMPONENT =============
 
 export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCategoryEditorProps) {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [showSaveDropdown, setShowSaveDropdown] = useState(false);
+  const [savedCategoryId, setSavedCategoryId] = useState<string | null>(null);
   
   // Template selection
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
@@ -942,8 +933,6 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
   // Beverage types state (for Bebidas template)
   const [beverageTypes, setBeverageTypes] = useState<BeverageType[]>([]);
   
-  // Beverage products state (for inline editing in step 4 of bebidas)
-  const [beverageProducts, setBeverageProducts] = useState<BeverageProduct[]>([]);
 
   // Option Groups state
   const [hasOptionGroups, setHasOptionGroups] = useState<"yes" | "no">("no");
@@ -1075,25 +1064,7 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
             isActive: bt.is_active,
           })));
 
-          // Also load beverage products
-          const { data: beverageProductsData } = await supabase
-            .from("beverage_products")
-            .select("id, name, description, price, promotional_price, image_url, beverage_type_id, is_active")
-            .eq("category_id", editId)
-            .order("display_order");
-
-          if (beverageProductsData) {
-            setBeverageProducts(beverageProductsData.map((bp: any) => ({
-              id: bp.id,
-              name: bp.name,
-              description: bp.description,
-              price: bp.price || 0,
-              promotionalPrice: bp.promotional_price,
-              imageUrl: bp.image_url,
-              beverageTypeId: bp.beverage_type_id,
-              isActive: bp.is_active,
-            })));
-          }
+          // Beverage products are now managed on a separate page, not loaded here
         }
       } catch (e) {
         console.error("Error loading standard category:", e);
@@ -1300,7 +1271,7 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
   };
 
   // Save category
-  const handleSave = async () => {
+  const handleSave = async (redirectToBeverages: boolean = false) => {
     if (!name.trim()) {
       toast.error("Nome da categoria é obrigatório");
       return;
@@ -1508,46 +1479,16 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
           if (error) throw error;
         }
 
-        // ===== BEVERAGE PRODUCTS =====
-        const validBeverageProducts = beverageProducts.filter((bp) => bp.name.trim() && bp.beverageTypeId);
-        
-        if (validBeverageProducts.length > 0) {
-          const productsPayload = validBeverageProducts.map((bp, index) => ({
-            id: bp.id,
-            store_id: storeId,
-            category_id: categoryId,
-            beverage_type_id: bp.beverageTypeId,
-            name: bp.name.trim(),
-            description: bp.description || null,
-            price: bp.price || 0,
-            promotional_price: bp.promotionalPrice || null,
-            image_url: bp.imageUrl || null,
-            is_active: bp.isActive,
-            display_order: index,
-          }));
-
-          const { error: upsertProductsError } = await supabase
-            .from("beverage_products")
-            .upsert(productsPayload as any, { onConflict: "id" });
-
-          if (upsertProductsError) throw upsertProductsError;
-
-          const keepProductIds = validBeverageProducts.map((bp) => bp.id);
-          const { error: deleteRemovedProductsError } = await supabase
-            .from("beverage_products")
-            .delete()
-            .eq("category_id", categoryId)
-            .not("id", "in", inList(keepProductIds));
-
-          if (deleteRemovedProductsError) throw deleteRemovedProductsError;
-        } else {
-          const { error } = await supabase.from("beverage_products").delete().eq("category_id", categoryId);
-          if (error) throw error;
-        }
+        // Beverage products are now managed on a separate page
       }
 
       toast.success(editId ? "Categoria atualizada com sucesso!" : "Categoria criada com sucesso!");
-      onClose();
+      
+      if (redirectToBeverages && categoryId && selectedTemplate === "bebidas") {
+        navigate(`/dashboard/beverage/new?categoryId=${categoryId}`);
+      } else {
+        onClose();
+      }
     } catch (error) {
       console.error("Error saving category:", error);
       toast.error("Erro ao salvar categoria");
@@ -1913,207 +1854,8 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
             </div>
           )}
 
-          {/* Step 4: Bebidas Products (only for bebidas template) */}
-          {currentStep === 4 && selectedTemplate === "bebidas" && (
-            <div className="bg-card rounded-lg shadow-sm border border-border p-4 space-y-4">
-              <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
-                <p className="text-xs text-foreground font-medium">🍹 Cadastre as bebidas do seu cardápio:</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  • Preencha nome, descrição, valor, foto e selecione o tipo de bebida.<br/>
-                  • Você pode adicionar quantas bebidas quiser.
-                </p>
-              </div>
-
-              {/* Beverage Products List */}
-              <div className="space-y-3">
-                {beverageProducts.map((product, index) => (
-                  <div key={product.id} className="bg-muted/50 border border-border rounded-lg p-3 space-y-3">
-                    <div className="flex items-start gap-3">
-                      {/* Image Upload */}
-                      <div className="relative w-16 h-16 shrink-0">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            if (!file.type.startsWith("image/")) {
-                              toast.error("Apenas imagens são permitidas");
-                              return;
-                            }
-                            if (file.size > 5 * 1024 * 1024) {
-                              toast.error("Imagem muito grande. Máximo 5MB");
-                              return;
-                            }
-                            try {
-                              const fileName = `${storeId}/beverages/${Date.now()}-${file.name}`;
-                              const { error: uploadError } = await supabase.storage
-                                .from("product-images")
-                                .upload(fileName, file, { contentType: file.type });
-                              if (uploadError) throw uploadError;
-                              const { data: urlData } = supabase.storage
-                                .from("product-images")
-                                .getPublicUrl(fileName);
-                              setBeverageProducts(prev => prev.map(p => 
-                                p.id === product.id ? { ...p, imageUrl: urlData.publicUrl } : p
-                              ));
-                              toast.success("Imagem enviada!");
-                            } catch (error: any) {
-                              console.error("Upload error:", error);
-                              toast.error(error.message || "Erro ao enviar imagem");
-                            }
-                          }}
-                          className="hidden"
-                          id={`beverage-image-${product.id}`}
-                        />
-                        <label
-                          htmlFor={`beverage-image-${product.id}`}
-                          className="w-full h-full rounded-lg border-2 border-dashed border-border bg-card flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors overflow-hidden"
-                        >
-                          {product.imageUrl ? (
-                            <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <>
-                              <ImageIcon className="w-4 h-4 text-muted-foreground" />
-                              <span className="text-[9px] text-muted-foreground mt-0.5">Foto</span>
-                            </>
-                          )}
-                        </label>
-                        {product.imageUrl && (
-                          <button
-                            type="button"
-                            onClick={() => setBeverageProducts(prev => prev.map(p => 
-                              p.id === product.id ? { ...p, imageUrl: undefined } : p
-                            ))}
-                            className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow-sm hover:bg-destructive/90"
-                          >
-                            <Trash2 className="w-2.5 h-2.5" />
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="flex-1 space-y-2">
-                        {/* Name */}
-                        <Input
-                          value={product.name}
-                          onChange={(e) => setBeverageProducts(prev => prev.map(p => 
-                            p.id === product.id ? { ...p, name: e.target.value } : p
-                          ))}
-                          placeholder="Nome da bebida"
-                          className="h-8"
-                        />
-                        
-                        {/* Description */}
-                        <Input
-                          value={product.description || ""}
-                          onChange={(e) => setBeverageProducts(prev => prev.map(p => 
-                            p.id === product.id ? { ...p, description: e.target.value } : p
-                          ))}
-                          placeholder="Descrição (opcional)"
-                          className="h-8"
-                        />
-                      </div>
-
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setBeverageProducts(prev => prev.filter(p => p.id !== product.id))}
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 items-center">
-                      {/* Price */}
-                      <div className="flex items-center gap-1">
-                        <Label className="text-xs text-muted-foreground">Valor:</Label>
-                        <div className="relative w-24">
-                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">R$</span>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value={product.price || ""}
-                            onChange={(e) => setBeverageProducts(prev => prev.map(p => 
-                              p.id === product.id ? { ...p, price: parseFloat(e.target.value) || 0 } : p
-                            ))}
-                            placeholder="0,00"
-                            className="h-8 pl-7 text-sm"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Beverage Type Select */}
-                      <div className="flex items-center gap-1 flex-1 min-w-[150px]">
-                        <Label className="text-xs text-muted-foreground">Tipo:</Label>
-                        <Select
-                          value={product.beverageTypeId}
-                          onValueChange={(value) => setBeverageProducts(prev => prev.map(p => 
-                            p.id === product.id ? { ...p, beverageTypeId: value } : p
-                          ))}
-                        >
-                          <SelectTrigger className="h-8 text-xs flex-1">
-                            <SelectValue placeholder="Selecione o tipo" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {beverageTypes.filter(bt => bt.name.trim()).map((bt) => (
-                              <SelectItem key={bt.id} value={bt.id}>
-                                {bt.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Active Switch */}
-                      <div className="flex items-center gap-1">
-                        <Switch
-                          checked={product.isActive}
-                          onCheckedChange={(checked) => setBeverageProducts(prev => prev.map(p => 
-                            p.id === product.id ? { ...p, isActive: checked } : p
-                          ))}
-                          className="data-[state=checked]:bg-primary scale-90"
-                        />
-                        <Label className="text-xs text-muted-foreground">Ativo</Label>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {beverageProducts.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground border border-dashed border-border rounded-lg">
-                    <GlassWater className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">Nenhuma bebida cadastrada ainda</p>
-                    <p className="text-xs">Clique no botão abaixo para adicionar</p>
-                  </div>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    const firstTypeId = beverageTypes.find(bt => bt.name.trim())?.id || "";
-                    setBeverageProducts(prev => [...prev, {
-                      id: crypto.randomUUID(),
-                      name: "",
-                      price: 0,
-                      beverageTypeId: firstTypeId,
-                      isActive: true,
-                    }]);
-                  }}
-                  className="flex items-center gap-1.5 text-primary hover:text-primary/80 text-sm font-medium"
-                >
-                  <Plus className="w-4 h-4" />
-                  Adicionar bebida
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 4: Option Groups (Personalização) - for non-bebidas templates */}
-          {/* Step 5: Option Groups (Personalização) - for bebidas template */}
-          {((currentStep === 4 && selectedTemplate !== "bebidas") || (currentStep === 5 && selectedTemplate === "bebidas")) && (
+          {/* Step 4: Option Groups (Personalização) - for all templates (including bebidas) */}
+          {currentStep === 4 && (
             <div className="bg-card rounded-lg shadow-sm border border-border p-4 space-y-4">
               <div className="flex items-center gap-4">
                 <Label className="text-sm font-medium text-foreground">Tem opções de personalização?</Label>
@@ -2253,8 +1995,54 @@ export function StandardCategoryEditor({ editId, storeId, onClose }: StandardCat
             >
               Continuar
             </Button>
+          ) : selectedTemplate === "bebidas" ? (
+            // Bebidas template: dropdown with two save options
+            <div className="relative">
+              <div className="flex">
+                <Button 
+                  onClick={() => handleSave(false)} 
+                  disabled={loading || !name.trim()}
+                  className="rounded-r-none"
+                >
+                  {loading ? "Salvando..." : "Salvar"}
+                </Button>
+                <Button
+                  onClick={() => setShowSaveDropdown(!showSaveDropdown)}
+                  disabled={loading || !name.trim()}
+                  className="rounded-l-none border-l border-primary-foreground/20 px-2"
+                >
+                  <ChevronUp className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              {showSaveDropdown && (
+                <div className="absolute bottom-full mb-1 right-0 w-56 bg-card border border-border rounded-lg shadow-lg overflow-hidden z-50">
+                  <button
+                    onClick={() => {
+                      setShowSaveDropdown(false);
+                      handleSave(true);
+                    }}
+                    disabled={loading}
+                    className="w-full px-4 py-2.5 text-left text-sm hover:bg-muted transition-colors flex items-center gap-2"
+                  >
+                    <GlassWater className="w-4 h-4 text-primary" />
+                    <span>Salvar e Cadastrar Bebidas</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowSaveDropdown(false);
+                      handleSave(false);
+                    }}
+                    disabled={loading}
+                    className="w-full px-4 py-2.5 text-left text-sm hover:bg-muted transition-colors border-t border-border"
+                  >
+                    Salvar
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
-            <Button onClick={handleSave} disabled={loading || !name.trim()}>
+            <Button onClick={() => handleSave(false)} disabled={loading || !name.trim()}>
               {loading ? "Salvando..." : "Salvar Categoria"}
             </Button>
           )}
