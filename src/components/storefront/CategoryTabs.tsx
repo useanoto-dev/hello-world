@@ -62,10 +62,11 @@ export default function CategoryTabs({
               key={category.id}
               ref={(el) => { tabsRef.current[index] = el; }}
               className={`
-                px-5 py-2.5 text-sm font-semibold rounded-full transition-all whitespace-nowrap
+                px-5 py-2.5 text-sm font-semibold rounded-full whitespace-nowrap
+                transition-all duration-300 ease-out
                 ${isActive
-                  ? "bg-[#FFB200] text-white shadow-sm"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-[#FFB200] text-white shadow-md scale-105"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 scale-100"
                 }
               `}
               onClick={() => onCategoryChange(category.id)}
