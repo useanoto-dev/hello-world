@@ -62,7 +62,7 @@ export default function CategoryTabs({
         {/* Sliding indicator */}
         {indicatorStyle && (
           <div
-            className="absolute top-3 h-[calc(100%-24px)] bg-[#FFB200] rounded-full shadow-md transition-all duration-300 ease-out"
+            className="absolute top-3 h-[calc(100%-24px)] bg-[#FFB200] rounded-full shadow-md transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
             style={{
               left: indicatorStyle.left,
               width: indicatorStyle.width,
@@ -79,7 +79,7 @@ export default function CategoryTabs({
               ref={(el) => { tabsRef.current[index] = el; }}
               className={`
                 relative z-10 px-5 py-2.5 text-sm font-semibold rounded-full whitespace-nowrap
-                transition-all duration-300 ease-out
+                transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
                 ${isActive
                   ? "text-white scale-105"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200 scale-100"
