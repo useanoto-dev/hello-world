@@ -78,11 +78,11 @@ export default function StorefrontHeader({ store }: StorefrontHeaderProps) {
         </Button>
       </div>
 
-      {/* Store info - avatar overlaps banner, text beside it on white background */}
+      {/* Store info - avatar overlaps banner */}
       <div className="relative -mt-10 px-5 md:max-w-5xl md:mx-auto">
-        <div className="flex items-center gap-3 bg-background pt-0 pb-2">
+        <div className="flex items-center gap-3">
           {/* Avatar - h-20 w-20, border-4 border-white, shadow-lg */}
-          <div className="h-20 w-20 rounded-full border-4 border-white shadow-lg overflow-hidden flex-shrink-0 bg-white -mt-10">
+          <div className="h-20 w-20 rounded-full border-4 border-white shadow-lg overflow-hidden flex-shrink-0 bg-white">
             {store.logo_url ? (
               <img
                 src={store.logo_url}
@@ -98,8 +98,8 @@ export default function StorefrontHeader({ store }: StorefrontHeaderProps) {
             )}
           </div>
           
-          {/* Store name and description - on white background */}
-          <div className="flex-1 min-w-0">
+          {/* Store name and description */}
+          <div className="flex-1 min-w-0 pt-10">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl font-bold text-foreground truncate">{store.name}</h1>
               {/* Open/Closed Badge */}
