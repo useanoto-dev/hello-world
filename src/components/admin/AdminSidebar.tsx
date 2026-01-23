@@ -80,16 +80,16 @@ const menuManagerSubItems: MenuItemWithRoles[] = [
   { title: "Fluxos", url: "/dashboard/flows", icon: GitBranch },
   { title: "Imagens", url: "/dashboard/menu-images", icon: Image },
   { title: "Edição em massa", url: "/dashboard/menu-bulk-edit", icon: Edit3 },
+  { title: "Estoque", url: "/dashboard/inventory", icon: Package },
+  { title: "Banners", url: "/dashboard/banners", icon: ImageIcon },
+  { title: "Cupons", url: "/dashboard/coupons", icon: Ticket },
 ];
 
 // Management items
 const managementItems: MenuItemWithRoles[] = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Pedidos", url: "/dashboard/orders", icon: ClipboardList, allowedRoles: ['admin'] },
-  { title: "Estoque", url: "/dashboard/inventory", icon: Package },
-  { title: "Banners", url: "/dashboard/banners", icon: ImageIcon },
   { title: "Clientes", url: "/dashboard/customers", icon: Users },
-  { title: "Cupons", url: "/dashboard/coupons", icon: Ticket },
   { title: "Financeiro", url: "/dashboard/financeiro", icon: DollarSign },
   { title: "Relatórios", url: "/dashboard/analytics", icon: BarChart3, allowedRoles: ['admin'] },
   { title: "Integrações", url: "/dashboard/integrations", icon: Plug },
@@ -127,7 +127,10 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
     location.pathname.startsWith("/dashboard/menu-images") ||
     location.pathname.startsWith("/dashboard/menu-bulk-edit") ||
     location.pathname.startsWith("/dashboard/pizza-flavor") ||
-    location.pathname.startsWith("/dashboard/flows");
+    location.pathname.startsWith("/dashboard/flows") ||
+    location.pathname.startsWith("/dashboard/inventory") ||
+    location.pathname.startsWith("/dashboard/banners") ||
+    location.pathname.startsWith("/dashboard/coupons");
   
   const [menuManagerOpen, setMenuManagerOpen] = useState(isMenuManagerActive);
 
