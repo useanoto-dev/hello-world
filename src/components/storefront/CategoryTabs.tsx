@@ -48,7 +48,7 @@ export default function CategoryTabs({
   if (categories.length === 0) return null;
 
   return (
-    <div className="sticky top-0 z-10 bg-background font-storefront">
+    <div className="sticky top-0 z-10 bg-background font-storefront mt-4">
       <div 
         ref={containerRef} 
         className="flex whitespace-nowrap px-4 py-3 gap-3 overflow-x-auto scrollbar-hide"
