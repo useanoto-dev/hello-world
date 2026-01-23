@@ -365,7 +365,7 @@ export default function BeveragesListPage() {
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7"
-                            onClick={() => navigate(`/dashboard/beverage/edit?edit=${product.id}&categoryId=${categoryId}`)}
+                            onClick={() => navigate(`/dashboard/beverage/edit?edit=${product.id}&categoryId=${categoryId}&from=beverages`)}
                           >
                             <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                           </Button>

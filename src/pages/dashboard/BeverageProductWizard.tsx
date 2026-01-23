@@ -42,6 +42,7 @@ export default function BeverageProductWizard() {
   const categoryId = searchParams.get('categoryId');
   const typeId = searchParams.get('typeId');
   const editId = searchParams.get('edit');
+  const fromPage = searchParams.get('from'); // 'beverages' if coming from list page
   
   const [loading, setLoading] = useState(false);
   const [storeId, setStoreId] = useState<string | null>(null);
@@ -301,7 +302,13 @@ export default function BeverageProductWizard() {
       }
 
       toast.success(editId ? "Bebida atualizada!" : "Bebida criada com sucesso!");
-      navigate("/dashboard/products");
+      
+      // Navigate back to origin page
+      if (fromPage === 'beverages' && categoryId) {
+        navigate(`/dashboard/beverages?categoryId=${categoryId}`);
+      } else {
+        navigate("/dashboard/products");
+      }
     } catch (error: any) {
       console.error("Error saving product:", error);
       toast.error(error.message || "Erro ao salvar bebida");
@@ -310,7 +317,13 @@ export default function BeverageProductWizard() {
     }
   };
 
-  const handleClose = () => navigate("/dashboard/products");
+  const handleClose = () => {
+    if (fromPage === 'beverages' && categoryId) {
+      navigate(`/dashboard/beverages?categoryId=${categoryId}`);
+    } else {
+      navigate("/dashboard/products");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-muted flex flex-col">
