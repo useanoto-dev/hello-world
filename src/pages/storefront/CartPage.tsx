@@ -204,11 +204,33 @@ export default function CartPage() {
               <div className="flex-1">
                 <h3 className="font-semibold text-foreground">{item.name}</h3>
                 
-                {/* Item details */}
+                {/* Item details - format description properly */}
                 {item.description && (
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                    {item.description}
-                  </p>
+                  <div className="mt-1 space-y-0.5">
+                    {item.description.split(", ").map((part, idx) => {
+                      // Handle notes separately
+                      if (part.includes("Obs:")) {
+                        const [options, notes] = part.split(" | Obs: ");
+                        return (
+                          <div key={idx}>
+                            {options && !options.includes("Obs:") && (
+                              <p className="text-xs text-muted-foreground">+ {options}</p>
+                            )}
+                            {(notes || options.replace("Obs: ", "")) && (
+                              <p className="text-xs text-amber-600 italic">
+                                📝 {notes || options.replace("Obs: ", "")}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      }
+                      return (
+                        <p key={idx} className="text-xs text-muted-foreground">
+                          + {part}
+                        </p>
+                      );
+                    })}
+                  </div>
                 )}
                 
                 {item.category === "pizzas" && (
