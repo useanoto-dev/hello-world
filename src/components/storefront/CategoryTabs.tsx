@@ -60,15 +60,16 @@ export default function CategoryTabs({
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {/* Sliding indicator */}
-        {indicatorStyle && (
-          <div
-            className="absolute top-3 h-[calc(100%-24px)] bg-[#FFB200] rounded-full shadow-md transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
-            style={{
-              left: indicatorStyle.left,
-              width: indicatorStyle.width,
-            }}
-          />
-        )}
+        <div
+          className={`absolute top-3 h-[calc(100%-24px)] bg-[#FFB200] rounded-full shadow-md transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+            indicatorStyle ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{
+            left: indicatorStyle?.left ?? 0,
+            width: indicatorStyle?.width ?? 0,
+            transform: 'translateZ(0)',
+          }}
+        />
         
         {categories.map((category, index) => {
           const isActive = activeCategory === category.id;
