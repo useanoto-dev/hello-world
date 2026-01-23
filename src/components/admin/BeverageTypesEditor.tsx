@@ -40,7 +40,6 @@ interface BeverageTypesEditorProps {
   setBeverageTypes: React.Dispatch<React.SetStateAction<BeverageType[]>>;
   storeId: string;
   categoryId?: string | null;
-  onManageProducts?: (typeId: string, typeName: string) => void;
 }
 
 // Sortable Item Component
@@ -50,14 +49,12 @@ function SortableBeverageTypeItem({
   onRemove,
   canRemove,
   storeId,
-  onManageProducts,
 }: {
   type: BeverageType;
   onUpdate: (id: string, field: keyof BeverageType, value: any) => void;
   onRemove: (id: string) => void;
   canRemove: boolean;
   storeId: string;
-  onManageProducts?: (typeId: string, typeName: string) => void;
 }) {
   const [uploading, setUploading] = useState(false);
 
@@ -163,18 +160,6 @@ function SortableBeverageTypeItem({
           </span>
         )}
 
-        {/* Manage products button */}
-        {onManageProducts && type.name.trim() && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => onManageProducts(type.id, type.name)}
-            className="text-primary hover:text-primary/80"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        )}
 
         <Switch
           checked={type.isActive}
@@ -200,7 +185,6 @@ export function BeverageTypesEditor({
   setBeverageTypes,
   storeId,
   categoryId,
-  onManageProducts,
 }: BeverageTypesEditorProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -262,7 +246,6 @@ export function BeverageTypesEditor({
                 onRemove={removeBeverageType}
                 canRemove={beverageTypes.length > 1}
                 storeId={storeId}
-                onManageProducts={onManageProducts}
               />
             ))}
           </div>
