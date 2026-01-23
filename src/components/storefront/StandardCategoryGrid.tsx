@@ -85,8 +85,8 @@ export function StandardCategoryGrid({
     enabled: !!categoryId,
   });
 
-  // Use prop if explicitly provided (including false), otherwise use category settings
-  const displayMode = propDisplayMode !== undefined ? propDisplayMode : (categorySettings?.display_mode ?? "cards");
+  // FORCE list mode always - FSW style
+  const displayMode = "list";
   const allowQuantitySelector = propAllowQuantity !== undefined ? propAllowQuantity : (categorySettings?.allow_quantity_selector !== false);
 
   // Fetch sizes for this category
@@ -204,8 +204,8 @@ export function StandardCategoryGrid({
   if (!items || items.length === 0) {
     if (sizes && sizes.length > 0) {
       return (
-        <div className="px-3 sm:px-4 lg:px-6 pb-6">
-        <div className={displayMode === "list" ? "flex flex-col lg:grid lg:grid-cols-2 lg:gap-x-4" : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5"}>
+        <div className="px-5 pb-6">
+        <div className="flex flex-col gap-3">
             {sizes.map((size, index) => {
               const badge = getBadgeForIndex(index);
               const quantity = getQuantity(size.id);
@@ -363,7 +363,7 @@ export function StandardCategoryGrid({
   }
 
   return (
-    <div className="px-3 sm:px-4 lg:px-6 pb-6 space-y-4">
+    <div className="px-5 pb-6 space-y-4">
       {/* Size selector */}
       {sizes && sizes.length > 1 && (
         <div className="flex gap-2 overflow-x-auto pb-2 -mx-3 sm:-mx-4 lg:-mx-6 px-3 sm:px-4 lg:px-6 scrollbar-hide">
@@ -386,8 +386,8 @@ export function StandardCategoryGrid({
         </div>
       )}
 
-      {/* Items grid/list */}
-      <div className={displayMode === "list" ? "flex flex-col lg:grid lg:grid-cols-2 lg:gap-x-4" : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5"}>
+      {/* Items list - FSW style */}
+      <div className="flex flex-col gap-3">
         {items.map((item, index) => {
           const selectedSize = sizes?.find(s => s.id === effectiveSize);
           const itemPrice = priceMap.get(item.id)?.get(effectiveSize || '');
