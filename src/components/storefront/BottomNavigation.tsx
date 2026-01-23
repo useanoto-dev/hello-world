@@ -17,7 +17,6 @@ interface BottomNavigationProps {
 
 const tabs: { id: NavigationTab; label: string; icon: typeof Home }[] = [
   { id: "cardapio", label: "Início", icon: Home },
-  { id: "pedidos", label: "Pedidos", icon: FileText },
   { id: "sobre", label: "Sobre", icon: Gift },
 ];
 
