@@ -48,10 +48,10 @@ export default function CategoryTabs({
   if (categories.length === 0) return null;
 
   return (
-    <div className="sticky top-0 z-10 bg-background border-b border-border font-storefront">
+    <div className="sticky top-0 z-10 bg-background font-storefront">
       <div 
         ref={containerRef} 
-        className="flex whitespace-nowrap px-4 gap-6 overflow-x-auto scrollbar-hide"
+        className="flex whitespace-nowrap px-4 py-3 gap-3 overflow-x-auto scrollbar-hide"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {categories.map((category, index) => {
@@ -62,10 +62,10 @@ export default function CategoryTabs({
               key={category.id}
               ref={(el) => { tabsRef.current[index] = el; }}
               className={`
-                py-3 text-sm font-medium transition-colors whitespace-nowrap border-b-2
+                px-5 py-2.5 text-sm font-semibold rounded-full transition-all whitespace-nowrap
                 ${isActive
-                  ? "border-primary text-primary"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-transparent border border-gray-300 text-gray-700 hover:border-gray-400"
                 }
               `}
               onClick={() => onCategoryChange(category.id)}
