@@ -1,7 +1,8 @@
-// Beverages List Page - Minimalist with lateral category selection
+// Beverages List Page - Professional full-screen drawer with animations
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Plus, Pencil, Trash2, GlassWater, Search, GripVertical } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Plus, Pencil, Trash2, GlassWater, Search, GripVertical, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -192,6 +193,7 @@ export default function BeveragesListPage() {
   const selectedTypeId = searchParams.get('typeId');
   
   const [loading, setLoading] = useState(true);
+  const [isClosing, setIsClosing] = useState(false);
   const [category, setCategory] = useState<Category | null>(null);
   const [beverageTypes, setBeverageTypes] = useState<BeverageType[]>([]);
   const [beverageProducts, setBeverageProducts] = useState<BeverageProduct[]>([]);
@@ -253,6 +255,13 @@ export default function BeveragesListPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      navigate("/dashboard/products");
+    }, 250);
   };
 
   const handleToggleActive = async (product: BeverageProduct) => {
@@ -356,165 +365,218 @@ export default function BeveragesListPage() {
   
   const canDrag = !searchTerm; // Disable drag when searching
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-muted flex">
-        <div className="w-44 bg-card border-r border-border p-3 space-y-2">
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-8 w-full" />
-        </div>
-        <div className="flex-1 p-4 space-y-3">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-muted flex">
-      {/* Sidebar - Categories/Types */}
-      <div className="w-44 bg-card border-r border-border flex flex-col">
-        <div className="p-3 border-b border-border">
-          <button 
-            onClick={() => navigate("/dashboard/products")}
-            className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Voltar</span>
-          </button>
-        </div>
+    <AnimatePresence mode="wait">
+      {/* Backdrop */}
+      <motion.div
+        key="backdrop"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isClosing ? 0 : 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+        onClick={handleClose}
+      />
 
-        <div className="p-2 flex-1 overflow-y-auto">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground px-2 mb-2">
-            Tipos
-          </p>
-          
-          {beverageTypes.length === 0 ? (
-            <p className="text-xs text-muted-foreground px-2">Nenhum tipo</p>
-          ) : (
-            <div className="space-y-0.5">
-              {beverageTypes.map(type => {
-                const count = beverageProducts.filter(p => p.beverage_type_id === type.id).length;
-                const isActive = selectedTypeId === type.id;
-                
-                return (
-                  <button
-                    key={type.id}
-                    onClick={() => handleSelectType(type.id)}
-                    className={cn(
-                      "w-full text-left px-2.5 py-2 rounded-md text-xs transition-all",
-                      "flex items-center justify-between gap-2",
-                      isActive 
-                        ? "bg-primary text-primary-foreground font-medium" 
-                        : "hover:bg-muted text-foreground"
-                    )}
-                  >
-                    <span className="truncate">{type.name}</span>
-                    <span className={cn(
-                      "text-[10px] tabular-nums",
-                      isActive ? "text-primary-foreground/70" : "text-muted-foreground"
-                    )}>
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        <div className="p-2 border-t border-border">
-          <Button
-            onClick={() => navigate(`/dashboard/beverage/new?categoryId=${categoryId}${selectedTypeId ? `&typeId=${selectedTypeId}` : ''}`)}
-            size="sm"
-            className="w-full h-8 text-xs gap-1"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Nova
-          </Button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* Full screen drawer */}
+      <motion.div
+        key="drawer"
+        initial={{ y: "100%" }}
+        animate={{ y: isClosing ? "100%" : 0 }}
+        exit={{ y: "100%" }}
+        transition={{ 
+          type: "spring", 
+          damping: 30, 
+          stiffness: 350,
+          mass: 0.8
+        }}
+        className="fixed inset-x-0 bottom-0 top-0 z-50 bg-background flex flex-col"
+      >
         {/* Header */}
-        <div className="bg-card border-b border-border px-4 py-2.5 flex items-center justify-between gap-4">
-          <div className="min-w-0">
-            <h1 className="text-sm font-medium text-foreground truncate">
-              {selectedType?.name || category?.name || "Bebidas"}
-            </h1>
-            <p className="text-[11px] text-muted-foreground">
-              {filteredProducts.length} {filteredProducts.length === 1 ? 'item' : 'itens'}
-            </p>
+        <div className="flex-shrink-0 border-b border-border bg-card">
+          {/* Handle bar - visual indicator for mobile */}
+          <div className="flex justify-center pt-3 pb-1 md:hidden">
+            <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
           </div>
-
-          <div className="relative w-48 flex-shrink-0">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-            <Input
-              placeholder="Buscar..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-8 pl-8 text-xs bg-muted/50"
-            />
+          
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={handleClose}
+                className="p-2 -ml-2 hover:bg-muted rounded-full transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <div>
+                <h1 className="text-base font-semibold text-foreground">
+                  {category?.name || "Bebidas"}
+                </h1>
+                <p className="text-xs text-muted-foreground">
+                  {beverageProducts.length} {beverageProducts.length === 1 ? 'item' : 'itens'} cadastrados
+                </p>
+              </div>
+            </div>
+            
+            <button 
+              onClick={handleClose}
+              className="p-2 -mr-2 hover:bg-muted rounded-full transition-colors md:flex hidden"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
 
-        {/* Products List */}
-        <div className="flex-1 overflow-y-auto">
-          {filteredProducts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center p-4">
-              <GlassWater className="w-8 h-8 mb-2 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">Nenhuma bebida</p>
-              <button
-                onClick={() => navigate(`/dashboard/beverage/new?categoryId=${categoryId}${selectedTypeId ? `&typeId=${selectedTypeId}` : ''}`)}
-                className="mt-2 text-xs text-primary hover:underline"
-              >
-                + Adicionar bebida
-              </button>
+        {/* Content */}
+        <div className="flex-1 flex min-h-0 overflow-hidden">
+          {loading ? (
+            <div className="flex-1 flex">
+              <div className="w-44 bg-card border-r border-border p-3 space-y-2">
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+              </div>
+              <div className="flex-1 p-4 space-y-3">
+                <Skeleton className="h-8 w-48" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+              </div>
             </div>
           ) : (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <table className="w-full">
-                <thead className="bg-muted/50 sticky top-0">
-                  <tr className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                    {canDrag && <th className="w-8"></th>}
-                    <th className="text-left px-4 py-2 font-medium">Bebida</th>
-                    <th className="text-right px-4 py-2 font-medium w-24">Preço</th>
-                    <th className="text-center px-4 py-2 font-medium w-16">Ativo</th>
-                    <th className="text-right px-4 py-2 font-medium w-20">Ações</th>
-                  </tr>
-                </thead>
-                <SortableContext items={filteredProducts.map(p => p.id)} strategy={verticalListSortingStrategy}>
-                  <tbody className="divide-y divide-border">
-                    {filteredProducts.map(product => (
-                      <SortableProductRow
-                        key={product.id}
-                        product={product}
-                        canDrag={canDrag}
-                        onToggleActive={handleToggleActive}
-                        onEdit={(p) => navigate(`/dashboard/beverage/edit?edit=${p.id}&categoryId=${categoryId}&from=beverages`)}
-                        onDelete={setDeleteProduct}
-                        formatPrice={formatPrice}
-                      />
-                    ))}
-                  </tbody>
-                </SortableContext>
-              </table>
-            </DndContext>
+            <>
+              {/* Sidebar - Types */}
+              <div className="w-44 bg-card border-r border-border flex flex-col flex-shrink-0">
+                <div className="p-2 flex-1 overflow-y-auto">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground px-2 mb-2">
+                    Tipos
+                  </p>
+                  
+                  {beverageTypes.length === 0 ? (
+                    <p className="text-xs text-muted-foreground px-2">Nenhum tipo</p>
+                  ) : (
+                    <div className="space-y-0.5">
+                      {beverageTypes.map(type => {
+                        const count = beverageProducts.filter(p => p.beverage_type_id === type.id).length;
+                        const isActive = selectedTypeId === type.id;
+                        
+                        return (
+                          <button
+                            key={type.id}
+                            onClick={() => handleSelectType(type.id)}
+                            className={cn(
+                              "w-full text-left px-2.5 py-2 rounded-md text-xs transition-all",
+                              "flex items-center justify-between gap-2",
+                              isActive 
+                                ? "bg-primary text-primary-foreground font-medium" 
+                                : "hover:bg-muted text-foreground"
+                            )}
+                          >
+                            <span className="truncate">{type.name}</span>
+                            <span className={cn(
+                              "text-[10px] tabular-nums",
+                              isActive ? "text-primary-foreground/70" : "text-muted-foreground"
+                            )}>
+                              {count}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-2 border-t border-border">
+                  <Button
+                    onClick={() => navigate(`/dashboard/beverage/new?categoryId=${categoryId}${selectedTypeId ? `&typeId=${selectedTypeId}` : ''}`)}
+                    size="sm"
+                    className="w-full h-8 text-xs gap-1"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Nova
+                  </Button>
+                </div>
+              </div>
+
+              {/* Main Content */}
+              <div className="flex-1 flex flex-col min-w-0">
+                {/* Sub Header */}
+                <div className="bg-muted/30 border-b border-border px-4 py-2.5 flex items-center justify-between gap-4 flex-shrink-0">
+                  <div className="min-w-0">
+                    <h2 className="text-sm font-medium text-foreground truncate">
+                      {selectedType?.name || "Todos"}
+                    </h2>
+                    <p className="text-[11px] text-muted-foreground">
+                      {filteredProducts.length} {filteredProducts.length === 1 ? 'item' : 'itens'}
+                    </p>
+                  </div>
+
+                  <div className="relative w-48 flex-shrink-0">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="h-8 pl-8 text-xs bg-background"
+                    />
+                  </div>
+                </div>
+
+                {/* Products List */}
+                <div className="flex-1 overflow-y-auto">
+                  {filteredProducts.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                      <GlassWater className="w-8 h-8 mb-2 text-muted-foreground/40" />
+                      <p className="text-sm text-muted-foreground">Nenhuma bebida</p>
+                      <button
+                        onClick={() => navigate(`/dashboard/beverage/new?categoryId=${categoryId}${selectedTypeId ? `&typeId=${selectedTypeId}` : ''}`)}
+                        className="mt-2 text-xs text-primary hover:underline"
+                      >
+                        + Adicionar bebida
+                      </button>
+                    </div>
+                  ) : (
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                      <table className="w-full">
+                        <thead className="bg-muted/50 sticky top-0">
+                          <tr className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                            {canDrag && <th className="w-8"></th>}
+                            <th className="text-left px-4 py-2 font-medium">Bebida</th>
+                            <th className="text-right px-4 py-2 font-medium w-24">Preço</th>
+                            <th className="text-center px-4 py-2 font-medium w-16">Ativo</th>
+                            <th className="text-right px-4 py-2 font-medium w-20">Ações</th>
+                          </tr>
+                        </thead>
+                        <SortableContext items={filteredProducts.map(p => p.id)} strategy={verticalListSortingStrategy}>
+                          <tbody className="divide-y divide-border">
+                            {filteredProducts.map(product => (
+                              <SortableProductRow
+                                key={product.id}
+                                product={product}
+                                canDrag={canDrag}
+                                onToggleActive={handleToggleActive}
+                                onEdit={(p) => navigate(`/dashboard/beverage/edit?edit=${p.id}&categoryId=${categoryId}&from=beverages`)}
+                                onDelete={setDeleteProduct}
+                                formatPrice={formatPrice}
+                              />
+                            ))}
+                          </tbody>
+                        </SortableContext>
+                      </table>
+                    </DndContext>
+                  )}
+                </div>
+              </div>
+            </>
           )}
         </div>
-      </div>
+      </motion.div>
 
-      {/* Delete Confirmation */}
+      {/* Delete confirmation */}
       <AlertDialog open={!!deleteProduct} onOpenChange={() => setDeleteProduct(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir bebida?</AlertDialogTitle>
             <AlertDialogDescription>
-              Excluir "{deleteProduct?.name}"? Esta ação não pode ser desfeita.
+              Esta ação não pode ser desfeita. A bebida "{deleteProduct?.name}" será removida permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -525,6 +587,6 @@ export default function BeveragesListPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </AnimatePresence>
   );
 }
