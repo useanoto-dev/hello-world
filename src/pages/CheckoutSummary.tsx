@@ -763,6 +763,30 @@ export default function CheckoutSummary() {
               <div key={`${item.id}-${index}`} className="flex justify-between items-start py-2 border-b border-border last:border-0 last:pb-0">
                 <div className="flex-1">
                   <p className="font-medium text-foreground">{item.quantity}x {item.name}</p>
+                  {/* Standard product descriptions */}
+                  {item.description && item.category !== "pizzas" && (
+                    <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
+                      {item.description.split(", ").map((part, idx) => {
+                        if (part.includes("Obs:")) {
+                          const [options, notes] = part.split(" | Obs: ");
+                          return (
+                            <div key={idx}>
+                              {options && !options.includes("Obs:") && (
+                                <p>+ {options}</p>
+                              )}
+                              {(notes || options.replace("Obs: ", "")) && (
+                                <p className="text-amber-600 italic">
+                                  📝 {notes || options.replace("Obs: ", "")}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        }
+                        return <p key={idx}>+ {part}</p>;
+                      })}
+                    </div>
+                  )}
+                  {/* Pizza-specific details */}
                   {item.category === "pizzas" && (
                     <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
                       {item.size && <p>📏 {item.size}</p>}
