@@ -11,6 +11,7 @@ import { MascotSpinner } from "@/components/MascotSpinner";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { applyMask, removeMask } from "@/hooks/useInputMask";
+import { validateStrongPassword, PASSWORD_REQUIREMENTS } from "@/lib/validators";
 
 // Brazilian states
 const STATES = [
@@ -48,10 +49,7 @@ const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 const isValidName = (name: string) => name.trim().length >= 2;
 const isValidPhone = (phone: string) => removeMask(phone).length >= 10;
 const isValidPassword = (password: string) => {
-  const hasMinLength = password.length >= 6;
-  const hasUppercase = /[A-Z]/.test(password);
-  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/`~]/.test(password);
-  return hasMinLength && hasUppercase && hasSpecialChar;
+  return validateStrongPassword(password).isValid;
 };
 
 const triggerConfetti = () => {
@@ -407,11 +405,14 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }: Signup
     }
   };
 
-  // Password requirements UI
+  // Password requirements UI - use centralized validation
+  const passwordValidation = validateStrongPassword(password);
   const passwordRequirements = [
-    { label: "Mínimo 6 caracteres", met: password.length >= 6 },
-    { label: "Uma letra maiúscula", met: /[A-Z]/.test(password) },
-    { label: "Um caractere especial", met: /[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/`~]/.test(password) },
+    { label: `Mínimo ${PASSWORD_REQUIREMENTS.minLength} caracteres`, met: passwordValidation.requirements.minLength },
+    { label: "Uma letra maiúscula (A-Z)", met: passwordValidation.requirements.hasUppercase },
+    { label: "Uma letra minúscula (a-z)", met: passwordValidation.requirements.hasLowercase },
+    { label: "Um número (0-9)", met: passwordValidation.requirements.hasNumber },
+    { label: "Um símbolo (!@#$%...)", met: passwordValidation.requirements.hasSymbol },
   ];
 
   return (

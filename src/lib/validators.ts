@@ -1,3 +1,58 @@
+// Strong password validation requirements
+export interface PasswordValidation {
+  isValid: boolean;
+  errors: string[];
+  requirements: {
+    minLength: boolean;
+    hasUppercase: boolean;
+    hasLowercase: boolean;
+    hasNumber: boolean;
+    hasSymbol: boolean;
+  };
+}
+
+export const PASSWORD_REQUIREMENTS = {
+  minLength: 8,
+  requireUppercase: true,
+  requireLowercase: true,
+  requireNumber: true,
+  requireSymbol: true,
+};
+
+export function validateStrongPassword(password: string): PasswordValidation {
+  const requirements = {
+    minLength: password.length >= PASSWORD_REQUIREMENTS.minLength,
+    hasUppercase: /[A-Z]/.test(password),
+    hasLowercase: /[a-z]/.test(password),
+    hasNumber: /[0-9]/.test(password),
+    hasSymbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+  };
+
+  const errors: string[] = [];
+  
+  if (!requirements.minLength) {
+    errors.push(`Mínimo ${PASSWORD_REQUIREMENTS.minLength} caracteres`);
+  }
+  if (!requirements.hasUppercase) {
+    errors.push("Pelo menos 1 letra maiúscula");
+  }
+  if (!requirements.hasLowercase) {
+    errors.push("Pelo menos 1 letra minúscula");
+  }
+  if (!requirements.hasNumber) {
+    errors.push("Pelo menos 1 número");
+  }
+  if (!requirements.hasSymbol) {
+    errors.push("Pelo menos 1 símbolo (!@#$%^&*...)");
+  }
+
+  return {
+    isValid: Object.values(requirements).every(Boolean),
+    errors,
+    requirements,
+  };
+}
+
 // CPF Validation with check digit verification
 export function validateCPF(cpf: string): boolean {
   // Remove non-numeric characters
