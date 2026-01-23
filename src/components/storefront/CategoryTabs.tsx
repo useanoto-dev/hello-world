@@ -49,31 +49,32 @@ export default function CategoryTabs({
 
   return (
     <div className="sticky top-0 z-10 bg-background border-b border-border font-storefront">
-      <ScrollArea className="w-full">
-        <div ref={containerRef} className="flex whitespace-nowrap px-5 py-3 gap-1">
-          {categories.map((category, index) => {
-            const isActive = activeCategory === category.id;
-            
-            return (
-              <button
-                key={category.id}
-                ref={(el) => { tabsRef.current[index] = el; }}
-                className={`
-                  px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap
-                  ${isActive
-                    ? "border-b-2 border-primary text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                  }
-                `}
-                onClick={() => onCategoryChange(category.id)}
-              >
-                {category.name}
-              </button>
-            );
-          })}
-        </div>
-        <ScrollBar orientation="horizontal" className="h-0" />
-      </ScrollArea>
+      <div 
+        ref={containerRef} 
+        className="flex whitespace-nowrap px-4 gap-6 overflow-x-auto scrollbar-hide"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {categories.map((category, index) => {
+          const isActive = activeCategory === category.id;
+          
+          return (
+            <button
+              key={category.id}
+              ref={(el) => { tabsRef.current[index] = el; }}
+              className={`
+                py-3 text-sm font-medium transition-colors whitespace-nowrap border-b-2
+                ${isActive
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+                }
+              `}
+              onClick={() => onCategoryChange(category.id)}
+            >
+              {category.name}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
