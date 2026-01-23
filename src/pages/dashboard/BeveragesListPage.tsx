@@ -1,7 +1,7 @@
-// Beverages List Page - Grouped by beverage type
+// Beverages List Page - Minimalist with lateral category selection
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Plus, Pencil, Trash2, Eye, EyeOff, GlassWater, Search } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, GlassWater, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -45,11 +45,11 @@ interface Category {
 
 export default function BeveragesListPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const categoryId = searchParams.get('categoryId');
+  const selectedTypeId = searchParams.get('typeId');
   
   const [loading, setLoading] = useState(true);
-  const [storeId, setStoreId] = useState<string | null>(null);
   const [category, setCategory] = useState<Category | null>(null);
   const [beverageTypes, setBeverageTypes] = useState<BeverageType[]>([]);
   const [beverageProducts, setBeverageProducts] = useState<BeverageProduct[]>([]);
@@ -59,6 +59,13 @@ export default function BeveragesListPage() {
   useEffect(() => {
     loadData();
   }, [categoryId]);
+
+  // Auto-select first type if none selected
+  useEffect(() => {
+    if (!selectedTypeId && beverageTypes.length > 0 && !loading) {
+      setSearchParams({ categoryId: categoryId || '', typeId: beverageTypes[0].id });
+    }
+  }, [beverageTypes, loading]);
 
   const loadData = async () => {
     try {
@@ -72,9 +79,7 @@ export default function BeveragesListPage() {
         .maybeSingle();
 
       if (!profile?.store_id) return;
-      setStoreId(profile.store_id);
 
-      // Load category info
       if (categoryId) {
         const { data: cat } = await supabase
           .from("categories")
@@ -82,11 +87,8 @@ export default function BeveragesListPage() {
           .eq("id", categoryId)
           .single();
         
-        if (cat) {
-          setCategory(cat as Category);
-        }
+        if (cat) setCategory(cat as Category);
 
-        // Load beverage types
         const { data: types } = await supabase
           .from("beverage_types")
           .select("id, name, icon, image_url")
@@ -95,7 +97,6 @@ export default function BeveragesListPage() {
 
         setBeverageTypes((types as BeverageType[]) || []);
 
-        // Load beverage products
         const { data: products } = await supabase
           .from("beverage_products")
           .select("id, name, description, price, promotional_price, image_url, is_active, beverage_type_id")
@@ -125,9 +126,9 @@ export default function BeveragesListPage() {
         prev.map(p => p.id === product.id ? { ...p, is_active: !p.is_active } : p)
       );
 
-      toast.success(product.is_active ? "Bebida ocultada do cardápio" : "Bebida visível no cardápio");
+      toast.success(product.is_active ? "Bebida ocultada" : "Bebida visível");
     } catch (error: any) {
-      toast.error("Erro ao atualizar bebida");
+      toast.error("Erro ao atualizar");
     }
   };
 
@@ -146,8 +147,12 @@ export default function BeveragesListPage() {
       toast.success("Bebida excluída!");
       setDeleteProduct(null);
     } catch (error: any) {
-      toast.error("Erro ao excluir bebida");
+      toast.error("Erro ao excluir");
     }
+  };
+
+  const handleSelectType = (typeId: string) => {
+    setSearchParams({ categoryId: categoryId || '', typeId });
   };
 
   const formatPrice = (price: number | null) => {
@@ -155,159 +160,156 @@ export default function BeveragesListPage() {
     return `R$ ${price.toFixed(2).replace('.', ',')}`;
   };
 
-  const filteredProducts = beverageProducts.filter(p =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProducts = beverageProducts
+    .filter(p => selectedTypeId ? p.beverage_type_id === selectedTypeId : true)
+    .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  const getProductsByType = (typeId: string) =>
-    filteredProducts.filter(p => p.beverage_type_id === typeId);
+  const selectedType = beverageTypes.find(t => t.id === selectedTypeId);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-muted flex flex-col">
-        <div className="bg-card border-b border-border px-4 py-3">
-          <Skeleton className="h-6 w-48" />
+      <div className="min-h-screen bg-muted flex">
+        <div className="w-44 bg-card border-r border-border p-3 space-y-2">
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
         </div>
-        <div className="flex-1 p-4 space-y-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
+        <div className="flex-1 p-4 space-y-3">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-muted flex flex-col">
-      {/* Header */}
-      <div className="bg-card border-b border-border px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => navigate("/dashboard/products")}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div>
-              <h1 className="text-base font-semibold text-foreground">
-                {category?.name || "Bebidas"}
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                {beverageProducts.length} bebidas cadastradas
-              </p>
-            </div>
-          </div>
-          
-          <Button
-            onClick={() => navigate(`/dashboard/beverage/new?categoryId=${categoryId}`)}
-            size="sm"
-            className="gap-1.5"
+    <div className="min-h-screen bg-muted flex">
+      {/* Sidebar - Categories/Types */}
+      <div className="w-44 bg-card border-r border-border flex flex-col">
+        <div className="p-3 border-b border-border">
+          <button 
+            onClick={() => navigate("/dashboard/products")}
+            className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
-            <Plus className="w-4 h-4" />
-            Nova Bebida
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Voltar</span>
+          </button>
+        </div>
+
+        <div className="p-2 flex-1 overflow-y-auto">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground px-2 mb-2">
+            Tipos
+          </p>
+          
+          {beverageTypes.length === 0 ? (
+            <p className="text-xs text-muted-foreground px-2">Nenhum tipo</p>
+          ) : (
+            <div className="space-y-0.5">
+              {beverageTypes.map(type => {
+                const count = beverageProducts.filter(p => p.beverage_type_id === type.id).length;
+                const isActive = selectedTypeId === type.id;
+                
+                return (
+                  <button
+                    key={type.id}
+                    onClick={() => handleSelectType(type.id)}
+                    className={cn(
+                      "w-full text-left px-2.5 py-2 rounded-md text-xs transition-all",
+                      "flex items-center justify-between gap-2",
+                      isActive 
+                        ? "bg-primary text-primary-foreground font-medium" 
+                        : "hover:bg-muted text-foreground"
+                    )}
+                  >
+                    <span className="truncate">{type.name}</span>
+                    <span className={cn(
+                      "text-[10px] tabular-nums",
+                      isActive ? "text-primary-foreground/70" : "text-muted-foreground"
+                    )}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="p-2 border-t border-border">
+          <Button
+            onClick={() => navigate(`/dashboard/beverage/new?categoryId=${categoryId}${selectedTypeId ? `&typeId=${selectedTypeId}` : ''}`)}
+            size="sm"
+            className="w-full h-8 text-xs gap-1"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Nova
           </Button>
         </div>
       </div>
 
-      {/* Search */}
-      <div className="p-4 pb-0">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar bebida..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-card"
-          />
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {beverageTypes.length === 0 ? (
-          <div className="text-center py-12">
-            <GlassWater className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
-            <h3 className="text-lg font-medium text-foreground mb-2">
-              Nenhum tipo de bebida cadastrado
-            </h3>
-            <p className="text-muted-foreground text-sm mb-4">
-              Configure os tipos de bebida na edição da categoria
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header */}
+        <div className="bg-card border-b border-border px-4 py-2.5 flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="text-sm font-medium text-foreground truncate">
+              {selectedType?.name || category?.name || "Bebidas"}
+            </h1>
+            <p className="text-[11px] text-muted-foreground">
+              {filteredProducts.length} {filteredProducts.length === 1 ? 'item' : 'itens'}
             </p>
-            <Button
-              variant="outline"
-              onClick={() => navigate(`/dashboard/category/edit?edit=${categoryId}`)}
-            >
-              Editar Categoria
-            </Button>
           </div>
-        ) : (
-          beverageTypes.map(type => {
-            const typeProducts = getProductsByType(type.id);
-            
-            return (
-              <div key={type.id} className="bg-card rounded-lg border border-border overflow-hidden">
-                {/* Type Header */}
-                <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    {type.image_url ? (
-                      <img 
-                        src={type.image_url} 
-                        alt={type.name}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <GlassWater className="w-4 h-4 text-primary" />
-                      </div>
-                    )}
-                    <div>
-                      <h3 className="font-medium text-foreground">{type.name}</h3>
-                      <p className="text-xs text-muted-foreground">
-                        {typeProducts.length} {typeProducts.length === 1 ? 'bebida' : 'bebidas'}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => navigate(`/dashboard/beverage/new?categoryId=${categoryId}&typeId=${type.id}`)}
-                    className="gap-1.5 text-xs"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    Adicionar
-                  </Button>
-                </div>
 
-                {/* Products List */}
-                {typeProducts.length === 0 ? (
-                  <div className="px-4 py-6 text-center">
-                    <p className="text-sm text-muted-foreground">
-                      Nenhuma bebida cadastrada neste tipo
-                    </p>
-                    <button
-                      onClick={() => navigate(`/dashboard/beverage/new?categoryId=${categoryId}&typeId=${type.id}`)}
-                      className="mt-2 text-sm text-primary hover:underline"
+          <div className="relative w-48 flex-shrink-0">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Buscar..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="h-8 pl-8 text-xs bg-muted/50"
+            />
+          </div>
+        </div>
+
+        {/* Products List */}
+        <div className="flex-1 overflow-y-auto">
+          {filteredProducts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center p-4">
+              <GlassWater className="w-8 h-8 mb-2 text-muted-foreground/40" />
+              <p className="text-sm text-muted-foreground">Nenhuma bebida</p>
+              <button
+                onClick={() => navigate(`/dashboard/beverage/new?categoryId=${categoryId}${selectedTypeId ? `&typeId=${selectedTypeId}` : ''}`)}
+                className="mt-2 text-xs text-primary hover:underline"
+              >
+                + Adicionar bebida
+              </button>
+            </div>
+          ) : (
+            <table className="w-full">
+              <thead className="bg-muted/50 sticky top-0">
+                <tr className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  <th className="text-left px-4 py-2 font-medium">Bebida</th>
+                  <th className="text-right px-4 py-2 font-medium w-24">Preço</th>
+                  <th className="text-center px-4 py-2 font-medium w-16">Ativo</th>
+                  <th className="text-right px-4 py-2 font-medium w-20">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {filteredProducts.map(product => {
+                  const hasPromo = product.promotional_price && product.promotional_price < (product.price || 0);
+                  
+                  return (
+                    <tr 
+                      key={product.id}
+                      className={cn(
+                        "hover:bg-muted/30 transition-colors",
+                        !product.is_active && "opacity-50"
+                      )}
                     >
-                      + Adicionar bebida
-                    </button>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-border">
-                    {typeProducts.map(product => {
-                      const hasPromo = product.promotional_price && product.promotional_price < (product.price || 0);
-                      
-                      return (
-                        <div 
-                          key={product.id}
-                          className={cn(
-                            "flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors",
-                            !product.is_active && "opacity-50"
-                          )}
-                        >
-                          {/* Image */}
-                          <div className="w-14 h-14 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                      <td className="px-4 py-2">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-md overflow-hidden bg-muted flex-shrink-0">
                             {product.image_url ? (
                               <img 
                                 src={product.image_url} 
@@ -316,74 +318,74 @@ export default function BeveragesListPage() {
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
-                                <GlassWater className="w-6 h-6 text-muted-foreground/50" />
+                                <GlassWater className="w-4 h-4 text-muted-foreground/40" />
                               </div>
                             )}
                           </div>
-
-                          {/* Info */}
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-foreground text-sm truncate">
+                          <div className="min-w-0">
+                            <p className="text-xs font-medium text-foreground truncate">
                               {product.name}
-                            </h4>
+                            </p>
                             {product.description && (
-                              <p className="text-xs text-muted-foreground truncate">
+                              <p className="text-[11px] text-muted-foreground truncate max-w-[200px]">
                                 {product.description}
                               </p>
                             )}
-                            <div className="flex items-center gap-2 mt-1">
-                              {hasPromo ? (
-                                <>
-                                  <span className="text-xs text-muted-foreground line-through">
-                                    {formatPrice(product.price)}
-                                  </span>
-                                  <span className="text-sm font-semibold text-green-600">
-                                    {formatPrice(product.promotional_price)}
-                                  </span>
-                                </>
-                              ) : (
-                                <span className="text-sm font-semibold text-foreground">
-                                  {formatPrice(product.price)}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Actions */}
-                          <div className="flex items-center gap-2">
-                            <Switch
-                              checked={product.is_active}
-                              onCheckedChange={() => handleToggleActive(product)}
-                              className="data-[state=checked]:bg-green-500"
-                            />
-                            
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => navigate(`/dashboard/beverage/edit?edit=${product.id}&categoryId=${categoryId}`)}
-                            >
-                              <Pencil className="w-4 h-4 text-muted-foreground" />
-                            </Button>
-                            
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive hover:text-destructive"
-                              onClick={() => setDeleteProduct(product)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })
-        )}
+                      </td>
+                      <td className="px-4 py-2 text-right">
+                        {hasPromo ? (
+                          <div className="flex flex-col items-end">
+                            <span className="text-[10px] text-muted-foreground line-through">
+                              {formatPrice(product.price)}
+                            </span>
+                            <span className="text-xs font-medium text-green-600">
+                              {formatPrice(product.promotional_price)}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-xs font-medium text-foreground">
+                            {formatPrice(product.price)}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2">
+                        <div className="flex justify-center">
+                          <Switch
+                            checked={product.is_active}
+                            onCheckedChange={() => handleToggleActive(product)}
+                            className="scale-75 data-[state=checked]:bg-green-500"
+                          />
+                        </div>
+                      </td>
+                      <td className="px-4 py-2">
+                        <div className="flex items-center justify-end gap-0.5">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => navigate(`/dashboard/beverage/edit?edit=${product.id}&categoryId=${categoryId}`)}
+                          >
+                            <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-destructive hover:text-destructive"
+                            onClick={() => setDeleteProduct(product)}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
 
       {/* Delete Confirmation */}
@@ -392,7 +394,7 @@ export default function BeveragesListPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir bebida?</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir "{deleteProduct?.name}"? Esta ação não pode ser desfeita.
+              Excluir "{deleteProduct?.name}"? Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
