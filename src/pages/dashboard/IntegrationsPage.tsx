@@ -43,20 +43,17 @@ export default function IntegrationsPage() {
     if (!restaurantId) return null;
 
     try {
-      console.log('[WhatsApp] Polling via conectarWhatsAppRestaurante...');
       const { data, error } = await supabase.functions.invoke(
         'conectarWhatsAppRestaurante',
         { body: { restaurantId } }
       );
 
       if (error || !data?.success) {
-        console.error('[WhatsApp] Polling error:', error || data?.error);
         return null;
       }
 
       return data.data;
-    } catch (error) {
-      console.error('[WhatsApp] Polling exception:', error);
+    } catch {
       return null;
     }
   }, [restaurantId]);
@@ -64,9 +61,8 @@ export default function IntegrationsPage() {
   // Polling logic - check status every 3 seconds while connecting
   useEffect(() => {
     const startPolling = () => {
-      if (pollingIntervalRef.current) return; // Already polling
+      if (pollingIntervalRef.current) return;
 
-      console.log('[WhatsApp] Starting polling (3s interval)...');
       pollingIntervalRef.current = setInterval(async () => {
         const data = await pollStatus();
         if (data) {
@@ -87,9 +83,8 @@ export default function IntegrationsPage() {
 
           // When connected: stop polling, close screen, show success
           if (newStatus === 'connected') {
-            console.log('[WhatsApp] Connected! Stopping polling.');
             setWhatsappStatus('connected');
-            setQrCode(null); // Remove QR code
+            setQrCode(null);
             setIsConnecting(false);
             toast.success('WhatsApp conectado com sucesso!');
             stopPolling();
@@ -257,7 +252,7 @@ export default function IntegrationsPage() {
     return `+${countryCode} (${areaCode}) ${part1}-${part2}`;
   };
 
-  const getStatusBadge = () => {
+  const _getStatusBadge = () => {
     switch (whatsappStatus) {
       case 'connected':
         return (

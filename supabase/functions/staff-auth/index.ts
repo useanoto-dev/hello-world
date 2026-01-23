@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const action = url.searchParams.get('action');
     
-    console.log(`Staff auth action: ${action}`);
+    
 
     if (action === 'login') {
       const { cpf, password } = await req.json() as LoginRequest;
@@ -75,7 +75,6 @@ Deno.serve(async (req) => {
       }
 
       if (!staff) {
-        console.log('Staff not found for CPF:', cleanCpf);
         return new Response(
           JSON.stringify({ error: 'CPF não encontrado', code: 'USER_NOT_FOUND' }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -166,7 +165,7 @@ Deno.serve(async (req) => {
         details: { role: staff.role },
       });
 
-      console.log('Login successful for staff:', staff.id);
+      
 
       return new Response(
         JSON.stringify({ 

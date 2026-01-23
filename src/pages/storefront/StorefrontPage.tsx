@@ -12,7 +12,7 @@ import ProductFilters, { PriceFilter, SortOption } from "@/components/storefront
 import CategoryTabs from "@/components/storefront/CategoryTabs";
 import ProductGrid from "@/components/storefront/ProductGrid";
 import FeaturedProducts from "@/components/storefront/FeaturedProducts";
-// CartFloatingButton removed - using BottomNavigation instead
+
 import StorefrontSkeleton from "@/components/storefront/StorefrontSkeleton";
 import ProductCustomizationModal from "@/components/storefront/ProductCustomizationModal";
 import AboutSection from "@/components/storefront/AboutSection";
@@ -111,7 +111,8 @@ function getStoreThemeStyles(
 
 const STORAGE_KEY = "storefront_active_tab";
 
-interface Store {
+// Store interface for type reference
+type _Store = {
   id: string;
   name: string;
   slug: string;
@@ -133,7 +134,7 @@ interface Store {
   google_maps_link: string | null;
   min_order_value: number | null;
   schedule?: unknown;
-}
+};
 
 interface Category {
   id: string;
@@ -181,7 +182,6 @@ interface PrimaryGroupItem {
   description: string | null;
 }
 
-// Fetch store data with all fields needed for display
 // Fetch store data with all fields needed for display
 async function fetchStoreData(slug: string) {
   const { data, error } = await supabase
@@ -384,8 +384,6 @@ async function fetchStoreContent(storeId: string) {
     standardCategoryIds,
   };
 }
-
-const TAB_ORDER: NavigationTab[] = ["cardapio", "pedidos", "sobre"];
 
 export default function StorefrontPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -609,14 +607,14 @@ export default function StorefrontPage() {
   // Pull-to-refresh state
   const [isRefreshing, setIsRefreshing] = useState(false);
   
-  const handleRefresh = useCallback(async () => {
+  const _handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     triggerHaptic();
     
     try {
       await Promise.all([refetchStore(), refetchContent()]);
       toast.success("Dados atualizados!");
-    } catch (error) {
+    } catch {
       toast.error("Erro ao atualizar");
     } finally {
       setIsRefreshing(false);
@@ -629,7 +627,7 @@ export default function StorefrontPage() {
   const primaryGroupItems = content?.primaryGroupItems || {};
   const reviewStats = content?.reviewStats;
   const flowStepsData = content?.flowStepsData || {};
-  const standardCategoryIds = content?.standardCategoryIds || new Set<string>();
+  const _standardCategoryIds = content?.standardCategoryIds || new Set<string>();
   const loading = storeLoading || (!!store && contentLoading);
 
   // Use ref to always have latest flowStepsData (avoids stale closure issues)
@@ -1297,7 +1295,7 @@ export default function StorefrontPage() {
                         storeId={store.id}
                         displayMode={activeCategoryData?.display_mode}
                         allowQuantitySelector={activeCategoryData?.allow_quantity_selector}
-                        onItemSelect={(item, size, price, quantity) => {
+                        onItemSelect={(item, size, price, _quantity) => {
                           // Check if category has option groups for customization
                           const category = categories.find(c => c.id === effectiveCategory);
                           if (category && categoryHasOptions.has(category.id)) {

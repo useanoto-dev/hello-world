@@ -159,7 +159,7 @@ Deno.serve(async (req) => {
           const existingInstance = instances?.find((inst: any) => inst.name === instanceName);
           if (existingInstance?.token) {
             instanceToken = existingInstance.token;
-            console.log(`[conectarWhatsApp] Token encontrado: ${instanceToken}`);
+            
           }
         }
       }
@@ -180,16 +180,16 @@ Deno.serve(async (req) => {
         })
         .eq('id', restaurantId);
 
-      console.log(`[conectarWhatsApp] Instância salva: ${instanceName}`);
+      
     }
 
     // ========== PASSO 3: Buscar status atual ==========
     let statusData = await fetchInstanceStatus(baseUrl, instanceToken);
-    console.log(`[conectarWhatsApp] Status atual: ${statusData.status}`);
+    
 
     // ========== PASSO 4: Se NÃO connected, chamar /instance/connect ==========
     if (statusData.status !== 'connected') {
-      console.log(`[conectarWhatsApp] Chamando POST /instance/connect...`);
+      
       
       const connectResponse = await fetch(`${baseUrl}/instance/connect`, {
         method: 'POST',
@@ -200,11 +200,11 @@ Deno.serve(async (req) => {
       });
 
       const connectResult = await connectResponse.json();
-      console.log('[conectarWhatsApp] Resposta connect:', JSON.stringify(connectResult));
+      
 
       // ========== PASSO 5: Buscar status novamente ==========
       statusData = await fetchInstanceStatus(baseUrl, instanceToken);
-      console.log(`[conectarWhatsApp] Status após connect: ${statusData.status}`);
+      
     }
 
     // ========== PASSO 6: Atualizar banco e retornar ==========

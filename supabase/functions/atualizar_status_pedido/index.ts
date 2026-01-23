@@ -74,8 +74,6 @@ Deno.serve(async (req) => {
   try {
     const { pedido_id, novo_status }: UpdateStatusRequest = await req.json();
 
-    console.log(`[AtualizarStatus] ========================================`);
-    console.log(`[AtualizarStatus] Updating order ${pedido_id} to status: ${novo_status}`);
 
     // Validate required fields
     if (!pedido_id || !novo_status) {
@@ -106,8 +104,6 @@ Deno.serve(async (req) => {
     }
 
     const oldStatus = order.status;
-    console.log(`[AtualizarStatus] Order #${order.order_number} - ${order.customer_name}`);
-    console.log(`[AtualizarStatus] Status change: ${oldStatus} -> ${novo_status}`);
 
     // 2. Update the order status in the database
     const { error: updateError } = await supabase
