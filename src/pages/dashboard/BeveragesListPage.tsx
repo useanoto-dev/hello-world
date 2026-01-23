@@ -1,7 +1,7 @@
 // Beverages List Page - Minimalist with lateral category selection
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Plus, Pencil, Trash2, GlassWater, Search } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, GlassWater, Search, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -19,6 +19,23 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface BeverageType {
   id: string;
@@ -36,11 +53,136 @@ interface BeverageProduct {
   image_url: string | null;
   is_active: boolean;
   beverage_type_id: string;
+  display_order: number;
 }
 
 interface Category {
   id: string;
   name: string;
+}
+
+interface SortableProductRowProps {
+  product: BeverageProduct;
+  canDrag: boolean;
+  onToggleActive: (product: BeverageProduct) => void;
+  onEdit: (product: BeverageProduct) => void;
+  onDelete: (product: BeverageProduct) => void;
+  formatPrice: (price: number | null) => string;
+}
+
+function SortableProductRow({ product, canDrag, onToggleActive, onEdit, onDelete, formatPrice }: SortableProductRowProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: product.id, disabled: !canDrag });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const hasPromo = product.promotional_price && product.promotional_price < (product.price || 0);
+
+  return (
+    <tr
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "hover:bg-muted/30 transition-colors bg-card",
+        !product.is_active && "opacity-50",
+        isDragging && "z-50"
+      )}
+    >
+      {canDrag && (
+        <td className="w-8 px-1">
+          <button
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded"
+          >
+            <GripVertical className="w-3.5 h-3.5 text-muted-foreground" />
+          </button>
+        </td>
+      )}
+      <td className="px-4 py-2">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-md overflow-hidden bg-muted flex-shrink-0">
+            {product.image_url ? (
+              <img
+                src={product.image_url}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <GlassWater className="w-4 h-4 text-muted-foreground/40" />
+              </div>
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-foreground truncate">
+              {product.name}
+            </p>
+            {product.description && (
+              <p className="text-[11px] text-muted-foreground truncate max-w-[200px]">
+                {product.description}
+              </p>
+            )}
+          </div>
+        </div>
+      </td>
+      <td className="px-4 py-2 text-right">
+        {hasPromo ? (
+          <div className="flex flex-col items-end">
+            <span className="text-[10px] text-muted-foreground line-through">
+              {formatPrice(product.price)}
+            </span>
+            <span className="text-xs font-medium text-green-600">
+              {formatPrice(product.promotional_price)}
+            </span>
+          </div>
+        ) : (
+          <span className="text-xs font-medium text-foreground">
+            {formatPrice(product.price)}
+          </span>
+        )}
+      </td>
+      <td className="px-4 py-2">
+        <div className="flex justify-center">
+          <Switch
+            checked={product.is_active}
+            onCheckedChange={() => onToggleActive(product)}
+            className="scale-75 data-[state=checked]:bg-green-500"
+          />
+        </div>
+      </td>
+      <td className="px-4 py-2">
+        <div className="flex items-center justify-end gap-0.5">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => onEdit(product)}
+          >
+            <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-destructive hover:text-destructive"
+            onClick={() => onDelete(product)}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+      </td>
+    </tr>
+  );
 }
 
 export default function BeveragesListPage() {
@@ -99,7 +241,7 @@ export default function BeveragesListPage() {
 
         const { data: products } = await supabase
           .from("beverage_products")
-          .select("id, name, description, price, promotional_price, image_url, is_active, beverage_type_id")
+          .select("id, name, description, price, promotional_price, image_url, is_active, beverage_type_id, display_order")
           .eq("category_id", categoryId)
           .order("display_order");
 
@@ -160,11 +302,59 @@ export default function BeveragesListPage() {
     return `R$ ${price.toFixed(2).replace('.', ',')}`;
   };
 
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = filteredProducts.findIndex(p => p.id === active.id);
+    const newIndex = filteredProducts.findIndex(p => p.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(filteredProducts, oldIndex, newIndex);
+    
+    // Update local state immediately
+    setBeverageProducts(prev => {
+      const otherProducts = prev.filter(p => !reordered.some(r => r.id === p.id));
+      return [...otherProducts, ...reordered.map((p, i) => ({ ...p, display_order: i }))];
+    });
+
+    // Persist to database
+    try {
+      const updates = reordered.map((product, index) => ({
+        id: product.id,
+        display_order: index,
+      }));
+
+      for (const update of updates) {
+        await supabase
+          .from("beverage_products")
+          .update({ display_order: update.display_order })
+          .eq("id", update.id);
+      }
+
+      toast.success("Ordem atualizada!");
+    } catch (error) {
+      console.error("Error updating order:", error);
+      toast.error("Erro ao atualizar ordem");
+      loadData(); // Reload on error
+    }
+  };
+
   const filteredProducts = beverageProducts
     .filter(p => selectedTypeId ? p.beverage_type_id === selectedTypeId : true)
-    .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
 
   const selectedType = beverageTypes.find(t => t.id === selectedTypeId);
+  
+  const canDrag = !searchTerm; // Disable drag when searching
 
   if (loading) {
     return (
@@ -286,104 +476,34 @@ export default function BeveragesListPage() {
               </button>
             </div>
           ) : (
-            <table className="w-full">
-              <thead className="bg-muted/50 sticky top-0">
-                <tr className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  <th className="text-left px-4 py-2 font-medium">Bebida</th>
-                  <th className="text-right px-4 py-2 font-medium w-24">Preço</th>
-                  <th className="text-center px-4 py-2 font-medium w-16">Ativo</th>
-                  <th className="text-right px-4 py-2 font-medium w-20">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filteredProducts.map(product => {
-                  const hasPromo = product.promotional_price && product.promotional_price < (product.price || 0);
-                  
-                  return (
-                    <tr 
-                      key={product.id}
-                      className={cn(
-                        "hover:bg-muted/30 transition-colors",
-                        !product.is_active && "opacity-50"
-                      )}
-                    >
-                      <td className="px-4 py-2">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-9 h-9 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                            {product.image_url ? (
-                              <img 
-                                src={product.image_url} 
-                                alt={product.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <GlassWater className="w-4 h-4 text-muted-foreground/40" />
-                              </div>
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-xs font-medium text-foreground truncate">
-                              {product.name}
-                            </p>
-                            {product.description && (
-                              <p className="text-[11px] text-muted-foreground truncate max-w-[200px]">
-                                {product.description}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-2 text-right">
-                        {hasPromo ? (
-                          <div className="flex flex-col items-end">
-                            <span className="text-[10px] text-muted-foreground line-through">
-                              {formatPrice(product.price)}
-                            </span>
-                            <span className="text-xs font-medium text-green-600">
-                              {formatPrice(product.promotional_price)}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-xs font-medium text-foreground">
-                            {formatPrice(product.price)}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-2">
-                        <div className="flex justify-center">
-                          <Switch
-                            checked={product.is_active}
-                            onCheckedChange={() => handleToggleActive(product)}
-                            className="scale-75 data-[state=checked]:bg-green-500"
-                          />
-                        </div>
-                      </td>
-                      <td className="px-4 py-2">
-                        <div className="flex items-center justify-end gap-0.5">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            onClick={() => navigate(`/dashboard/beverage/edit?edit=${product.id}&categoryId=${categoryId}&from=beverages`)}
-                          >
-                            <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-destructive hover:text-destructive"
-                            onClick={() => setDeleteProduct(product)}
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <table className="w-full">
+                <thead className="bg-muted/50 sticky top-0">
+                  <tr className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    {canDrag && <th className="w-8"></th>}
+                    <th className="text-left px-4 py-2 font-medium">Bebida</th>
+                    <th className="text-right px-4 py-2 font-medium w-24">Preço</th>
+                    <th className="text-center px-4 py-2 font-medium w-16">Ativo</th>
+                    <th className="text-right px-4 py-2 font-medium w-20">Ações</th>
+                  </tr>
+                </thead>
+                <SortableContext items={filteredProducts.map(p => p.id)} strategy={verticalListSortingStrategy}>
+                  <tbody className="divide-y divide-border">
+                    {filteredProducts.map(product => (
+                      <SortableProductRow
+                        key={product.id}
+                        product={product}
+                        canDrag={canDrag}
+                        onToggleActive={handleToggleActive}
+                        onEdit={(p) => navigate(`/dashboard/beverage/edit?edit=${p.id}&categoryId=${categoryId}&from=beverages`)}
+                        onDelete={setDeleteProduct}
+                        formatPrice={formatPrice}
+                      />
+                    ))}
+                  </tbody>
+                </SortableContext>
+              </table>
+            </DndContext>
           )}
         </div>
       </div>
