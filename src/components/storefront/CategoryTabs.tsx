@@ -1,6 +1,4 @@
-import { Button } from "@/components/ui/button";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 
 interface Category {
   id: string;
@@ -23,8 +21,9 @@ export default function CategoryTabs({
 }: CategoryTabsProps) {
   const tabsRef = useRef<(HTMLButtonElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [indicatorStyle, setIndicatorStyle] = useState<{ left: number; width: number } | null>(null);
 
-  // Auto-scroll to active category
+  // Update indicator position when active category changes
   useEffect(() => {
     const selectedIndex = categories.findIndex((c) => c.id === activeCategory);
     if (selectedIndex >= 0 && tabsRef.current[selectedIndex] && containerRef.current) {
@@ -35,8 +34,14 @@ export default function CategoryTabs({
         const tabRect = tab.getBoundingClientRect();
         const containerRect = container.getBoundingClientRect();
         
-        const scrollLeft = tab.offsetLeft - (containerRect.width / 2) + (tabRect.width / 2);
+        // Calculate position relative to scrollable container
+        const left = tab.offsetLeft;
+        const width = tabRect.width;
         
+        setIndicatorStyle({ left, width });
+        
+        // Auto-scroll to center the active tab
+        const scrollLeft = tab.offsetLeft - (containerRect.width / 2) + (tabRect.width / 2);
         container.scrollTo({
           left: Math.max(0, scrollLeft),
           behavior: 'smooth'
@@ -51,9 +56,20 @@ export default function CategoryTabs({
     <div className="sticky top-0 z-10 bg-background font-storefront mt-4">
       <div 
         ref={containerRef} 
-        className="flex whitespace-nowrap px-4 py-3 gap-3 overflow-x-auto scrollbar-hide"
+        className="relative flex whitespace-nowrap px-4 py-3 gap-3 overflow-x-auto scrollbar-hide"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
+        {/* Sliding indicator */}
+        {indicatorStyle && (
+          <div
+            className="absolute top-3 h-[calc(100%-24px)] bg-[#FFB200] rounded-full shadow-md transition-all duration-300 ease-out"
+            style={{
+              left: indicatorStyle.left,
+              width: indicatorStyle.width,
+            }}
+          />
+        )}
+        
         {categories.map((category, index) => {
           const isActive = activeCategory === category.id;
           
@@ -62,10 +78,10 @@ export default function CategoryTabs({
               key={category.id}
               ref={(el) => { tabsRef.current[index] = el; }}
               className={`
-                px-5 py-2.5 text-sm font-semibold rounded-full whitespace-nowrap
+                relative z-10 px-5 py-2.5 text-sm font-semibold rounded-full whitespace-nowrap
                 transition-all duration-300 ease-out
                 ${isActive
-                  ? "bg-[#FFB200] text-white shadow-md scale-105"
+                  ? "text-white scale-105"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200 scale-100"
                 }
               `}
