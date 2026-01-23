@@ -81,7 +81,6 @@ export default function ProductCustomizationModal({
   const [searchQuery, setSearchQuery] = useState("");
   const [notes, setNotes] = useState("");
   const [hasInitializedPreselection, setHasInitializedPreselection] = useState(false);
-  const [preselectedGroupId, setPreselectedGroupId] = useState<string | null>(null);
   
   const { addToCart } = useCart();
 
@@ -177,7 +176,6 @@ export default function ProductCustomizationModal({
               [preselectedItem.group_id]: [preselectedOptionId]
             }));
             setHasInitializedPreselection(true);
-            setPreselectedGroupId(preselectedItem.group_id);
           }
         }
       }
@@ -190,7 +188,6 @@ export default function ProductCustomizationModal({
   };
 
   const basePrice = product.promotional_price ?? product.price;
-  const originalPrice = product.promotional_price ? product.price : null;
   const hasPromotion = product.promotional_price !== null && product.promotional_price < product.price;
 
   const isPromotionActive = (item: OptionItem): boolean => {
@@ -378,8 +375,8 @@ export default function ProductCustomizationModal({
     }
   }, [product.name]);
 
-  // Total selections count
-  const totalSelections = useMemo(() => {
+  // Total selections count - available for future use
+  const _totalSelections = useMemo(() => {
     return Object.values(selections).reduce((sum, arr) => sum + arr.length, 0);
   }, [selections]);
 
@@ -541,7 +538,7 @@ export default function ProductCustomizationModal({
               {groups.map((group) => {
                 const groupItems = getFilteredItems(group.id);
                 const isExpanded = expandedGroups.has(group.id);
-                const selectedCount = (selections[group.id] || []).length;
+                const _selectedCount = (selections[group.id] || []).length;
                 
                 return (
                   <div key={group.id} className="border-b border-border/50 last:border-b-0">

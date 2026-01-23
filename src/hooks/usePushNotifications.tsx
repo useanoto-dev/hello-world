@@ -15,7 +15,6 @@ export function usePushNotifications({ storeId, enabled = true, onNewOrder }: Us
   // Request notification permission
   const requestPermission = useCallback(async () => {
     if (!('Notification' in window)) {
-      console.log('This browser does not support notifications');
       return false;
     }
 

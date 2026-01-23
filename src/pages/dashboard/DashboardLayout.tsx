@@ -4,9 +4,9 @@ import { Outlet, useNavigate, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Image, ShoppingBag,
-  Settings, CreditCard, LogOut, Menu, X, ExternalLink, Package,
-  ChefHat, TicketPercent, Users, ChevronLeft, ChevronRight, TrendingUp,
-  Monitor, UtensilsCrossed, ChevronDown, Warehouse, Plug, Maximize, Minimize, DollarSign,
+  Settings, CreditCard, LogOut, ExternalLink, Package,
+  ChefHat, TicketPercent, Users, ChevronRight, TrendingUp,
+  Monitor, ChevronDown, Warehouse, Plug, DollarSign,
   ClipboardList, UserCircle
 } from "lucide-react";
 import { QuickActionButtons } from "@/components/admin/QuickActionButtons";
@@ -100,18 +100,14 @@ export default function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { isStaffLoggedIn, role, name: staffName, logout: staffLogout, loading: staffLoading } = useStaffAuth();
+  const { isStaffLoggedIn, role, logout: staffLogout, loading: staffLoading } = useStaffAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [store, setStore] = useState<Store | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [animatingIcon, setAnimatingIcon] = useState<string | null>(null);
   const [showCloseStoreDialog, setShowCloseStoreDialog] = useState(false);
-
-  // Check if on PDV page for fullscreen button
-  const isPDVPage = location.pathname === "/dashboard/pdv";
 
   // Check route access for staff - wait for everything to load
   useEffect(() => {
@@ -144,7 +140,7 @@ export default function DashboardLayout() {
   // Pending orders count - realtime updates
   const pendingOrdersCount = usePendingOrdersCount(store?.id ?? null);
 
-  const sidebarTheme = useMemo(() => {
+  const _sidebarTheme = useMemo(() => {
     const themeId = store?.sidebar_color || "amber";
     const classes = getMenuThemeClasses(themeId);
     const theme = MENU_THEMES.find(t => t.id === themeId);
@@ -420,9 +416,8 @@ export default function DashboardLayout() {
     toast.success(newStatus ? "Loja aberta!" : "Loja fechada!");
   };
 
-  // Track which icon was just clicked for animation
-
-  const createRipple = (event: React.MouseEvent<HTMLElement>) => {
+  // Ripple effect helper - currently unused but available for future UI enhancements
+  const _createRipple = (event: React.MouseEvent<HTMLElement>) => {
     const button = event.currentTarget;
     const rect = button.getBoundingClientRect();
     const size = Math.max(rect.width, rect.height);
