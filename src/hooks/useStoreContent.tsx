@@ -377,6 +377,10 @@ export function useStoreContent(slug: string | undefined) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'standard_sizes' }, invalidate)
       // Standard item prices - all events
       .on('postgres_changes', { event: '*', schema: 'public', table: 'standard_item_prices' }, invalidate)
+      // Beverage types - all events
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'beverage_types' }, invalidate)
+      // Beverage products - all events
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'beverage_products' }, invalidate)
       .subscribe();
 
     return () => {

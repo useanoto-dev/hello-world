@@ -28,6 +28,7 @@ import { PizzaSizeGrid } from "@/components/storefront/PizzaSizeGrid";
 import { PizzaFlavorSelectionDrawer } from "@/components/storefront/PizzaFlavorSelectionDrawer";
 import { PizzaDoughSelectionDrawer } from "@/components/storefront/PizzaDoughSelectionDrawer";
 import { StandardCategoryGrid } from "@/components/storefront/StandardCategoryGrid";
+import { BeverageTypesGrid } from "@/components/storefront/BeverageTypesGrid";
 import ProductDetailDrawer from "@/components/storefront/ProductDetailDrawer";
 import { useFavorites } from "@/hooks/useFavorites";
 import { parseSchedule, isStoreOpenNow, getNextOpeningTime } from "@/lib/scheduleUtils";
@@ -768,6 +769,9 @@ export default function StorefrontPage() {
   
   // Check if current category is a standard category (by category_type, not by having sizes)
   const isStandardCategory = activeCategoryData?.category_type === "standard";
+  
+  // Check if current category is a beverages category
+  const isBeveragesCategory = activeCategoryData?.category_type === "beverages";
 
   // Prefetch upsell modals for current category (instant modal loading)
   const prefetchUpsellModals = usePrefetchUpsellModals(store?.id, activeCategoryData?.id);
@@ -1348,6 +1352,12 @@ export default function StorefrontPage() {
                             setShowProductDetailDrawer(true);
                           }
                         }}
+                      />
+                    ) : isBeveragesCategory && !searchQuery && effectiveCategory && store ? (
+                      <BeverageTypesGrid
+                        categoryId={effectiveCategory}
+                        storeId={store.id}
+                        isStoreOpen={isStoreOpen}
                       />
                     ) : (
                       <ProductGrid
