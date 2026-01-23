@@ -188,6 +188,7 @@ export default function MenuManagerPage() {
   const [categoryStandardSizes, setCategoryStandardSizes] = useState<Record<string, StandardSize[]>>({});
   const [categoryStandardItems, setCategoryStandardItems] = useState<Record<string, StandardItem[]>>({});
   const [categoryOptionGroups, setCategoryOptionGroups] = useState<Record<string, OptionGroup[]>>({});
+  const [categoryBeverageTypes, setCategoryBeverageTypes] = useState<Record<string, { id: string; name: string }[]>>({});
   const [loadingProducts, setLoadingProducts] = useState<Set<string>>(new Set());
   
   // Modal states
@@ -289,8 +290,8 @@ export default function MenuManagerPage() {
           [categoryId]: (flavorsResult.data as PizzaFlavor[]) || []
         }));
       } else if (categoryType === 'standard') {
-        // For standard categories (açaí, hambúrguer, etc.), load sizes, items and option groups
-        const [sizesResult, itemsResult, groupsResult] = await Promise.all([
+        // For standard categories (açaí, hambúrguer, bebidas, etc.), load sizes, items, option groups, and beverage types
+        const [sizesResult, itemsResult, groupsResult, beverageTypesResult] = await Promise.all([
           supabase
             .from("standard_sizes")
             .select("id, name, base_price, description, is_active")
@@ -304,6 +305,11 @@ export default function MenuManagerPage() {
           supabase
             .from("category_option_groups")
             .select("id, name, min_selections, max_selections, is_required")
+            .eq("category_id", categoryId)
+            .order("display_order"),
+          supabase
+            .from("beverage_types")
+            .select("id, name")
             .eq("category_id", categoryId)
             .order("display_order")
         ]);
@@ -332,6 +338,11 @@ export default function MenuManagerPage() {
         setCategoryOptionGroups(prev => ({
           ...prev,
           [categoryId]: groupsWithCount as OptionGroup[]
+        }));
+        
+        setCategoryBeverageTypes(prev => ({
+          ...prev,
+          [categoryId]: (beverageTypesResult.data || []) as { id: string; name: string }[]
         }));
       } else {
         // For regular categories, load products
@@ -1223,15 +1234,29 @@ export default function MenuManagerPage() {
                       {/* Section Header */}
                       <div className="flex items-center justify-between pb-3 border-b border-border/50">
                         <h4 className="font-medium text-foreground text-sm">Estrutura da Categoria</h4>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate(`/dashboard/category/edit?edit=${category.id}`)}
-                          className="gap-1.5 h-7 text-xs text-muted-foreground hover:text-foreground"
-                        >
-                          <Pencil className="w-3 h-3" />
-                          Editar
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          {/* Show "Cadastrar Bebidas" button if category has beverage types */}
+                          {categoryBeverageTypes[category.id]?.length > 0 && (
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={() => navigate(`/dashboard/beverage/new?categoryId=${category.id}`)}
+                              className="gap-1.5 h-7 text-xs"
+                            >
+                              <Plus className="w-3 h-3" />
+                              Cadastrar Bebidas
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/dashboard/category/edit?edit=${category.id}`)}
+                            className="gap-1.5 h-7 text-xs text-muted-foreground hover:text-foreground"
+                          >
+                            <Pencil className="w-3 h-3" />
+                            Editar
+                          </Button>
+                        </div>
                       </div>
 
                       {/* Sizes Section */}
