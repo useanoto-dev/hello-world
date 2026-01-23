@@ -1253,8 +1253,6 @@ export default function StorefrontPage() {
                       />
                     )}
                     
-                    <ProductSearch onSearch={handleSearch} />
-                    
                     {(promoCount > 0 || favoritesCount > 0) && (
                       <ProductFilters
                         priceFilter={priceFilter}
