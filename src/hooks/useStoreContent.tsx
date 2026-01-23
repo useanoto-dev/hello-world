@@ -349,32 +349,34 @@ export function useStoreContent(slug: string | undefined) {
     gcTime: 30 * 60 * 1000,
   });
 
-  // Real-time subscription for updates
+  // Real-time subscription for ALL changes (INSERT, UPDATE, DELETE)
   useEffect(() => {
     if (!store?.id) return;
 
+    const invalidate = () => queryClient.invalidateQueries({ queryKey: ["store-content", store.id] });
+
     const channel = supabase
       .channel('storefront-realtime-hook')
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'products' },
-        () => queryClient.invalidateQueries({ queryKey: ["store-content", store.id] })
-      )
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'category_option_items' },
-        () => queryClient.invalidateQueries({ queryKey: ["store-content", store.id] })
-      )
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'inventory_products' },
-        () => queryClient.invalidateQueries({ queryKey: ["store-content", store.id] })
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'pizza_flow_steps' },
-        () => queryClient.invalidateQueries({ queryKey: ["store-content", store.id] })
-      )
+      // Products - all events
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, invalidate)
+      // Categories - all events
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, invalidate)
+      // Option items - all events
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'category_option_items' }, invalidate)
+      // Option groups - all events
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'category_option_groups' }, invalidate)
+      // Inventory products - all events
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory_products' }, invalidate)
+      // Inventory categories - all events
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory_categories' }, invalidate)
+      // Pizza flow steps - all events
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'pizza_flow_steps' }, invalidate)
+      // Standard items - all events
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'standard_items' }, invalidate)
+      // Standard sizes - all events
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'standard_sizes' }, invalidate)
+      // Standard item prices - all events
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'standard_item_prices' }, invalidate)
       .subscribe();
 
     return () => {

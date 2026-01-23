@@ -503,99 +503,111 @@ export default function StorefrontPage() {
 
     const channel = supabase
       .channel('storefront-realtime')
+      // Products - ALL events (INSERT, UPDATE, DELETE)
       .on(
         'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'category_option_items'
-        },
+        { event: '*', schema: 'public', table: 'products' },
         (payload) => {
-          // Check if promotional price changed
-          const oldPrice = payload.old?.promotional_price;
-          const newPrice = payload.new?.promotional_price;
-          const oldAdditional = payload.old?.additional_price;
-          const newAdditional = payload.new?.additional_price;
+          const eventType = payload.eventType;
           
-          if (oldPrice !== newPrice || oldAdditional !== newAdditional) {
-            toast.success("🔥 Promoção atualizada!", {
-              description: "Os preços do cardápio foram atualizados",
-              duration: 4000,
-            });
-          }
-          
-          // Invalidate the store-content query to refetch with updated prices
-          queryClient.invalidateQueries({ queryKey: ["store-content", store.id] });
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'products'
-        },
-        (payload) => {
-          // Check if promotional price or stock changed
-          const oldPrice = payload.old?.promotional_price;
-          const newPrice = payload.new?.promotional_price;
-          const oldRegular = payload.old?.price;
-          const newRegular = payload.new?.price;
-          const oldStock = payload.old?.stock_quantity;
-          const newStock = payload.new?.stock_quantity;
-          
-          const priceChanged = oldPrice !== newPrice || oldRegular !== newRegular;
-          const stockChanged = oldStock !== newStock;
-          
-          if (priceChanged) {
-            const productId = payload.new?.id;
-            if (productId) {
-              // Add to updated IDs for pulse effect
-              setUpdatedProductIds(prev => new Set([...prev, productId]));
-              // Clear the pulse effect after animation completes
-              setTimeout(() => {
-                setUpdatedProductIds(prev => {
-                  const next = new Set(prev);
-                  next.delete(productId);
-                  return next;
-                });
-              }, 2500);
-            }
+          if (eventType === 'INSERT') {
+            toast.success("✨ Novo item no cardápio!", { duration: 3000 });
+          } else if (eventType === 'DELETE') {
+            toast.info("Item removido do cardápio", { duration: 3000 });
+          } else if (eventType === 'UPDATE') {
+            const oldPrice = payload.old?.promotional_price;
+            const newPrice = payload.new?.promotional_price;
+            const oldRegular = payload.old?.price;
+            const newRegular = payload.new?.price;
             
-            toast.success("🔥 Promoção atualizada!", {
-              description: "Os preços do cardápio foram atualizados",
-              duration: 4000,
-            });
+            if (oldPrice !== newPrice || oldRegular !== newRegular) {
+              const productId = payload.new?.id;
+              if (productId) {
+                setUpdatedProductIds(prev => new Set([...prev, productId]));
+                setTimeout(() => {
+                  setUpdatedProductIds(prev => {
+                    const next = new Set(prev);
+                    next.delete(productId);
+                    return next;
+                  });
+                }, 2500);
+              }
+              toast.success("🔥 Promoção atualizada!", { duration: 3000 });
+            }
           }
           
-          // Silent refetch for stock changes (no toast to avoid spam)
-          if (priceChanged || stockChanged) {
-            queryClient.invalidateQueries({ queryKey: ["store-content", store.id] });
+          queryClient.invalidateQueries({ queryKey: ["store-content", store.id] });
+        }
+      )
+      // Categories - ALL events
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'categories' },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            toast.success("📂 Nova categoria!", { duration: 3000 });
+          } else if (payload.eventType === 'DELETE') {
+            toast.info("Categoria removida", { duration: 3000 });
           }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'inventory_products'
-        },
-        () => {
-          // Refetch inventory products when stock changes
           queryClient.invalidateQueries({ queryKey: ["store-content", store.id] });
         }
       )
+      // Category option items - ALL events
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'pizza_flow_steps'
-        },
-        () => {
+        { event: '*', schema: 'public', table: 'category_option_items' },
+        (payload) => {
+          if (payload.eventType === 'UPDATE') {
+            const oldPrice = payload.old?.promotional_price;
+            const newPrice = payload.new?.promotional_price;
+            if (oldPrice !== newPrice) {
+              toast.success("🔥 Promoção atualizada!", { duration: 3000 });
+            }
+          }
           queryClient.invalidateQueries({ queryKey: ["store-content", store.id] });
         }
+      )
+      // Category option groups - ALL events
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'category_option_groups' },
+        () => queryClient.invalidateQueries({ queryKey: ["store-content", store.id] })
+      )
+      // Inventory products - ALL events
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'inventory_products' },
+        () => queryClient.invalidateQueries({ queryKey: ["store-content", store.id] })
+      )
+      // Inventory categories - ALL events
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'inventory_categories' },
+        () => queryClient.invalidateQueries({ queryKey: ["store-content", store.id] })
+      )
+      // Pizza flow steps - ALL events
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'pizza_flow_steps' },
+        () => queryClient.invalidateQueries({ queryKey: ["store-content", store.id] })
+      )
+      // Standard items - ALL events
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'standard_items' },
+        () => queryClient.invalidateQueries({ queryKey: ["store-content", store.id] })
+      )
+      // Standard sizes - ALL events
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'standard_sizes' },
+        () => queryClient.invalidateQueries({ queryKey: ["store-content", store.id] })
+      )
+      // Standard item prices - ALL events
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'standard_item_prices' },
+        () => queryClient.invalidateQueries({ queryKey: ["store-content", store.id] })
       )
       .subscribe();
 
