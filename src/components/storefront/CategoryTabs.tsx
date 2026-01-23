@@ -48,32 +48,32 @@ export default function CategoryTabs({
   if (categories.length === 0) return null;
 
   return (
-    <ScrollArea className="w-full">
-      <div ref={containerRef} className="flex gap-3 px-5 py-4">
-        {categories.map((category, index) => {
-          const isActive = activeCategory === category.id;
-          
-          return (
-            <Button
-              key={category.id}
-              ref={(el) => { tabsRef.current[index] = el; }}
-              variant="outline"
-              className={`
-                rounded-full whitespace-nowrap min-w-fit px-5 h-10 text-sm font-medium
-                transition-all duration-200
-                ${isActive
-                  ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90"
-                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                }
-              `}
-              onClick={() => onCategoryChange(category.id)}
-            >
-              {category.name}
-            </Button>
-          );
-        })}
-      </div>
-      <ScrollBar orientation="horizontal" className="h-0" />
-    </ScrollArea>
+    <div className="sticky top-0 z-10 bg-background border-b border-border font-storefront">
+      <ScrollArea className="w-full">
+        <div ref={containerRef} className="flex whitespace-nowrap px-5 py-3 gap-1">
+          {categories.map((category, index) => {
+            const isActive = activeCategory === category.id;
+            
+            return (
+              <button
+                key={category.id}
+                ref={(el) => { tabsRef.current[index] = el; }}
+                className={`
+                  px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap
+                  ${isActive
+                    ? "border-b-2 border-primary text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                  }
+                `}
+                onClick={() => onCategoryChange(category.id)}
+              >
+                {category.name}
+              </button>
+            );
+          })}
+        </div>
+        <ScrollBar orientation="horizontal" className="h-0" />
+      </ScrollArea>
+    </div>
   );
 }

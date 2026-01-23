@@ -57,23 +57,23 @@ const ProductCard = memo(function ProductCard({
   return (
     <div
       className={`
-        flex items-center gap-4 p-3 bg-white rounded-xl border border-gray-100 
-        hover:shadow-md transition-all duration-200 cursor-pointer
+        flex gap-3 p-3 border border-border rounded-xl cursor-pointer 
+        hover:bg-muted/50 transition-colors font-storefront
         ${isOutOfStock ? 'opacity-60 cursor-not-allowed' : ''}
       `}
       onClick={() => !isOutOfStock && onClick()}
     >
-      {/* Product Image - Square, left side */}
-      <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+      {/* Product Image - h-24 w-24 rounded-lg */}
+      <div className="relative h-24 w-24 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
         {product.image_url ? (
           <img
             src={product.image_url}
             alt={product.name}
-            className="w-full h-full object-cover"
+            className="h-full w-full object-cover"
             loading={index < 6 ? "eager" : "lazy"}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400 text-2xl">
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-2xl">
             🍽️
           </div>
         )}
@@ -88,10 +88,10 @@ const ProductCard = memo(function ProductCard({
         )}
       </div>
 
-      {/* Product Info - Right side */}
-      <div className="flex-1 min-w-0 py-1">
+      {/* Product Info */}
+      <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-gray-900 text-base leading-tight line-clamp-2">
+          <h3 className="font-medium text-foreground line-clamp-1">
             {product.name}
           </h3>
           
@@ -108,19 +108,19 @@ const ProductCard = memo(function ProductCard({
         </div>
         
         {product.description && (
-          <p className="text-gray-500 text-sm line-clamp-2 mt-1">
+          <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
             {product.description}
           </p>
         )}
         
-        {/* Price - Minimalist dark style */}
+        {/* Price - FSW style: text-sm font-semibold text-primary */}
         <div className="mt-2 flex items-center gap-2">
           {hasPromo && (
-            <span className="text-xs text-gray-400 line-through">
+            <span className="text-xs text-muted-foreground line-through">
               {formatCurrency(product.price)}
             </span>
           )}
-          <span className="font-semibold text-gray-900 text-base">
+          <span className="text-sm font-semibold text-primary">
             {formatCurrency(displayPrice)}
           </span>
         </div>

@@ -85,10 +85,10 @@ export default function ProductDetailDrawer({
   return (
     <>
       <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl">
+        <SheetContent side="bottom" className="h-[90vh] rounded-t-3xl p-0 font-storefront">
           <div className="flex flex-col h-full">
-            {/* Product Image */}
-            <div className="relative -mx-6 -mt-6">
+            {/* Product Image - w-full h-56 object-cover */}
+            <div className="relative">
               {product.image_url ? (
                 <img
                   src={product.image_url}
@@ -102,30 +102,30 @@ export default function ProductDetailDrawer({
               )}
             </div>
 
-            {/* Header */}
-            <SheetHeader className="mt-4 text-left">
-              <SheetTitle className="text-xl">{product.name}</SheetTitle>
-            </SheetHeader>
+            {/* Content */}
+            <div className="flex-1 px-6 py-4 overflow-y-auto">
+              {/* Header */}
+              <SheetHeader className="text-left mb-2">
+                <SheetTitle className="text-2xl font-bold">{product.name}</SheetTitle>
+              </SheetHeader>
 
-            {/* Description */}
-            {product.description && (
-              <p className="text-muted-foreground text-sm mt-2">
-                {product.description}
-              </p>
-            )}
-
-            {/* Spacer */}
-            <div className="flex-1" />
+              {/* Description */}
+              {product.description && (
+                <p className="text-muted-foreground">
+                  {product.description}
+                </p>
+              )}
+            </div>
 
             {/* Footer with quantity and add button */}
-            <div className="border-t pt-4 mt-4">
+            <div className="border-t border-border p-6 pb-8">
               <div className="flex items-center justify-between mb-4">
-                {/* Quantity controls */}
+                {/* Quantity controls - h-10 w-10 rounded-full */}
                 <div className="flex items-center gap-4">
                   <Button
                     variant="outline"
                     size="icon"
-                    className="rounded-full"
+                    className="h-10 w-10 rounded-full"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   >
                     <Minus className="h-4 w-4" />
@@ -136,7 +136,7 @@ export default function ProductDetailDrawer({
                   <Button
                     variant="outline"
                     size="icon"
-                    className="rounded-full"
+                    className="h-10 w-10 rounded-full"
                     onClick={() => setQuantity(quantity + 1)}
                   >
                     <Plus className="h-4 w-4" />
@@ -149,11 +149,12 @@ export default function ProductDetailDrawer({
                 </span>
               </div>
 
+              {/* Add button - w-full h-14 text-lg font-bold rounded-full */}
               <Button
-                className="w-full h-12 text-lg font-semibold"
+                className="w-full h-14 text-lg font-bold rounded-full"
                 onClick={handleAddToCart}
               >
-                Adicionar ao carrinho
+                Adicionar
               </Button>
             </div>
           </div>
