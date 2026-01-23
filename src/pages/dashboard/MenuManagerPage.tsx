@@ -1309,34 +1309,25 @@ export default function MenuManagerPage() {
                         </div>
                       )}
 
-                      {/* Option Groups Section */}
-                      {categoryOptionGroups[category.id]?.length > 0 && (
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Personalizações</span>
-                            <span className="text-[10px] text-muted-foreground/60">
-                              {categoryOptionGroups[category.id].length}
-                            </span>
-                          </div>
-                          
-                          <div className="flex flex-wrap gap-1.5">
-                            {categoryOptionGroups[category.id].map((group) => (
-                              <div 
-                                key={group.id}
-                                className="inline-flex items-center gap-1.5 bg-card rounded-md border border-border/50 px-2.5 py-1.5 text-xs"
-                              >
-                                <span className="font-medium text-foreground">{group.name}</span>
-                                {group.is_required && (
-                                  <span className="text-[9px] text-amber-600 font-medium">*</span>
-                                )}
-                                <span className="text-muted-foreground/60">
-                                  ({group.items_count || 0})
-                                </span>
-                              </div>
-                            ))}
-                          </div>
+                      {/* Quick Access Buttons - Personalizações */}
+                      <div className="space-y-2">
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Personalizações</span>
+                        
+                        <div className="flex flex-wrap gap-1.5">
+                          <button
+                            onClick={() => navigate(`/dashboard/category/edit?edit=${category.id}&tab=options&group=temperatura`)}
+                            className="inline-flex items-center gap-1.5 bg-card hover:bg-muted rounded-md border border-border/50 hover:border-primary/30 px-3 py-2 text-xs transition-all cursor-pointer"
+                          >
+                            <span className="font-medium text-foreground">🌡️ Temperatura</span>
+                          </button>
+                          <button
+                            onClick={() => navigate(`/dashboard/category/edit?edit=${category.id}&tab=options&group=adicionais`)}
+                            className="inline-flex items-center gap-1.5 bg-card hover:bg-muted rounded-md border border-border/50 hover:border-primary/30 px-3 py-2 text-xs transition-all cursor-pointer"
+                          >
+                            <span className="font-medium text-foreground">➕ Adicionais</span>
+                          </button>
                         </div>
-                      )}
+                      </div>
                     </div>
                   ) : categoryProducts[category.id]?.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
