@@ -63,8 +63,8 @@ export function useOrderNotifications() {
 
           oscillator.start(ctx.currentTime);
           oscillator.stop(ctx.currentTime + 0.6);
-        } catch (error) {
-          console.log('Could not play notification sound:', error);
+        } catch {
+          // Audio API not available - silent fail
         }
       });
     }

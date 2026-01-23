@@ -4,7 +4,7 @@ import { useOutletContext } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ShoppingBag, Clock, Check, Truck, X, RefreshCw,
-  ChevronLeft, ChevronRight, Eye, Printer, Filter, Calendar as CalendarIcon
+  ChevronLeft, ChevronRight, Eye, Filter, Calendar as CalendarIcon
 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";

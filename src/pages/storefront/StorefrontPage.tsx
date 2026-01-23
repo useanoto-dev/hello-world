@@ -12,7 +12,7 @@ import ProductFilters, { PriceFilter, SortOption } from "@/components/storefront
 import CategoryTabs from "@/components/storefront/CategoryTabs";
 import ProductGrid from "@/components/storefront/ProductGrid";
 import FeaturedProducts from "@/components/storefront/FeaturedProducts";
-import CartFloatingButton from "@/components/storefront/CartFloatingButton";
+// CartFloatingButton removed - using BottomNavigation instead
 import StorefrontSkeleton from "@/components/storefront/StorefrontSkeleton";
 import ProductCustomizationModal from "@/components/storefront/ProductCustomizationModal";
 import AboutSection from "@/components/storefront/AboutSection";
