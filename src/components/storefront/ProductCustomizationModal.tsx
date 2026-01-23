@@ -1,7 +1,7 @@
 // Product Customization Modal - Exact style as reference images
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ChevronDown, ChevronUp, Plus, Share2, Search, X } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronUp, Plus, Share2, Search, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -666,10 +666,11 @@ export default function ProductCustomizationModal({
                                               : "text-amber-500 hover:bg-amber-50"
                                           )}
                                         >
-                                          <Plus className={cn(
-                                            "w-5 h-5 transition-transform",
-                                            isSelected && "rotate-45"
-                                          )} />
+                                          {isSelected ? (
+                                            <Check className="w-5 h-5" />
+                                          ) : (
+                                            <Plus className="w-5 h-5" />
+                                          )}
                                         </button>
                                       )}
                                     </div>
