@@ -322,12 +322,14 @@ export default function CategoryEditorPage() {
       setAvailability(categoryData.is_active ? "always" : "paused");
 
       const categoryType = categoryData.category_type ?? "pizza";
-      setModelo(categoryType === "standard" ? "padrao" : "pizza");
-
-      // Standard categories are edited inside StandardCategoryEditor
-      if (categoryType === "standard") {
+      
+      // Standard and beverage categories are edited inside StandardCategoryEditor
+      if (categoryType === "standard" || categoryType === "beverages") {
+        setModelo("padrao");
         return;
       }
+      
+      setModelo("pizza");
 
       if (categoryType === "pizza") {
         const { data: sizesData } = await supabase

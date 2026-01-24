@@ -957,28 +957,53 @@ export function StandardCategoryEditor({ editId, storeId, onClose, initialStep }
     const loadExisting = async () => {
       setLoading(true);
       try {
-        // In edit mode we skip template selection - go to step from URL or default to step 2
-        setSelectedTemplate("personalizado");
-        // initialStep is already set in useState, only override if not provided
-        if (!initialStep) {
-          setCurrentStep(2);
-        }
-
+        // First fetch category to determine template
         const { data: categoryData, error: categoryError } = await supabase
           .from("categories")
-          .select("id, name, description, is_active, display_mode, allow_quantity_selector")
+          .select("id, name, description, is_active, display_mode, allow_quantity_selector, category_type")
           .eq("id", editId)
           .single();
 
         if (categoryError) throw categoryError;
         if (!categoryData) return;
 
+        // Set template based on category_type
+        if (categoryData.category_type === "beverages") {
+          setSelectedTemplate("bebidas");
+        } else {
+          setSelectedTemplate("personalizado");
+        }
+        
+        // initialStep is already set in useState, only override if not provided
+        if (!initialStep) {
+          setCurrentStep(2);
+        }
+
         setName(categoryData.name ?? "");
         setIsPromotion(!!categoryData.description);
         setPromotionMessage(categoryData.description ?? "");
         setAvailability(categoryData.is_active ? "always" : "paused");
-        // displayMode is always "list" - no need to set from database
         setAllowQuantitySelector(categoryData.allow_quantity_selector ?? true);
+
+        // Load beverage types if it's a beverage category
+        if (categoryData.category_type === "beverages") {
+          const { data: typesData } = await supabase
+            .from("beverage_types")
+            .select("id, name, description, icon, image_url, is_active")
+            .eq("category_id", editId)
+            .order("display_order");
+
+          if (typesData && typesData.length > 0) {
+            setBeverageTypes(typesData.map(t => ({
+              id: t.id,
+              name: t.name,
+              description: t.description ?? "",
+              icon: t.icon ?? "",
+              imageUrl: t.image_url ?? "",
+              isActive: t.is_active ?? true
+            })));
+          }
+        }
 
         const [{ data: sizesData, error: sizesError }, { data: groupsData, error: groupsError }] = await Promise.all([
           supabase
