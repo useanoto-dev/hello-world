@@ -1,5 +1,5 @@
 // Storefront Page - Refactored with custom hooks
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { useStoreStatus } from "@/contexts/StoreStatusContext";
@@ -7,6 +7,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useStorefrontData, type Category, type Product } from "@/hooks/useStorefrontData";
 import { useStorefrontPizzaFlow } from "@/hooks/useStorefrontPizzaFlow";
 import { useStorefrontUI, createVirtualProducts, filterAndSortProducts } from "@/hooks/useStorefrontUI";
+import { useStorefrontProducts } from "@/hooks/useStorefrontProducts";
 import { getStoreThemeStyles, getMorphAnimationEnabled } from "@/lib/storeTheme";
 import { usePrefetchUpsellModals } from "@/components/storefront/DynamicUpsellModal";
 import { toast } from "sonner";
@@ -39,7 +40,7 @@ import ProductDetailDrawer from "@/components/storefront/ProductDetailDrawer";
 
 export default function StorefrontPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { addToCart, totalItems } = useCart();
+  const { totalItems } = useCart();
   const { setStoreData, isOpen: isStoreOpen } = useStoreStatus();
   
   // Data fetching hook
@@ -74,17 +75,6 @@ export default function StorefrontPage() {
     }
   }, [store?.id]);
   
-  // Product customization modal state
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [preselectedOptionId, setPreselectedOptionId] = useState<string | null>(null);
-  const [showCustomizationModal, setShowCustomizationModal] = useState(false);
-  
-  // Simple product detail drawer state
-  const [showProductDetailDrawer, setShowProductDetailDrawer] = useState(false);
-  const [simpleProduct, setSimpleProduct] = useState<Product | null>(null);
-  const [simpleProductCategoryName, setSimpleProductCategoryName] = useState("");
-  
   // Compute active category
   const initialCategory = useMemo(() => categories.length > 0 ? categories[0].id : null, [categories]);
   const effectiveCategory = ui.activeCategory ?? initialCategory;
@@ -97,6 +87,13 @@ export default function StorefrontPage() {
   const isPizzaCategory = activeCategoryData?.category_type === "pizza";
   const isStandardCategory = activeCategoryData?.category_type === "standard";
   const isBeveragesCategory = activeCategoryData?.category_type === "beverages";
+  
+  // Product modal hook
+  const productModals = useStorefrontProducts({
+    categories,
+    categoryHasOptions,
+    isStoreOpen,
+  });
   
   // Pizza flow hook
   const pizzaFlow = useStorefrontPizzaFlow(flowStepsData, activeCategoryData, isStoreOpen);
@@ -158,91 +155,7 @@ export default function StorefrontPage() {
     }
   }, [store, setStoreData]);
   
-  // Product click handler
-  const handleProductClick = useCallback((product: Product & { isVirtualProduct?: boolean; primaryOptionId?: string }) => {
-    if (!isStoreOpen) {
-      toast.error("Estabelecimento fechado", {
-        description: "Não é possível adicionar itens ao carrinho no momento.",
-      });
-      return;
-    }
-
-    const isInventoryProduct = product.id.startsWith('inv-');
-    const isStandardSizeProduct = product.id.startsWith('standard-size-');
-    
-    if (isInventoryProduct) {
-      const category = categories.find(c => c.id === product.category_id);
-      setSimpleProduct(product);
-      setSimpleProductCategoryName(category?.name || "Estoque");
-      setShowProductDetailDrawer(true);
-      return;
-    }
-    
-    if (isStandardSizeProduct) {
-      const category = categories.find(c => c.id === product.category_id);
-      if (category && categoryHasOptions.has(category.id)) {
-        const productForModal: Product = {
-          id: product.id,
-          name: product.name,
-          description: product.description,
-          price: product.price,
-          promotional_price: product.promotional_price,
-          image_url: product.image_url || category.image_url,
-          category_id: category.id,
-          is_featured: false,
-        };
-        setSelectedProduct(productForModal);
-        setSelectedCategory(category);
-        setPreselectedOptionId(null);
-        setShowCustomizationModal(true);
-      } else {
-        setSimpleProduct(product);
-        setSimpleProductCategoryName(category?.name || "Produto");
-        setShowProductDetailDrawer(true);
-      }
-      return;
-    }
-
-    const category = categories.find(c => c.id === product.category_id);
-    
-    if (category) {
-      const productForModal: Product = product.isVirtualProduct 
-        ? {
-            id: category.id,
-            name: product.name,
-            description: null,
-            price: product.price,
-            promotional_price: product.promotional_price,
-            image_url: product.image_url || category.image_url,
-            category_id: category.id,
-            is_featured: false,
-          }
-        : product;
-      
-      if (categoryHasOptions.has(category.id)) {
-        setSelectedProduct(productForModal);
-        setSelectedCategory(category);
-        setPreselectedOptionId(product.isVirtualProduct ? product.primaryOptionId || null : null);
-        setShowCustomizationModal(true);
-      } else {
-        setSimpleProduct(product);
-        setSimpleProductCategoryName(category.name);
-        setShowProductDetailDrawer(true);
-      }
-    } else {
-      setSimpleProduct(product);
-      setSimpleProductCategoryName("Produto");
-      setShowProductDetailDrawer(true);
-    }
-  }, [categories, isStoreOpen, categoryHasOptions]);
-
-  const handleCustomizationComplete = useCallback(() => {
-    setShowCustomizationModal(false);
-    setSelectedProduct(null);
-    setSelectedCategory(null);
-    setPreselectedOptionId(null);
-  }, []);
-
+  // Handlers
   const handleShowUpsell = useCallback((categoryId: string) => {
     pizzaFlow.setUpsellTriggerCategoryId(categoryId);
     pizzaFlow.setShowUpsellModal(true);
@@ -250,59 +163,17 @@ export default function StorefrontPage() {
 
   const handleUpsellClose = useCallback(() => {
     pizzaFlow.handleUpsellClose();
-    setShowCustomizationModal(false);
-    setShowProductDetailDrawer(false);
-    setSelectedProduct(null);
-    setSelectedCategory(null);
-    setSimpleProduct(null);
-  }, [pizzaFlow]);
+    productModals.resetAllModals();
+  }, [pizzaFlow, productModals]);
 
-  // Pizza size selection with prefetch
   const handlePizzaSizeSelect = useCallback((sizeId: string, sizeName: string, maxFlavors: number, basePrice: number, imageUrl: string | null) => {
     prefetchUpsellModals();
     pizzaFlow.handlePizzaSizeSelect(sizeId, sizeName, maxFlavors, basePrice, imageUrl);
   }, [prefetchUpsellModals, pizzaFlow]);
 
-  // Standard category item selection
-  const handleStandardItemSelect = useCallback((item: any, size: any, price: number, _quantity: number) => {
-    const category = categories.find(c => c.id === effectiveCategory);
-    if (category && categoryHasOptions.has(category.id)) {
-      const productForModal: Product = {
-        id: `${item.id}-${size.id}`,
-        name: `${size.name} - ${item.name}`,
-        description: item.description,
-        price: price,
-        promotional_price: null,
-        image_url: item.image_url || size.image_url || category.image_url,
-        category_id: category.id,
-        is_featured: false,
-      };
-      setSelectedProduct(productForModal);
-      setSelectedCategory(category);
-      setPreselectedOptionId(null);
-      setShowCustomizationModal(true);
-    } else {
-      if (!isStoreOpen) {
-        toast.error("Estabelecimento fechado", {
-          description: "Não é possível adicionar itens ao carrinho no momento.",
-        });
-        return;
-      }
-      const productForDrawer: Product = {
-        id: `${item.id}-${size.id}`,
-        name: `${size.name}${item.name !== size.name ? ` - ${item.name}` : ''}`,
-        description: item.description,
-        price: price,
-        promotional_price: null,
-        image_url: item.image_url || size.image_url || undefined,
-        category_id: effectiveCategory!,
-        is_featured: false,
-      };
-      setSimpleProduct(productForDrawer);
-      setSimpleProductCategoryName(category?.name || "Produto");
-      setShowProductDetailDrawer(true);
-    }
-  }, [categories, effectiveCategory, categoryHasOptions, isStoreOpen]);
+  const handleStandardItemSelect = useCallback((item: any, size: any, price: number, quantity: number) => {
+    productModals.handleStandardItemSelect(item, size, price, quantity, effectiveCategory);
+  }, [productModals, effectiveCategory]);
 
   // Loading state
   if (loading) {
@@ -327,10 +198,8 @@ export default function StorefrontPage() {
       data-theme="light"
       style={storeThemeStyles}
     >
-      {/* Closed Overlay */}
       {!ui.storeStatus.isOpen && ui.activeTab === "cardapio" && <ClosedOverlay nextOpeningTime={ui.nextOpeningTime} />}
       
-      {/* Main scrollable content */}
       <div className="flex-1 max-w-4xl mx-auto w-full overflow-y-auto pb-24 min-h-0 ios-scroll">
         <StorefrontHeader 
           store={store} 
@@ -338,16 +207,10 @@ export default function StorefrontPage() {
           onRatingClick={() => ui.handleTabChange("sobre")}
         />
         
-        {/* Tab Content with Animations */}
         <div className="min-h-0">
           <AnimatePresence mode="wait" initial={false}>
             {ui.isRefreshing ? (
-              <motion.div
-                key="refreshing-skeleton"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
+              <motion.div key="refreshing-skeleton" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 {ui.activeTab === "cardapio" && <CardapioSkeleton />}
                 {ui.activeTab === "pedidos" && <PedidosSkeleton />}
                 {ui.activeTab === "sobre" && <SobreSkeleton />}
@@ -355,20 +218,11 @@ export default function StorefrontPage() {
             ) : (
               <>
                 {ui.activeTab === "cardapio" && (
-                  <motion.div
-                    key="cardapio"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15, ease: "easeOut" }}
-                  >
+                  <motion.div key="cardapio" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15, ease: "easeOut" }}>
                     <BannerCarousel storeId={store.id} />
                     
                     {!ui.searchQuery && featuredProducts.length > 0 && (
-                      <FeaturedProducts 
-                        products={featuredProducts} 
-                        onProductClick={handleProductClick} 
-                      />
+                      <FeaturedProducts products={featuredProducts} onProductClick={productModals.handleProductClick} />
                     )}
                     
                     {(promoCount > 0 || favoritesCount > 0) && (
@@ -400,11 +254,7 @@ export default function StorefrontPage() {
                         <p className="text-muted-foreground">Nenhum produto encontrado para "{ui.searchQuery}"</p>
                       </div>
                     ) : isPizzaCategory && !ui.searchQuery && effectiveCategory && store ? (
-                      <PizzaSizeGrid
-                        categoryId={effectiveCategory}
-                        storeId={store.id}
-                        onSizeSelect={handlePizzaSizeSelect}
-                      />
+                      <PizzaSizeGrid categoryId={effectiveCategory} storeId={store.id} onSizeSelect={handlePizzaSizeSelect} />
                     ) : isStandardCategory && !ui.searchQuery && effectiveCategory && store ? (
                       <StandardCategoryGrid
                         categoryId={effectiveCategory}
@@ -414,15 +264,11 @@ export default function StorefrontPage() {
                         onItemSelect={handleStandardItemSelect}
                       />
                     ) : isBeveragesCategory && !ui.searchQuery && effectiveCategory && store ? (
-                      <BeverageTypesGrid
-                        categoryId={effectiveCategory}
-                        storeId={store.id}
-                        isStoreOpen={isStoreOpen}
-                      />
+                      <BeverageTypesGrid categoryId={effectiveCategory} storeId={store.id} isStoreOpen={isStoreOpen} />
                     ) : (
                       <ProductGrid
                         products={filteredProducts}
-                        onProductClick={handleProductClick}
+                        onProductClick={productModals.handleProductClick}
                         updatedProductIds={updatedProductIds}
                         storeId={store.id}
                         showFavorites={true}
@@ -433,27 +279,13 @@ export default function StorefrontPage() {
                 )}
 
                 {ui.activeTab === "pedidos" && (
-                  <motion.div
-                    key="pedidos"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="min-h-[60vh]"
-                  >
+                  <motion.div key="pedidos" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15, ease: "easeOut" }} className="min-h-[60vh]">
                     <OrderHistoryContent storeId={store.id} storeName={store.name} />
                   </motion.div>
                 )}
 
                 {ui.activeTab === "sobre" && (
-                  <motion.div
-                    key="sobre"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="min-h-[60vh]"
-                  >
+                  <motion.div key="sobre" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15, ease: "easeOut" }} className="min-h-[60vh]">
                     <div className="px-4 py-6">
                       <AboutSection store={store} expanded />
                     </div>
@@ -474,21 +306,19 @@ export default function StorefrontPage() {
         hideOrdersTab={(store as any)?.use_comanda_mode === false}
       />
 
-      {/* Customization Modal */}
-      {showCustomizationModal && selectedProduct && selectedCategory && store && (
+      {productModals.showCustomizationModal && productModals.selectedProduct && productModals.selectedCategory && store && (
         <ProductCustomizationModal
-          product={selectedProduct}
-          category={selectedCategory}
+          product={productModals.selectedProduct}
+          category={productModals.selectedCategory}
           storeId={store.id}
-          preselectedOptionId={preselectedOptionId}
-          allowOptionItemQuantity={selectedCategory.allow_quantity_selector !== false}
-          onClose={() => setShowCustomizationModal(false)}
-          onComplete={handleCustomizationComplete}
+          preselectedOptionId={productModals.preselectedOptionId}
+          allowOptionItemQuantity={productModals.selectedCategory.allow_quantity_selector !== false}
+          onClose={productModals.closeCustomizationModal}
+          onComplete={productModals.closeCustomizationModal}
           onShowUpsell={handleShowUpsell}
         />
       )}
 
-      {/* Dynamic Upsell Modal */}
       {pizzaFlow.showUpsellModal && pizzaFlow.upsellTriggerCategoryId && store && (
         <DynamicUpsellModal
           storeId={store.id}
@@ -510,7 +340,6 @@ export default function StorefrontPage() {
         />
       )}
 
-      {/* Pizza Flavor Selection Drawer */}
       {pizzaFlow.selectedPizzaSize && store && (
         <PizzaFlavorSelectionDrawer
           open={pizzaFlow.showPizzaFlavorDrawer}
@@ -530,7 +359,6 @@ export default function StorefrontPage() {
         />
       )}
 
-      {/* Pizza Dough Selection Drawer */}
       {pizzaFlow.selectedPizzaSize && store && (
         <PizzaDoughSelectionDrawer
           open={pizzaFlow.showPizzaDoughDrawer}
@@ -545,17 +373,13 @@ export default function StorefrontPage() {
         />
       )}
 
-      {/* Simple Product Detail Drawer */}
-      {simpleProduct && store && (
+      {productModals.simpleProduct && store && (
         <ProductDetailDrawer
-          product={simpleProduct}
-          categoryName={simpleProductCategoryName}
+          product={productModals.simpleProduct}
+          categoryName={productModals.simpleProductCategoryName}
           storeId={store.id}
-          isOpen={showProductDetailDrawer}
-          onClose={() => {
-            setShowProductDetailDrawer(false);
-            setSimpleProduct(null);
-          }}
+          isOpen={productModals.showProductDetailDrawer}
+          onClose={productModals.closeProductDetailDrawer}
           onNavigateToCategory={(categoryId) => {
             ui.setActiveCategory(categoryId);
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -563,7 +387,6 @@ export default function StorefrontPage() {
         />
       )}
 
-      {/* Loyalty Widget */}
       {store && <LoyaltyWidget storeId={store.id} storeName={store.name} />}
     </div>
   );
