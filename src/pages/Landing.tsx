@@ -1,216 +1,48 @@
-// Landing Page - Anotô Cardápio Digital - Apple Style Clean Design
-import { useState, useEffect, useCallback, useRef } from "react";
-import { motion, useInView } from "framer-motion";
+// Landing Page - Anotô Cardápio Digital - Apple Style Clean Design (Refactored)
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  QrCode, BarChart3, Star, Check, Menu, X,
-  ArrowRight, Smartphone, Zap, Shield, Search, Store, MapPin, Download, Trophy, User,
-  MessageSquare, Send, Printer, Chrome, ShoppingCart, ChefHat, Package, 
-  Users, Ticket, Heart, ClipboardList, Bell, Sparkles
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { generateStoreSlug } from "@/lib/utils";
 import SignupModal from "@/components/SignupModal";
 import LoginModal from "@/components/LoginModal";
+import {
+  LandingHeader,
+  LandingHero,
+  LandingIntegrations,
+  LandingFeatures,
+  LandingPricing,
+  LandingTestimonials,
+  LandingFooter,
+  AnimatedCard,
+  SectionTitle,
+} from "@/components/landing";
 
-// Imagens importadas
-import anotoLogoHeader from "@/assets/anoto-logo-header.avif";
-import anotoMascotMoto from "@/assets/anoto-mascot-moto.png";
-import anotoMascotHero from "@/assets/anoto-mascot-hero.avif";
-import badgeCheckIcon from "@/assets/badge-check-icon.png";
-import anotoMascotFooter from "@/assets/anoto-mascot-footer.avif";
-import integrationWhatsapp from "@/assets/integration-whatsapp.avif";
-import integrationBroadcast from "@/assets/integration-broadcast.avif";
-import integrationNotification from "@/assets/integration-notification.avif";
-import integrationPrint from "@/assets/integration-print.avif";
-import integrationGoogle from "@/assets/integration-google.avif";
-
-// Cores fixas da landing
 const COLORS = {
   background: "#FDFDFD",
-  backgroundAlt: "#FFFFFF",
   foreground: "#1D1D1F",
   primary: "#FFC107",
-  primaryDark: "#FFB300",
-  primaryLight: "#FFF8E1",
   muted: "#86868B",
   border: "rgba(0, 0, 0, 0.04)",
-  card: "#FFFFFF",
-  success: "#34C759",
-};
-
-// iOS-style Glass
-const GLASS = {
-  card: {
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
-    backdropFilter: "blur(20px)",
-    WebkitBackdropFilter: "blur(20px)",
-  },
-  header: {
-    backgroundColor: "rgba(255, 255, 255, 0.72)",
-    backdropFilter: "blur(20px) saturate(180%)",
-    WebkitBackdropFilter: "blur(20px) saturate(180%)",
-  },
-};
-
-// Integrações
-const integrations = [
-  { image: integrationWhatsapp, title: "WhatsApp Bot", desc: "Atendimento 24h" },
-  { image: integrationBroadcast, title: "Disparo em Massa", desc: "Promoções" },
-  { image: integrationNotification, title: "Notificações", desc: "Status em tempo real" },
-  { image: integrationPrint, title: "Impressão", desc: "Comandas automáticas" },
-  { image: integrationGoogle, title: "Login Google", desc: "Acesso rápido" }
-];
-
-// Funcionalidades
-const systemFeatures = [
-  { icon: ShoppingCart, title: "PDV", desc: "Atendimento presencial" },
-  { icon: ChefHat, title: "KDS", desc: "Kanban para cozinha" },
-  { icon: Package, title: "Estoque", desc: "Alertas automáticos" },
-  { icon: Users, title: "Mesas", desc: "Ocupação e comandas" },
-  { icon: Ticket, title: "Cupons", desc: "Descontos" },
-  { icon: Heart, title: "Fidelidade", desc: "Programa de pontos" },
-  { icon: ClipboardList, title: "CRM", desc: "Histórico de clientes" },
-  { icon: Star, title: "Avaliações", desc: "Feedback" },
-  { icon: QrCode, title: "QR Code", desc: "Pedidos via celular" }
-];
-
-// Depoimentos
-const testimonials = [
-  { name: "João Silva", business: "Pizzaria do João", text: "Meu delivery triplicou. Simples de usar!", rating: 5, avatar: "👨‍🍳" },
-  { name: "Maria Santos", business: "Café da Maria", text: "Finalmente sem comissão absurda.", rating: 5, avatar: "👩‍🍳" },
-  { name: "Carlos Oliveira", business: "Hamburgueria CO", text: "Em 5 minutos estava funcionando!", rating: 5, avatar: "🧑‍🍳" }
-];
-
-// Card com animação individual no scroll
-const AnimatedCard = ({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-50px" });
-  
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 30, scale: 0.95 }}
-      animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 30, scale: 0.95 }}
-      transition={{ duration: 0.5, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-};
-
-// Typewriter effect hook - digita, pausa 4s, apaga e repete
-const useTypewriter = (text: string, typeSpeed: number = 80, deleteSpeed: number = 40, pauseTime: number = 4000) => {
-  const [displayText, setDisplayText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  
-  useEffect(() => {
-    let timeout: NodeJS.Timeout;
-    
-    if (isPaused) {
-      // Pausando antes de apagar
-      timeout = setTimeout(() => {
-        setIsPaused(false);
-        setIsDeleting(true);
-      }, pauseTime);
-    } else if (!isDeleting) {
-      // Digitando
-      if (displayText.length < text.length) {
-        timeout = setTimeout(() => {
-          setDisplayText(text.slice(0, displayText.length + 1));
-        }, typeSpeed);
-      } else {
-        // Terminou de digitar, inicia pausa
-        setIsPaused(true);
-      }
-    } else {
-      // Apagando
-      if (displayText.length > 0) {
-        timeout = setTimeout(() => {
-          setDisplayText(text.slice(0, displayText.length - 1));
-        }, deleteSpeed);
-      } else {
-        // Terminou de apagar, começa a digitar de novo
-        setIsDeleting(false);
-      }
-    }
-    
-    return () => clearTimeout(timeout);
-  }, [displayText, isDeleting, isPaused, text, typeSpeed, deleteSpeed, pauseTime]);
-  
-  return { displayText, isDeleting };
-};
-
-// Section Title com animação
-const SectionTitle = ({ badge, title, subtitle }: { badge?: string; title: string; subtitle?: string }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-80px" });
-  const { displayText } = useTypewriter(title, 80);
-  
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 20 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-      transition={{ duration: 0.6 }}
-      className="text-center mb-12"
-    >
-      {badge && (
-        <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold mb-3 tracking-wide"
-          style={{ backgroundColor: `${COLORS.primary}20`, color: COLORS.primaryDark }}>
-          {badge}
-        </span>
-      )}
-      <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: COLORS.foreground }}>
-        {displayText}
-        <motion.span 
-          animate={{ opacity: [1, 0.25, 1] }}
-          transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
-          className="ml-0.5 font-light"
-          style={{ color: COLORS.primary }}
-        >|</motion.span>
-      </h2>
-      {subtitle && (
-        <p className="mt-2 text-sm max-w-md mx-auto" style={{ color: COLORS.muted }}>{subtitle}</p>
-      )}
-    </motion.div>
-  );
 };
 
 export default function Landing() {
   const navigate = useNavigate();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [menuAnimating, setMenuAnimating] = useState(false);
-  const [authOpen, setAuthOpen] = useState(false);
-  const [isLogin, setIsLogin] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [showResults, setShowResults] = useState(false);
   const [topRatedStores, setTopRatedStores] = useState<any[]>([]);
-  
-  const [storeName, setStoreName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [acceptTerms, setAcceptTerms] = useState(false);
 
-  // Auth check
+  // Auth check - redirect if logged in
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        const { data: profile } = await supabase.from("profiles").select("store_id").eq("id", session.user.id).maybeSingle();
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("store_id")
+          .eq("id", session.user.id)
+          .maybeSingle();
         navigate(profile?.store_id ? "/dashboard" : "/dashboard/onboarding", { replace: true });
       }
     };
@@ -219,7 +51,11 @@ export default function Landing() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
         setTimeout(async () => {
-          const { data: profile } = await supabase.from("profiles").select("store_id").eq("id", session.user.id).maybeSingle();
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("store_id")
+            .eq("id", session.user.id)
+            .maybeSingle();
           navigate(profile?.store_id ? "/dashboard" : "/dashboard/onboarding", { replace: true });
         }, 0);
       }
@@ -227,268 +63,63 @@ export default function Landing() {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const scrollToSection = (id: string) => {
-    setMobileMenuOpen(false);
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  // Search
-  const searchStores = useCallback(async (query: string) => {
-    if (query.trim().length < 2) { setSearchResults([]); setShowResults(false); return; }
-    setIsSearching(true);
-    try {
-      const { data } = await supabase.from("stores").select("id, name, logo_url, address, slug").eq("is_active", true).ilike("name", `%${query}%`).limit(6);
-      setSearchResults(data || []);
-      setShowResults(true);
-    } catch { setSearchResults([]); }
-    finally { setIsSearching(false); }
-  }, []);
-
+  // Fetch top rated stores
   useEffect(() => {
-    const t = setTimeout(() => searchStores(searchQuery), 300);
-    return () => clearTimeout(t);
-  }, [searchQuery, searchStores]);
-
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (!(e.target as HTMLElement).closest('[data-search]')) setShowResults(false);
-    };
-    document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
-  }, []);
-
-  // Top stores
-  useEffect(() => {
-    const fetch = async () => {
+    const fetchTopStores = async () => {
       try {
         const start = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
-        const { data: reviews } = await supabase.from("reviews").select("store_id, rating").gte("created_at", start);
+        const { data: reviews } = await supabase
+          .from("reviews")
+          .select("store_id, rating")
+          .gte("created_at", start);
+        
         if (!reviews?.length) return;
         
         const map: Record<string, { t: number; c: number }> = {};
-        reviews.forEach(r => { map[r.store_id] = map[r.store_id] || { t: 0, c: 0 }; map[r.store_id].t += r.rating; map[r.store_id].c++; });
+        reviews.forEach(r => { 
+          map[r.store_id] = map[r.store_id] || { t: 0, c: 0 }; 
+          map[r.store_id].t += r.rating; 
+          map[r.store_id].c++; 
+        });
         
-        const sorted = Object.entries(map).map(([id, d]) => ({ id, avg: d.t / d.c, count: d.c })).sort((a, b) => b.avg - a.avg || b.count - a.count).slice(0, 3);
+        const sorted = Object.entries(map)
+          .map(([id, d]) => ({ id, avg: d.t / d.c, count: d.c }))
+          .sort((a, b) => b.avg - a.avg || b.count - a.count)
+          .slice(0, 3);
+        
         if (!sorted.length) return;
         
-        const { data: stores } = await supabase.from("stores").select("id, name, logo_url, address, slug").in("id", sorted.map(s => s.id)).eq("is_active", true);
+        const { data: stores } = await supabase
+          .from("stores")
+          .select("id, name, logo_url, address, slug")
+          .in("id", sorted.map(s => s.id))
+          .eq("is_active", true);
+        
         if (!stores?.length) return;
         
-        setTopRatedStores(sorted.map(s => { const st = stores.find(x => x.id === s.id); return st ? { ...st, avg_rating: Math.round(s.avg * 10) / 10, review_count: s.count } : null; }).filter(Boolean));
+        setTopRatedStores(sorted.map(s => { 
+          const st = stores.find(x => x.id === s.id); 
+          return st ? { ...st, avg_rating: Math.round(s.avg * 10) / 10, review_count: s.count } : null; 
+        }).filter(Boolean));
       } catch {}
     };
-    fetch();
+    fetchTopStores();
   }, []);
-
-  // Auth
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!storeName || !email || !password) { toast.error("Preencha todos os campos"); return; }
-    if (!acceptTerms) { toast.error("Aceite os Termos"); return; }
-    setLoading(true);
-    try {
-      const { data: auth, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/dashboard`, data: { full_name: storeName } } });
-      if (error) throw error;
-      if (!auth.user || auth.user.identities?.length === 0) { toast.error("Email já cadastrado"); setLoading(false); return; }
-      await new Promise(r => setTimeout(r, 500));
-      const { data: store } = await supabase.from("stores").insert({ name: storeName, slug: generateStoreSlug(storeName), primary_color: "#FFC107" }).select().single();
-      if (!store) throw new Error("Erro ao criar loja");
-      await supabase.from("stores").update({ slug: generateStoreSlug(storeName, store.id) }).eq("id", store.id);
-      await supabase.from("profiles").update({ store_id: store.id, is_owner: true }).eq("id", auth.user.id);
-      await supabase.from("subscriptions").insert({ store_id: store.id, status: "trial" });
-      toast.success("Conta criada!");
-      setAuthOpen(false);
-      navigate("/dashboard/onboarding");
-    } catch (e: any) { toast.error(e.message || "Erro"); }
-    finally { setLoading(false); }
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) { toast.error("Preencha todos os campos"); return; }
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      toast.success("Login realizado!");
-      setAuthOpen(false);
-      navigate("/dashboard");
-    } catch (e: any) { toast.error(e.message || "Erro"); }
-    finally { setLoading(false); }
-  };
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: COLORS.background, color: COLORS.foreground }}>
-      {/* Header - NAO MEXI */}
-      <header 
-        className="fixed top-2 sm:top-4 left-1/2 -translate-x-1/2 z-50 w-[92%] sm:w-[95%] max-w-5xl"
-        style={{ 
-          ...GLASS.header,
-          borderRadius: (mobileMenuOpen || menuAnimating) ? "24px" : "9999px",
-          overflow: "hidden",
-          border: "1px solid rgba(255, 255, 255, 0.6)",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.08)",
-          transition: "border-radius 0.18s ease-out",
-        }}
-      >
-        <div className="px-3 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between">
-          <img src={anotoLogoHeader} alt="Anotô?" className="h-10 sm:h-12 object-contain" />
-          
-          <nav className="hidden md:flex items-center gap-6">
-            {["Recursos", "Funcionalidades", "Preços", "Depoimentos"].map((item) => (
-              <button key={item} onClick={() => scrollToSection(item.toLowerCase())} 
-                className="text-xs font-medium transition-colors hover:text-amber-500"
-                style={{ color: COLORS.muted, background: "none", border: "none", cursor: "pointer" }}>
-                {item}
-              </button>
-            ))}
-          </nav>
+      <LandingHeader 
+        onOpenSignup={() => setShowSignupModal(true)} 
+        onOpenLogin={() => setShowLoginModal(true)} 
+      />
 
-          <div className="hidden md:flex items-center gap-2">
-            <button onClick={() => navigate("/explorar")} className="p-2 rounded-full hover:bg-amber-50"
-              style={{ color: COLORS.foreground, background: "none", border: "none" }} title="Explorar">
-              <Store className="w-4 h-4" style={{ color: '#c2185b' }} />
-            </button>
-            <Button variant="ghost" size="sm" onClick={() => setShowLoginModal(true)} className="text-xs">Entrar</Button>
-            <Button size="sm" onClick={() => setShowSignupModal(true)} className="text-xs font-semibold rounded-full px-4"
-              style={{ backgroundColor: COLORS.primary, color: COLORS.foreground }}>
-              Começar grátis
-            </Button>
-          </div>
+      <LandingHero onOpenSignup={() => setShowSignupModal(true)} />
 
-          <div className="md:hidden flex items-center gap-3">
-            <button onClick={() => navigate("/explorar")} className="p-2" style={{ background: "none", border: "none" }}>
-              <Store className="w-5 h-5" style={{ color: '#c2185b' }} />
-            </button>
-            <button onClick={() => setShowLoginModal(true)} style={{ color: COLORS.foreground, background: "none", border: "none" }}>
-              <User className="w-5 h-5" />
-            </button>
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} style={{ color: COLORS.foreground, background: "none", border: "none" }}>
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
-        </div>
+      <LandingIntegrations />
 
-        {mobileMenuOpen && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-            onAnimationStart={() => setMenuAnimating(true)} onAnimationComplete={() => setMenuAnimating(false)}
-            className="md:hidden" style={{ backgroundColor: "#fff" }}>
-            <div className="px-4 py-3 space-y-1">
-              {["Recursos", "Funcionalidades", "Preços", "Depoimentos"].map((item) => (
-                <button key={item} onClick={() => scrollToSection(item.toLowerCase())}
-                  className="block w-full text-left py-2.5 px-3 rounded-xl text-sm hover:bg-amber-50"
-                  style={{ color: COLORS.foreground, background: "none", border: "none" }}>
-                  {item}
-                </button>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </header>
+      <LandingFeatures />
 
-      {/* Hero - Apple Style Minimal */}
-      <section className="pt-28 pb-8 sm:pt-36 sm:pb-12 px-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid sm:grid-cols-2 gap-10 items-center">
-            {/* Text */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
-              className="text-center sm:text-left order-1">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4"
-                style={{ backgroundColor: COLORS.primary }}>
-                <Sparkles className="w-3.5 h-3.5 text-black" />
-                <span className="text-xs font-medium text-black">#1 em Cardápios Digitais</span>
-              </div>
-
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight leading-tight text-center sm:text-left">
-                <span className="block">Seu delivery</span>
-                <span className="block text-3xl sm:text-4xl lg:text-5xl" style={{ background: `linear-gradient(135deg, ${COLORS.primaryDark}, ${COLORS.primary})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                  sem comissão
-                </span>
-                <span className="block lg:inline">em 3 minutos</span>
-              </h1>
-              
-              <p className="mt-4 text-sm sm:text-base max-w-md mx-auto sm:mx-0 leading-relaxed" style={{ color: COLORS.muted }}>
-                Crie seu cardápio digital, receba pedidos via WhatsApp e gerencie tudo em um lugar. <strong className="font-medium" style={{ color: COLORS.foreground }}>Zero taxas.</strong>
-              </p>
-              
-              <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center sm:justify-start">
-                <Button size="lg" onClick={() => setShowSignupModal(true)}
-                  className="text-sm px-6 py-5 rounded-full shadow-lg"
-                  style={{ backgroundColor: COLORS.primary, color: COLORS.foreground, fontWeight: 600, boxShadow: "0 8px 30px rgba(255, 193, 7, 0.35)" }}>
-                  <ArrowRight className="w-4 h-4 mr-2" />
-                  Começar grátis
-                </Button>
-              </div>
-              
-              <div className="mt-6 flex flex-wrap items-center justify-center lg:justify-start gap-4">
-                {[{ icon: Check, text: "7 dias grátis" }, { icon: Shield, text: "Sem cartão" }, { icon: Zap, text: "Setup 3 min" }].map((item) => (
-                  <span key={item.text} className="flex items-center gap-1.5 text-xs" style={{ color: COLORS.muted }}>
-                    <item.icon className="w-3.5 h-3.5" style={{ color: COLORS.success }} />
-                    {item.text}
-                  </span>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Mascot */}
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative hidden sm:flex justify-center items-center order-2">
-              <div className="absolute w-48 h-48 sm:w-64 sm:h-64 rounded-full"
-                style={{ background: `radial-gradient(circle, ${COLORS.primary}25 0%, transparent 70%)`, filter: "blur(40px)" }} />
-              <motion.img src={anotoMascotHero} alt="Mascote" className="w-48 sm:w-64 lg:w-96 object-contain relative z-10"
-                animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }} />
-              <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.6 }}
-                className="absolute -top-2 right-2 lg:right-6 z-20 px-4 py-2 rounded-xl shadow-lg"
-                style={{ backgroundColor: "rgba(255,255,255,0.95)", backdropFilter: "blur(10px)" }}>
-                <span className="font-semibold text-sm" style={{ color: COLORS.foreground }}>Pediu, Chegou! 🛵</span>
-              </motion.div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-      {/* Integrações */}
-      <section id="recursos" className="px-4 py-16 sm:py-20" style={{ background: `linear-gradient(180deg, ${COLORS.backgroundAlt} 0%, ${COLORS.primaryLight} 50%, ${COLORS.backgroundAlt} 100%)` }}>
-        <div className="max-w-5xl mx-auto">
-          <SectionTitle badge="INTEGRAÇÕES" title="Tudo conectado" subtitle="Automatize seu atendimento" />
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            {integrations.map((item, i) => (
-              <AnimatedCard key={item.title} delay={i * 0.08}>
-                <div className="rounded-2xl p-4 h-full text-center transition-transform hover:scale-[1.02]"
-                  style={{ backgroundColor: "#fff", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
-                  <div className="w-10 h-10 mx-auto rounded-xl flex items-center justify-center overflow-hidden">
-                    <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
-                  </div>
-                  <h3 className="mt-3 text-xs font-semibold" style={{ color: COLORS.foreground }}>{item.title}</h3>
-                  <p className="text-[10px] mt-0.5" style={{ color: COLORS.muted }}>{item.desc}</p>
-                </div>
-              </AnimatedCard>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Funcionalidades */}
-      <section id="funcionalidades" className="px-4 py-16 sm:py-20" style={{ backgroundColor: COLORS.backgroundAlt }}>
-        <div className="max-w-5xl mx-auto">
-          <SectionTitle badge="FUNCIONALIDADES" title="Gestão completa" subtitle="Tudo que você precisa em um só lugar" />
-          <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-3">
-            {systemFeatures.map((item, i) => (
-              <AnimatedCard key={item.title} delay={i * 0.05}>
-                <div className="rounded-xl p-3 text-center transition-all hover:shadow-md hover:-translate-y-0.5"
-                  style={{ backgroundColor: COLORS.background }}>
-                  <div className="w-8 h-8 mx-auto rounded-lg flex items-center justify-center" style={{ backgroundColor: COLORS.primaryLight }}>
-                    <item.icon className="w-4 h-4" style={{ color: COLORS.primaryDark }} />
-                  </div>
-                  <h3 className="mt-2 text-[10px] font-semibold leading-tight" style={{ color: COLORS.foreground }}>{item.title}</h3>
-                  <p className="text-[9px] mt-0.5 leading-tight" style={{ color: COLORS.muted }}>{item.desc}</p>
-                </div>
-              </AnimatedCard>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Top Rated */}
+      {/* Top Rated Stores */}
       {topRatedStores.length > 0 && (
         <section className="px-4 py-14 sm:py-16" style={{ backgroundColor: COLORS.background }}>
           <div className="max-w-3xl mx-auto">
@@ -496,19 +127,38 @@ export default function Landing() {
             <div className="grid sm:grid-cols-3 gap-3">
               {topRatedStores.map((store, i) => (
                 <AnimatedCard key={store.id} delay={i * 0.1}>
-                  <div className="rounded-xl p-3 cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5"
-                    style={{ backgroundColor: "#fff", border: i === 0 ? `2px solid ${COLORS.primary}` : `1px solid ${COLORS.border}` }}
-                    onClick={() => navigate(`/cardapio/${store.slug}`)}>
+                  <div 
+                    className="rounded-xl p-3 cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5"
+                    style={{ 
+                      backgroundColor: "#fff", 
+                      border: i === 0 ? `2px solid ${COLORS.primary}` : `1px solid ${COLORS.border}` 
+                    }}
+                    onClick={() => navigate(`/cardapio/${store.slug}`)}
+                  >
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold"
-                        style={{ backgroundColor: i === 0 ? COLORS.primary : i === 1 ? "#E5E7EB" : "#FED7AA", color: i === 0 ? COLORS.foreground : COLORS.muted }}>
+                      <div 
+                        className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold"
+                        style={{ 
+                          backgroundColor: i === 0 ? COLORS.primary : i === 1 ? "#E5E7EB" : "#FED7AA", 
+                          color: i === 0 ? COLORS.foreground : COLORS.muted 
+                        }}
+                      >
                         {i + 1}º
                       </div>
-                      <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{ border: `1px solid ${COLORS.border}` }}>
-                        {store.logo_url ? <img src={store.logo_url} alt="" className="w-full h-full object-cover" /> :
-                          <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: COLORS.primaryLight }}>
+                      <div 
+                        className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" 
+                        style={{ border: `1px solid ${COLORS.border}` }}
+                      >
+                        {store.logo_url ? (
+                          <img src={store.logo_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div 
+                            className="w-full h-full flex items-center justify-center" 
+                            style={{ backgroundColor: "#FFF8E1" }}
+                          >
                             <span className="text-xs font-bold">{store.name.charAt(0)}</span>
-                          </div>}
+                          </div>
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium text-xs truncate">{store.name}</h3>
@@ -526,251 +176,23 @@ export default function Landing() {
         </section>
       )}
 
-      {/* Preços */}
-      <section id="preços" className="px-3 sm:px-4 py-12 sm:py-20 relative" style={{ background: `linear-gradient(180deg, transparent 0%, ${COLORS.primaryLight} 8%, ${COLORS.primaryLight} 92%, transparent 100%)` }}>
-        <div className="max-w-3xl mx-auto">
-          <SectionTitle badge="PREÇO JUSTO" title="Invista no crescimento do seu negócio" subtitle="Sem taxa por pedido. Cancele quando quiser." />
-          
-          {/* Cards em ordem inversa no mobile (anual primeiro) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            {/* Plano Anual - Destaque (aparece primeiro no mobile) */}
-            <AnimatedCard delay={0} className="order-1 md:order-2">
-              <div className="rounded-2xl sm:rounded-3xl p-4 sm:p-6 relative h-full overflow-hidden" style={{ backgroundColor: COLORS.foreground, boxShadow: "0 8px 40px rgba(0,0,0,0.25)" }}>
-                {/* Badge Mais Escolhido */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-b-lg sm:rounded-b-xl text-[9px] sm:text-[10px] font-bold uppercase tracking-wider"
-                  style={{ backgroundColor: COLORS.primary, color: COLORS.foreground }}>
-                  ⭐ Mais Escolhido
-                </div>
-                
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3 sm:mb-4 mt-6 sm:mt-4">
-                  <h3 className="text-sm sm:text-base font-semibold text-white">Plano Anual</h3>
-                  <span className="text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded-full font-semibold w-fit" style={{ backgroundColor: COLORS.success, color: "#fff" }}>
-                    Economize R$ 442,80/ano
-                  </span>
-                </div>
-                
-                <div className="flex items-baseline flex-wrap gap-x-1">
-                  <span className="text-xs sm:text-sm line-through" style={{ color: "rgba(255,255,255,0.5)" }}>R$ 179,90</span>
-                  <span className="text-3xl sm:text-5xl font-bold text-white">R$ 143</span>
-                  <span className="text-base sm:text-lg" style={{ color: "rgba(255,255,255,0.7)" }}>,00</span>
-                  <span className="text-xs sm:text-sm" style={{ color: "rgba(255,255,255,0.7)" }}>/mês</span>
-                </div>
-                
-                <div className="mt-2 sm:mt-3 p-2 sm:p-3 rounded-lg sm:rounded-xl" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}>
-                  <p className="text-[10px] sm:text-xs text-white flex flex-wrap items-center gap-1">
-                    <span className="font-semibold">Total anual:</span> 
-                    <span>R$ 1.716,00</span>
-                    <span className="text-[9px] sm:text-[10px]" style={{ color: COLORS.primary }}>• 12x R$ 143,00</span>
-                  </p>
-                </div>
-                
-                <div className="my-3 sm:my-5 h-px" style={{ backgroundColor: "rgba(255,255,255,0.15)" }} />
-                
-                <ul className="space-y-2 sm:space-y-3">
-                  {["Tudo do plano mensal", "Suporte prioritário 24h", "Consultoria de lançamento", "Cardápio com tema premium", "Relatórios avançados", "WhatsApp API integrada"].map(item => (
-                    <li key={item} className="flex items-center gap-2">
-                      <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: COLORS.primary }}>
-                        <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3" style={{ color: COLORS.foreground }} />
-                      </div>
-                      <span className="text-xs sm:text-sm text-white">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                
-                <Button size="lg" className="w-full mt-4 sm:mt-6 rounded-full text-xs sm:text-sm font-semibold h-10 sm:h-12 transition-transform hover:scale-[1.02]" onClick={() => setShowSignupModal(true)}
-                  style={{ backgroundColor: COLORS.primary, color: COLORS.foreground }}>
-                  Começar 7 dias grátis
-                </Button>
-                
-                <p className="text-center mt-2 sm:mt-3 text-[9px] sm:text-[10px]" style={{ color: "rgba(255,255,255,0.6)" }}>
-                  🔒 Garantia de 7 dias ou seu dinheiro de volta
-                </p>
-              </div>
-            </AnimatedCard>
+      <LandingPricing onOpenSignup={() => setShowSignupModal(true)} />
 
-            {/* Plano Mensal */}
-            <AnimatedCard delay={0.1} className="order-2 md:order-1">
-              <div className="rounded-2xl sm:rounded-3xl p-4 sm:p-6 h-full relative overflow-hidden" style={{ backgroundColor: "#fff", boxShadow: "0 4px 24px rgba(0,0,0,0.08)", border: `1px solid ${COLORS.border}` }}>
-                <div className="flex items-center justify-between mb-3 sm:mb-4">
-                  <h3 className="text-sm sm:text-base font-semibold" style={{ color: COLORS.foreground }}>Plano Mensal</h3>
-                  <span className="text-[10px] sm:text-xs px-2 py-1 rounded-full" style={{ backgroundColor: COLORS.backgroundAlt, color: COLORS.muted }}>Flexível</span>
-                </div>
-                <div className="flex items-baseline flex-wrap gap-x-1">
-                  <span className="text-3xl sm:text-5xl font-bold" style={{ color: COLORS.foreground }}>R$ 179</span>
-                  <span className="text-base sm:text-lg" style={{ color: COLORS.muted }}>,90</span>
-                  <span className="text-xs sm:text-sm" style={{ color: COLORS.muted }}>/mês</span>
-                </div>
-                <p className="mt-1 sm:mt-2 text-[10px] sm:text-xs" style={{ color: COLORS.muted }}>Cobrança mensal, sem compromisso</p>
-                <div className="my-3 sm:my-5 h-px" style={{ backgroundColor: COLORS.border }} />
-                <ul className="space-y-2 sm:space-y-3">
-                  {["Cardápio digital ilimitado", "Pedidos ilimitados", "Zero taxa por pedido", "Suporte via WhatsApp", "Dashboard completo", "QR Code personalizado"].map(item => (
-                    <li key={item} className="flex items-center gap-2">
-                      <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: COLORS.primaryLight }}>
-                        <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3" style={{ color: COLORS.primaryDark }} />
-                      </div>
-                      <span className="text-xs sm:text-sm" style={{ color: COLORS.foreground }}>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Button variant="outline" size="lg" className="w-full mt-4 sm:mt-6 rounded-full text-xs sm:text-sm font-semibold h-10 sm:h-12" onClick={() => setShowSignupModal(true)}
-                  style={{ borderColor: COLORS.border, color: COLORS.foreground }}>
-                  Começar 7 dias grátis
-                </Button>
-              </div>
-            </AnimatedCard>
-          </div>
-          
-          {/* Trust badges */}
-          <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-[10px] sm:text-xs" style={{ color: COLORS.muted }}>
-            <span className="flex items-center gap-1">
-              <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: COLORS.success }} />
-              Pagamento seguro
-            </span>
-            <span className="flex items-center gap-1">
-              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: COLORS.primary }} />
-              Ativação instantânea
-            </span>
-            <span className="flex items-center gap-1">
-              <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: COLORS.success }} />
-              Cancele quando quiser
-            </span>
-          </div>
-        </div>
-      </section>
+      <LandingTestimonials />
 
-      {/* Depoimentos */}
-      <section id="depoimentos" className="px-4 py-16 sm:py-20" style={{ backgroundColor: COLORS.backgroundAlt }}>
-        <div className="max-w-4xl mx-auto">
-          <SectionTitle badge="DEPOIMENTOS" title="O que dizem nossos clientes" />
-          <div className="grid sm:grid-cols-3 gap-4">
-            {testimonials.map((t, i) => (
-              <AnimatedCard key={t.name} delay={i * 0.1}>
-                <div className="rounded-2xl p-5 h-full" style={{ backgroundColor: "#fff", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
-                  <div className="flex gap-0.5 mb-3">
-                    {[...Array(t.rating)].map((_, j) => (
-                      <Star key={j} className="w-4 h-4" style={{ fill: COLORS.primary, color: COLORS.primary }} />
-                    ))}
-                  </div>
-                  <p className="text-sm italic mb-4" style={{ color: COLORS.foreground }}>"{t.text}"</p>
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-lg" style={{ backgroundColor: COLORS.primaryLight }}>
-                      {t.avatar}
-                    </div>
-                    <div>
-                      <p className="font-medium text-xs">{t.name}</p>
-                      <p className="text-[10px]" style={{ color: COLORS.muted }}>{t.business}</p>
-                    </div>
-                  </div>
-                </div>
-              </AnimatedCard>
-            ))}
-          </div>
-        </div>
-      </section>
+      <LandingFooter onOpenSignup={() => setShowSignupModal(true)} />
 
-      {/* Final CTA */}
-      <section className="px-4 py-16 sm:py-20">
-        <AnimatedCard>
-          <div className="max-w-3xl mx-auto rounded-3xl p-8 sm:p-12 text-center"
-            style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`, boxShadow: "0 16px 48px rgba(255, 193, 7, 0.3)" }}>
-            <h2 className="text-2xl sm:text-3xl font-semibold" style={{ color: COLORS.foreground }}>Pronto para vender mais?</h2>
-            <p className="mt-3 text-sm max-w-md mx-auto" style={{ color: COLORS.foreground, opacity: 0.8 }}>
-              Teste gratuito de 7 dias. Sem compromisso, sem cartão.
-            </p>
-            <Button size="lg" onClick={() => setShowSignupModal(true)}
-              className="mt-6 text-sm px-8 py-5 rounded-full shadow-lg"
-              style={{ backgroundColor: COLORS.foreground, color: "#fff", fontWeight: 600 }}>
-              Criar meu cardápio grátis
-              <ArrowRight className="ml-2 w-4 h-4" />
-            </Button>
-          </div>
-        </AnimatedCard>
-      </section>
-
-      {/* Footer */}
-      <footer className="px-4 py-8" style={{ backgroundColor: COLORS.backgroundAlt }}>
-        <div className="max-w-5xl mx-auto">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <img src={anotoMascotFooter} alt="" className="w-8 h-8 object-contain" />
-              <div>
-                <span className="font-semibold text-sm">Anotô</span>
-                <p className="text-[10px]" style={{ color: COLORS.muted }}>Pediu, chegou!</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-5 flex-wrap justify-center">
-              {[{ label: "FAQ", path: "/faq" }, { label: "Privacidade", path: "/privacidade" }, { label: "Termos", path: "/termos" }].map(link => (
-                <button key={link.label} onClick={() => navigate(link.path)}
-                  className="text-xs hover:text-amber-500 transition-colors"
-                  style={{ color: COLORS.muted, background: "none", border: "none", cursor: "pointer" }}>
-                  {link.label}
-                </button>
-              ))}
-              <button onClick={() => navigate("/instalar")}
-                className="flex items-center gap-1.5 text-xs hover:text-amber-500 transition-colors"
-                style={{ color: COLORS.muted, background: "none", border: "none", cursor: "pointer" }}>
-                <Download className="w-3.5 h-3.5" />
-                Instalar App
-              </button>
-            </div>
-          </div>
-          <div className="mt-5 pt-5 text-center" style={{ borderTop: `1px solid ${COLORS.border}` }}>
-            <p className="text-xs" style={{ color: COLORS.muted }}>© {new Date().getFullYear()} Anotô. Todos os direitos reservados.</p>
-          </div>
-        </div>
-      </footer>
-
-      {/* Auth Dialog */}
-      <Dialog open={authOpen} onOpenChange={setAuthOpen}>
-        <DialogContent className="mx-4 max-w-sm rounded-2xl" style={{ backgroundColor: "#fff" }}>
-          <DialogHeader>
-            <DialogTitle className="text-center text-base">{isLogin ? "Entrar" : "Criar conta grátis"}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={isLogin ? handleLogin : handleSignUp} className="space-y-3 mt-3">
-            {!isLogin && (
-              <div>
-                <Label htmlFor="storeName" className="text-xs">Nome do estabelecimento</Label>
-                <Input id="storeName" placeholder="Ex: Pizzaria do João" value={storeName}
-                  onChange={(e) => setStoreName(e.target.value)} className="mt-1 rounded-xl text-sm" />
-              </div>
-            )}
-            <div>
-              <Label htmlFor="email" className="text-xs">Email</Label>
-              <Input id="email" type="email" placeholder="seu@email.com" value={email}
-                onChange={(e) => setEmail(e.target.value)} className="mt-1 rounded-xl text-sm" />
-            </div>
-            <div>
-              <Label htmlFor="password" className="text-xs">Senha</Label>
-              <Input id="password" type="password" placeholder="••••••••" value={password}
-                onChange={(e) => setPassword(e.target.value)} className="mt-1 rounded-xl text-sm" />
-            </div>
-            {!isLogin && (
-              <label className="flex items-start gap-2 cursor-pointer">
-                <input type="checkbox" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded accent-amber-500" disabled={loading} />
-                <span className="text-[10px]" style={{ color: COLORS.muted }}>
-                  Li e aceito os <button type="button" onClick={() => navigate("/termos")} className="text-amber-600 hover:underline font-medium" style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>Termos</button> e a <button type="button" onClick={() => navigate("/privacidade")} className="text-amber-600 hover:underline font-medium" style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>Política de Privacidade</button>
-                </span>
-              </label>
-            )}
-            <Button type="submit" className="w-full rounded-full text-sm" disabled={loading || (!isLogin && !acceptTerms)}
-              style={{ backgroundColor: COLORS.primary, color: COLORS.foreground, fontWeight: 600 }}>
-              {loading ? "Aguarde..." : isLogin ? "Entrar" : "Criar conta grátis"}
-            </Button>
-          </form>
-          <div className="text-center mt-3">
-            <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-xs"
-              style={{ color: COLORS.muted, background: "none", border: "none", cursor: "pointer" }}>
-              {isLogin ? "Não tem conta? Criar agora" : "Já tem conta? Entrar"}
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <SignupModal isOpen={showSignupModal} onClose={() => setShowSignupModal(false)}
-        onSwitchToLogin={() => { setShowSignupModal(false); setShowLoginModal(true); }} />
-      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)}
-        onSwitchToSignup={() => { setShowLoginModal(false); setShowSignupModal(true); }} />
+      {/* Auth Modals */}
+      <SignupModal 
+        isOpen={showSignupModal} 
+        onClose={() => setShowSignupModal(false)} 
+        onSwitchToLogin={() => { setShowSignupModal(false); setShowLoginModal(true); }}
+      />
+      <LoginModal 
+        isOpen={showLoginModal} 
+        onClose={() => setShowLoginModal(false)} 
+        onSwitchToSignup={() => { setShowLoginModal(false); setShowSignupModal(true); }}
+      />
     </div>
   );
 }
