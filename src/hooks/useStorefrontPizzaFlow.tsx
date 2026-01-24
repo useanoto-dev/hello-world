@@ -1,8 +1,8 @@
 // Hook for managing pizza customization flow in storefront
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
-import type { Category } from "./useStorefrontData";
+import type { Category, Product } from "./useStorefrontData";
 
 export interface PizzaSize {
   id: string;
@@ -244,6 +244,16 @@ export function useStorefrontPizzaFlow(
     setUpsellTriggerCategoryId(null);
   }, []);
 
+  // Reset pizza state
+  const resetPizzaState = useCallback(() => {
+    setShowPizzaFlavorDrawer(false);
+    setShowPizzaDoughDrawer(false);
+    setSelectedPizzaSize(null);
+    setSelectedPizzaFlavors(null);
+    setSelectedPizzaEdge(null);
+    setSelectedPizzaDough(null);
+  }, []);
+
   return {
     // State
     showPizzaFlavorDrawer,
@@ -251,11 +261,16 @@ export function useStorefrontPizzaFlow(
     showPizzaDoughDrawer,
     setShowPizzaDoughDrawer,
     selectedPizzaSize,
+    setSelectedPizzaSize,
     selectedPizzaFlavors,
+    setSelectedPizzaFlavors,
     selectedPizzaEdge,
+    setSelectedPizzaEdge,
     selectedPizzaDough,
     showUpsellModal,
+    setShowUpsellModal,
     upsellTriggerCategoryId,
+    setUpsellTriggerCategoryId,
     
     // Handlers
     handlePizzaSizeSelect,
@@ -264,6 +279,7 @@ export function useStorefrontPizzaFlow(
     finalizePizzaOrderDirect,
     handleUpsellClose,
     handleUpsellBack,
+    resetPizzaState,
     
     // Helpers
     isStepEnabled,
