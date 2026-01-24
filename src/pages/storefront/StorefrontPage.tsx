@@ -1,28 +1,34 @@
-// Storefront Page - Dynamic Categories and Products
-import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+// Storefront Page - Refactored with custom hooks
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/contexts/CartContext";
 import { useStoreStatus } from "@/contexts/StoreStatusContext";
+import { useFavorites } from "@/hooks/useFavorites";
+import { useStorefrontData, type Category, type Product } from "@/hooks/useStorefrontData";
+import { useStorefrontPizzaFlow } from "@/hooks/useStorefrontPizzaFlow";
+import { useStorefrontUI, createVirtualProducts, filterAndSortProducts } from "@/hooks/useStorefrontUI";
+import { getStoreThemeStyles, getMorphAnimationEnabled } from "@/lib/storeTheme";
+import { usePrefetchUpsellModals } from "@/components/storefront/DynamicUpsellModal";
+import { toast } from "sonner";
+import { AnimatePresence, motion } from "framer-motion";
+
+// Components
 import StorefrontHeader from "@/components/storefront/StorefrontHeader";
 import BannerCarousel from "@/components/storefront/BannerCarousel";
-import ProductSearch from "@/components/storefront/ProductSearch";
-import ProductFilters, { PriceFilter, SortOption } from "@/components/storefront/ProductFilters";
+import ProductFilters from "@/components/storefront/ProductFilters";
 import CategoryTabs from "@/components/storefront/CategoryTabs";
 import ProductGrid from "@/components/storefront/ProductGrid";
 import FeaturedProducts from "@/components/storefront/FeaturedProducts";
-
 import StorefrontSkeleton from "@/components/storefront/StorefrontSkeleton";
 import ProductCustomizationModal from "@/components/storefront/ProductCustomizationModal";
 import AboutSection from "@/components/storefront/AboutSection";
 import ClosedOverlay from "@/components/storefront/ClosedOverlay";
-import BottomNavigation, { NavigationTab } from "@/components/storefront/BottomNavigation";
+import BottomNavigation from "@/components/storefront/BottomNavigation";
 import OrderHistoryContent from "@/components/storefront/OrderHistoryContent";
 import CardapioSkeleton from "@/components/storefront/skeletons/CardapioSkeleton";
 import PedidosSkeleton from "@/components/storefront/skeletons/PedidosSkeleton";
 import SobreSkeleton from "@/components/storefront/skeletons/SobreSkeleton";
-import DynamicUpsellModal, { usePrefetchUpsellModals } from "@/components/storefront/DynamicUpsellModal";
+import DynamicUpsellModal from "@/components/storefront/DynamicUpsellModal";
 import { LoyaltyWidget } from "@/components/storefront/LoyaltyWidget";
 import { PizzaSizeGrid } from "@/components/storefront/PizzaSizeGrid";
 import { PizzaFlavorSelectionDrawer } from "@/components/storefront/PizzaFlavorSelectionDrawer";
@@ -30,763 +36,130 @@ import { PizzaDoughSelectionDrawer } from "@/components/storefront/PizzaDoughSel
 import { StandardCategoryGrid } from "@/components/storefront/StandardCategoryGrid";
 import { BeverageTypesGrid } from "@/components/storefront/BeverageTypesGrid";
 import ProductDetailDrawer from "@/components/storefront/ProductDetailDrawer";
-import { useFavorites } from "@/hooks/useFavorites";
-import { parseSchedule, isStoreOpenNow, getNextOpeningTime } from "@/lib/scheduleUtils";
-import { toast } from "sonner";
-import { AnimatePresence, motion } from "framer-motion";
-
-// Helper to convert HEX color to HSL values
-function hexToHsl(hex: string): { h: number; s: number; l: number } | null {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!result) return null;
-
-  let r = parseInt(result[1], 16) / 255;
-  let g = parseInt(result[2], 16) / 255;
-  let b = parseInt(result[3], 16) / 255;
-
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  let h = 0;
-  let s = 0;
-  const l = (max + min) / 2;
-
-  if (max !== min) {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch (max) {
-      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
-      case g: h = ((b - r) / d + 2) / 6; break;
-      case b: h = ((r - g) / d + 4) / 6; break;
-    }
-  }
-
-  return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
-}
-
-// Generate CSS variables and font from store's colors and font
-function getStoreThemeStyles(
-  primaryColor: string | null, 
-  secondaryColor: string | null,
-  fontFamily: string | null
-): React.CSSProperties {
-  const styles: React.CSSProperties = {};
-  
-  // Apply font family
-  if (fontFamily) {
-    styles.fontFamily = `'${fontFamily}', system-ui, sans-serif`;
-  }
-  
-  // Apply primary color
-  if (primaryColor) {
-    const primaryHsl = hexToHsl(primaryColor);
-    if (primaryHsl) {
-      const { h, s, l } = primaryHsl;
-      const foregroundL = l > 50 ? 10 : 98;
-      
-      Object.assign(styles, {
-        '--primary': `${h} ${s}% ${l}%`,
-        '--primary-foreground': `0 0% ${foregroundL}%`,
-        '--ring': `${h} ${s}% ${l}%`,
-      });
-    }
-  }
-  
-  // Apply secondary color
-  if (secondaryColor) {
-    const secondaryHsl = hexToHsl(secondaryColor);
-    if (secondaryHsl) {
-      const { h, s, l } = secondaryHsl;
-      const foregroundL = l > 50 ? 10 : 98;
-      
-      Object.assign(styles, {
-        '--secondary': `${h} ${s}% ${l}%`,
-        '--secondary-foreground': `0 0% ${foregroundL}%`,
-        '--accent': `${h} ${s}% ${l}%`,
-        '--accent-foreground': `0 0% ${foregroundL}%`,
-      });
-    }
-  }
-  
-  return styles;
-}
-
-const STORAGE_KEY = "storefront_active_tab";
-
-// Store interface for type reference
-type _Store = {
-  id: string;
-  name: string;
-  slug: string;
-  logo_url: string | null;
-  banner_url: string | null;
-  primary_color: string | null;
-  secondary_color: string | null;
-  font_family: string | null;
-  address: string | null;
-  phone: string | null;
-  whatsapp: string | null;
-  instagram: string | null;
-  open_hour: number | null;
-  close_hour: number | null;
-  is_open_override: boolean | null;
-  about_us: string | null;
-  estimated_prep_time: number | null;
-  estimated_delivery_time: number | null;
-  google_maps_link: string | null;
-  min_order_value: number | null;
-  schedule?: unknown;
-};
-
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  icon: string | null;
-  image_url: string | null;
-  use_sequential_flow: boolean;
-  has_base_product: boolean | null;
-  category_type: string | null;
-  show_flavor_prices?: boolean;
-  display_mode?: "cards" | "list";
-  allow_quantity_selector?: boolean;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  promotional_price: number | null;
-  image_url: string | null;
-  category_id: string;
-  is_featured: boolean | null;
-  stock_quantity?: number | null;
-  min_stock_alert?: number | null;
-  has_stock_control?: boolean | null;
-}
-
-interface CategoryOptionGroup {
-  id: string;
-  category_id: string;
-  is_primary: boolean;
-}
-
-interface PrimaryGroupItem {
-  id: string;
-  group_id: string;
-  name: string;
-  additional_price: number;
-  promotional_price: number | null;
-  promotion_start_at: string | null;
-  promotion_end_at: string | null;
-  image_url: string | null;
-  description: string | null;
-}
-
-// Fetch store data with all fields needed for display
-async function fetchStoreData(slug: string) {
-  const { data, error } = await supabase
-    .from("stores")
-    .select("id, name, slug, logo_url, banner_url, primary_color, secondary_color, font_family, address, phone, whatsapp, instagram, open_hour, close_hour, is_open_override, about_us, estimated_prep_time, estimated_delivery_time, google_maps_link, schedule, min_order_value, use_comanda_mode")
-    .eq("slug", slug)
-    .eq("is_active", true)
-    .maybeSingle();
-  
-  if (error) throw error;
-  return data;
-}
-
-// Check if morph animation is enabled (stored in localStorage per store)
-function getMorphAnimationEnabled(storeId: string): boolean {
-  try {
-    const stored = localStorage.getItem(`morph_animation_${storeId}`);
-    return stored !== "false"; // Default to true
-  } catch {
-    return true;
-  }
-}
-
-// Fetch categories, products and option groups
-async function fetchStoreContent(storeId: string) {
-  const [categoriesResult, productsResult, optionGroupsResult, reviewsResult, inventoryCategoriesResult, inventoryProductsResult, flowStepsResult, standardSizesResult] = await Promise.all([
-    supabase
-      .from("categories")
-      .select("id, name, slug, icon, image_url, use_sequential_flow, has_base_product, category_type, show_flavor_prices, display_mode, allow_quantity_selector")
-      .eq("store_id", storeId)
-      .eq("is_active", true)
-      .order("display_order"),
-    supabase
-      .from("products")
-      .select("id, name, description, price, promotional_price, image_url, category_id, is_featured, stock_quantity, min_stock_alert, has_stock_control")
-      .eq("store_id", storeId)
-      .eq("is_available", true)
-      .order("display_order"),
-    supabase
-      .from("category_option_groups")
-      .select("id, category_id, is_primary")
-      .eq("store_id", storeId)
-      .eq("is_active", true),
-    supabase
-      .from("reviews")
-      .select("rating")
-      .eq("store_id", storeId),
-    // Fetch inventory categories
-    supabase
-      .from("inventory_categories")
-      .select("id, name, icon, is_active")
-      .eq("store_id", storeId)
-      .eq("is_active", true)
-      .order("display_order"),
-    // Fetch inventory products with stock > 0
-    supabase
-      .from("inventory_products")
-      .select("id, name, description, price, promotional_price, image_url, category_id, stock_quantity, min_stock_alert")
-      .eq("store_id", storeId)
-      .eq("is_active", true)
-      .gt("stock_quantity", 0)
-      .order("display_order"),
-    // Fetch pizza flow steps configuration
-    supabase
-      .from("pizza_flow_steps")
-      .select("category_id, step_type, is_enabled, step_order, next_step_id")
-      .eq("store_id", storeId),
-    // Fetch standard sizes for standard categories (açaí, hambúrguer, etc.)
-    supabase
-      .from("standard_sizes")
-      .select("id, category_id, name, description, base_price, image_url, is_active")
-      .eq("store_id", storeId)
-      .eq("is_active", true)
-      .order("display_order"),
-  ]);
-
-  if (categoriesResult.error) throw categoriesResult.error;
-  if (productsResult.error) throw productsResult.error;
-  if (optionGroupsResult.error) throw optionGroupsResult.error;
-
-  // Calculate review stats
-  const reviews = reviewsResult.data || [];
-  const reviewStats = {
-    averageRating: reviews.length > 0 
-      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length 
-      : 0,
-    totalReviews: reviews.length
-  };
-
-  // Build a map of categories that have option groups
-  const categoryHasOptions = new Map<string, boolean>();
-  const primaryGroupIds: string[] = [];
-  
-  (optionGroupsResult.data || []).forEach((group: CategoryOptionGroup) => {
-    categoryHasOptions.set(group.category_id, true);
-    if (group.is_primary) {
-      primaryGroupIds.push(group.id);
-    }
-  });
-
-  // Fetch items from primary groups for display on cards
-  let primaryGroupItems: Record<string, PrimaryGroupItem[]> = {};
-  
-  if (primaryGroupIds.length > 0) {
-    const { data: itemsData } = await supabase
-      .from("category_option_items")
-      .select("id, group_id, name, additional_price, promotional_price, promotion_start_at, promotion_end_at, image_url, description")
-      .in("group_id", primaryGroupIds)
-      .eq("is_active", true)
-      .order("display_order");
-    
-    // Map items by category_id (via group)
-    const groupToCategoryMap = new Map<string, string>();
-    (optionGroupsResult.data || []).forEach((group: CategoryOptionGroup) => {
-      if (group.is_primary) {
-        groupToCategoryMap.set(group.id, group.category_id);
-      }
-    });
-    
-    (itemsData || []).forEach((item: PrimaryGroupItem) => {
-      const categoryId = groupToCategoryMap.get(item.group_id);
-      if (categoryId) {
-        if (!primaryGroupItems[categoryId]) {
-          primaryGroupItems[categoryId] = [];
-        }
-        primaryGroupItems[categoryId].push(item);
-      }
-    });
-  }
-
-  // Map inventory categories to standard category format
-  const inventoryCategories: Category[] = (inventoryCategoriesResult.data || []).map(cat => ({
-    id: `inv-${cat.id}`,
-    name: cat.name,
-    slug: `estoque-${cat.id}`,
-    icon: cat.icon,
-    image_url: null,
-    use_sequential_flow: false,
-    has_base_product: false,
-    category_type: null,
-  }));
-
-  // Map inventory products to standard product format
-  const inventoryProducts: Product[] = (inventoryProductsResult.data || []).map(prod => ({
-    id: `inv-${prod.id}`,
-    name: prod.name,
-    description: prod.description,
-    price: prod.price,
-    promotional_price: prod.promotional_price,
-    image_url: prod.image_url,
-    category_id: `inv-${prod.category_id}`,
-    is_featured: false,
-    stock_quantity: prod.stock_quantity,
-    min_stock_alert: prod.min_stock_alert,
-    has_stock_control: true,
-  }));
-
-  // Build flow steps map by category - stores both enabled status and next_step_id
-  // Using plain objects for better React Query serialization
-  const flowStepsData: Record<string, Record<string, { is_enabled: boolean; next_step_id: string | null }>> = {};
-  (flowStepsResult.data || []).forEach((step: any) => {
-    if (!flowStepsData[step.category_id]) {
-      flowStepsData[step.category_id] = {};
-    }
-    flowStepsData[step.category_id][step.step_type] = {
-      is_enabled: step.is_enabled,
-      next_step_id: step.next_step_id,
-    };
-  });
-
-  // Create virtual products from standard_sizes for standard categories
-  const standardSizeProducts: Product[] = (standardSizesResult.data || []).map((size: any) => ({
-    id: `standard-size-${size.id}`,
-    name: size.name,
-    description: size.description,
-    price: size.base_price || 0,
-    promotional_price: null,
-    image_url: size.image_url,
-    category_id: size.category_id,
-    is_featured: false,
-    stock_quantity: null,
-    min_stock_alert: null,
-    has_stock_control: false,
-  }));
-
-  // Track which categories have standard sizes (so we don't show regular products)
-  const standardCategoryIds = new Set<string>(
-    (standardSizesResult.data || []).map((s: any) => s.category_id)
-  );
-
-
-  return {
-    categories: [...(categoriesResult.data || []) as Category[], ...inventoryCategories],
-    products: [...(productsResult.data || []) as Product[], ...inventoryProducts, ...standardSizeProducts],
-    categoryHasOptions,
-    primaryGroupItems,
-    reviewStats,
-    inventoryProductIds: new Set(inventoryProducts.map(p => p.id)),
-    flowStepsData,
-    standardCategoryIds,
-  };
-}
 
 export default function StorefrontPage() {
   const { slug } = useParams<{ slug: string }>();
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [priceFilter, setPriceFilter] = useState<PriceFilter>("all");
-  const [sortOption, setSortOption] = useState<SortOption>("default");
-  const [showPromoOnly, setShowPromoOnly] = useState(false);
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
-  const [enableMorphAnimation, setEnableMorphAnimation] = useState(true);
-  
-  // Initialize active tab from localStorage
-  const [activeTab, setActiveTab] = useState<NavigationTab>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return (saved as NavigationTab) || "cardapio";
-  });
-  
-  // Haptic feedback helper - safe for iOS Safari
-  const triggerHaptic = useCallback(() => {
-    try {
-      if (typeof navigator !== 'undefined' && 'vibrate' in navigator && typeof navigator.vibrate === 'function') {
-        navigator.vibrate(10);
-      }
-    } catch {
-      // Ignore vibration errors on unsupported browsers
-    }
-  }, []);
-  
-  // Persist active tab to localStorage with haptic feedback
-  const handleTabChange = useCallback((tab: NavigationTab) => {
-    triggerHaptic();
-    setActiveTab(tab);
-    localStorage.setItem(STORAGE_KEY, tab);
-  }, [triggerHaptic]);
-  
-  // Product customization modal
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [preselectedOptionId, setPreselectedOptionId] = useState<string | null>(null);
-  const [showCustomizationModal, setShowCustomizationModal] = useState(false);
-  
-  // Upsell modal state for ProductCustomizationModal
-  const [showUpsellModal, setShowUpsellModal] = useState(false);
-  const [upsellTriggerCategoryId, setUpsellTriggerCategoryId] = useState<string | null>(null);
-  
-  // Pizza flavor selection state
-  const [showPizzaFlavorDrawer, setShowPizzaFlavorDrawer] = useState(false);
-  const [showPizzaDoughDrawer, setShowPizzaDoughDrawer] = useState(false);
-  const [selectedPizzaSize, setSelectedPizzaSize] = useState<{
-    id: string;
-    name: string;
-    maxFlavors: number;
-    categoryId: string;
-    basePrice: number;
-    imageUrl: string | null;
-  } | null>(null);
-  const [selectedPizzaFlavors, setSelectedPizzaFlavors] = useState<{
-    flavors: { id: string; name: string; price: number; surcharge: number; flavor_type: string }[];
-    totalPrice: number;
-  } | null>(null);
-  const [selectedPizzaEdge, setSelectedPizzaEdge] = useState<{
-    id: string;
-    name: string;
-    price: number;
-  } | null>(null);
-  const [selectedPizzaDough, setSelectedPizzaDough] = useState<{
-    id: string;
-    name: string;
-    price: number;
-  } | null>(null);
-  
-  // Simple product detail drawer state (for products without customization)
-  const [showProductDetailDrawer, setShowProductDetailDrawer] = useState(false);
-  const [simpleProduct, setSimpleProduct] = useState<Product | null>(null);
-  const [simpleProductCategoryName, setSimpleProductCategoryName] = useState("");
-  
   const { addToCart, totalItems } = useCart();
   const { setStoreData, isOpen: isStoreOpen } = useStoreStatus();
-
-  // Fetch store with aggressive caching (staleTime: 5min, cacheTime: 30min)
-  const { data: store, isLoading: storeLoading, refetch: refetchStore } = useQuery({
-    queryKey: ["store", slug],
-    queryFn: () => fetchStoreData(slug!),
-    enabled: !!slug,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
-  });
-
-  // Load morph animation preference when store loads
-  useEffect(() => {
-    if (store?.id) {
-      setEnableMorphAnimation(getMorphAnimationEnabled(store.id));
-    }
-  }, [store?.id]);
-
-  // Fetch content after store loads, with same aggressive caching
-  const { data: content, isLoading: contentLoading, refetch: refetchContent } = useQuery({
-    queryKey: ["store-content", store?.id],
-    queryFn: () => fetchStoreContent(store!.id),
-    enabled: !!store?.id,
-    staleTime: 2 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
-  });
-
-  const queryClient = useQueryClient();
   
-  // Favorites hook - needs to be after store is loaded
-  const { favoritesCount } = useFavorites(store?.id);
-
-  // Track products with updated prices for visual effect
-  const [updatedProductIds, setUpdatedProductIds] = useState<Set<string>>(new Set());
-
-  // Real-time subscription for option items, products and inventory updates (prices and stock)
-  useEffect(() => {
-    if (!store?.id) return;
-
-    const channel = supabase
-      .channel('storefront-realtime')
-      // Products - ALL events (INSERT, UPDATE, DELETE)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'products' },
-        (payload) => {
-          const eventType = payload.eventType;
-          
-          if (eventType === 'INSERT') {
-            toast.success("✨ Novo item no cardápio!", { duration: 3000 });
-          } else if (eventType === 'DELETE') {
-            toast.info("Item removido do cardápio", { duration: 3000 });
-          } else if (eventType === 'UPDATE') {
-            const oldPrice = payload.old?.promotional_price;
-            const newPrice = payload.new?.promotional_price;
-            const oldRegular = payload.old?.price;
-            const newRegular = payload.new?.price;
-            
-            if (oldPrice !== newPrice || oldRegular !== newRegular) {
-              const productId = payload.new?.id;
-              if (productId) {
-                setUpdatedProductIds(prev => new Set([...prev, productId]));
-                setTimeout(() => {
-                  setUpdatedProductIds(prev => {
-                    const next = new Set(prev);
-                    next.delete(productId);
-                    return next;
-                  });
-                }, 2500);
-              }
-              toast.success("🔥 Promoção atualizada!", { duration: 3000 });
-            }
-          }
-          
-          queryClient.invalidateQueries({ queryKey: ["store-content", store.id] });
-        }
-      )
-      // Categories - ALL events
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'categories' },
-        (payload) => {
-          if (payload.eventType === 'INSERT') {
-            toast.success("📂 Nova categoria!", { duration: 3000 });
-          } else if (payload.eventType === 'DELETE') {
-            toast.info("Categoria removida", { duration: 3000 });
-          }
-          queryClient.invalidateQueries({ queryKey: ["store-content", store.id] });
-        }
-      )
-      // Category option items - ALL events
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'category_option_items' },
-        (payload) => {
-          if (payload.eventType === 'UPDATE') {
-            const oldPrice = payload.old?.promotional_price;
-            const newPrice = payload.new?.promotional_price;
-            if (oldPrice !== newPrice) {
-              toast.success("🔥 Promoção atualizada!", { duration: 3000 });
-            }
-          }
-          queryClient.invalidateQueries({ queryKey: ["store-content", store.id] });
-        }
-      )
-      // Category option groups - ALL events
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'category_option_groups' },
-        () => queryClient.invalidateQueries({ queryKey: ["store-content", store.id] })
-      )
-      // Inventory products - ALL events
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'inventory_products' },
-        () => queryClient.invalidateQueries({ queryKey: ["store-content", store.id] })
-      )
-      // Inventory categories - ALL events
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'inventory_categories' },
-        () => queryClient.invalidateQueries({ queryKey: ["store-content", store.id] })
-      )
-      // Pizza flow steps - ALL events
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'pizza_flow_steps' },
-        () => queryClient.invalidateQueries({ queryKey: ["store-content", store.id] })
-      )
-      // Standard items - ALL events
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'standard_items' },
-        () => queryClient.invalidateQueries({ queryKey: ["store-content", store.id] })
-      )
-      // Standard sizes - ALL events
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'standard_sizes' },
-        () => queryClient.invalidateQueries({ queryKey: ["store-content", store.id] })
-      )
-      // Standard item prices - ALL events
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'standard_item_prices' },
-        () => queryClient.invalidateQueries({ queryKey: ["store-content", store.id] })
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [store?.id, queryClient]);
+  // Data fetching hook
+  const { store, content, loading, updatedProductIds } = useStorefrontData(slug);
   
-  // Pull-to-refresh state
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  
-  const _handleRefresh = useCallback(async () => {
-    setIsRefreshing(true);
-    triggerHaptic();
-    
-    try {
-      await Promise.all([refetchStore(), refetchContent()]);
-      toast.success("Dados atualizados!");
-    } catch {
-      toast.error("Erro ao atualizar");
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [refetchStore, refetchContent, triggerHaptic]);
-
+  // Extract content data
   const categories = content?.categories || [];
   const products = content?.products || [];
   const categoryHasOptions = content?.categoryHasOptions || new Map<string, boolean>();
   const primaryGroupItems = content?.primaryGroupItems || {};
   const reviewStats = content?.reviewStats;
   const flowStepsData = content?.flowStepsData || {};
-  const _standardCategoryIds = content?.standardCategoryIds || new Set<string>();
-  const loading = storeLoading || (!!store && contentLoading);
-
-  // Use ref to always have latest flowStepsData (avoids stale closure issues)
-  const flowStepsDataRef = useRef(flowStepsData);
-  useEffect(() => {
-    flowStepsDataRef.current = flowStepsData;
-  }, [flowStepsData]);
-
-  // Helper to check if a flow step is enabled for a category
-  const isStepEnabled = useCallback((categoryId: string, stepType: string): boolean => {
-    const data = flowStepsDataRef.current;
-    const categorySteps = data[categoryId];
-    if (!categorySteps) return true; // Default to enabled if not configured
-    const stepData = categorySteps[stepType];
-    if (!stepData) return true; // Default to enabled if step not found
-    return stepData.is_enabled;
-  }, []);
-
-  // Helper to get the next step after a given step for a category
-  const getNextStep = useCallback((categoryId: string, currentStepType: string): string | null => {
-    const data = flowStepsDataRef.current;
-    const categorySteps = data[categoryId];
-    if (!categorySteps) return null;
-    const stepData = categorySteps[currentStepType];
-    if (!stepData) return null;
-    return stepData.next_step_id;
-  }, []);
-
-  // Helper to navigate to the next enabled step
-  const navigateToNextStep = useCallback((categoryId: string, currentStepType: string): string | null => {
-    let nextStep = getNextStep(categoryId, currentStepType);
-    
-    // Follow the chain until we find an enabled step or reach cart/null
-    while (nextStep && nextStep !== 'cart') {
-      if (isStepEnabled(categoryId, nextStep)) {
-        return nextStep;
-      }
-      // This step is disabled, get its next step
-      nextStep = getNextStep(categoryId, nextStep);
-    }
-    
-    return nextStep;
-  }, [getNextStep, isStepEnabled]);
-
-  // Helper to check if promotion is currently active
-  const isPromotionActive = useCallback((item: PrimaryGroupItem): boolean => {
-    if (item.promotional_price === null || item.promotional_price >= item.additional_price) {
-      return false;
-    }
-    const now = new Date();
-    if (item.promotion_start_at) {
-      const startDate = new Date(item.promotion_start_at);
-      if (now < startDate) return false;
-    }
-    if (item.promotion_end_at) {
-      const endDate = new Date(item.promotion_end_at);
-      if (now > endDate) return false;
-    }
-    return true;
-  }, []);
-
-  // Create virtual products from primary group items for categories that have option groups
-  const categoryProducts = useMemo(() => {
-    const virtualProducts: Array<{
-      id: string;
-      name: string;
-      description: string | null;
-      price: number;
-      promotional_price: number | null;
-      image_url: string | null;
-      category_id: string;
-      is_featured: boolean;
-      isVirtualProduct: boolean;
-      primaryOptionId: string;
-    }> = [];
-    
-    categories
-      .filter(cat => categoryHasOptions.has(cat.id))
-      .forEach(cat => {
-        const primaryItems = primaryGroupItems[cat.id] || [];
-        
-        // Create a virtual product for each primary group item
-        primaryItems.forEach(item => {
-          const hasActivePromo = isPromotionActive(item);
-          virtualProducts.push({
-            id: `primary-option-${item.id}`,
-            name: item.name,
-            description: item.description,
-            price: item.additional_price || 0,
-            promotional_price: hasActivePromo ? item.promotional_price : null,
-            image_url: item.image_url || cat.image_url,
-            category_id: cat.id,
-            is_featured: false,
-            isVirtualProduct: true,
-            primaryOptionId: item.id,
-          });
-        });
-      });
-    
-    return virtualProducts;
-  }, [categories, categoryHasOptions, primaryGroupItems, isPromotionActive]);
   
-  // Combine real products with virtual category products
+  // UI state hook
+  const ui = useStorefrontUI(
+    store?.id,
+    store?.schedule,
+    store?.is_open_override ?? null,
+    store?.open_hour ?? null,
+    store?.close_hour ?? null
+  );
+  
+  // Favorites hook
+  const { favoritesCount } = useFavorites(store?.id);
+  
+  // Morph animation state
+  const [enableMorphAnimation, setEnableMorphAnimation] = useState(true);
+  
+  useEffect(() => {
+    if (store?.id) {
+      setEnableMorphAnimation(getMorphAnimationEnabled(store.id));
+    }
+  }, [store?.id]);
+  
+  // Product customization modal state
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [preselectedOptionId, setPreselectedOptionId] = useState<string | null>(null);
+  const [showCustomizationModal, setShowCustomizationModal] = useState(false);
+  
+  // Simple product detail drawer state
+  const [showProductDetailDrawer, setShowProductDetailDrawer] = useState(false);
+  const [simpleProduct, setSimpleProduct] = useState<Product | null>(null);
+  const [simpleProductCategoryName, setSimpleProductCategoryName] = useState("");
+  
+  // Compute active category
+  const initialCategory = useMemo(() => categories.length > 0 ? categories[0].id : null, [categories]);
+  const effectiveCategory = ui.activeCategory ?? initialCategory;
+  
+  // Get active category data
+  const activeCategoryData = useMemo(() => {
+    return categories.find(c => c.id === effectiveCategory);
+  }, [categories, effectiveCategory]);
+  
+  const isPizzaCategory = activeCategoryData?.category_type === "pizza";
+  const isStandardCategory = activeCategoryData?.category_type === "standard";
+  const isBeveragesCategory = activeCategoryData?.category_type === "beverages";
+  
+  // Pizza flow hook
+  const pizzaFlow = useStorefrontPizzaFlow(flowStepsData, activeCategoryData, isStoreOpen);
+  
+  // Prefetch upsell modals
+  const prefetchUpsellModals = usePrefetchUpsellModals(store?.id, activeCategoryData?.id);
+  
+  // Create virtual products from primary group items
+  const categoryProducts = useMemo(() => {
+    return createVirtualProducts(categories, categoryHasOptions, primaryGroupItems);
+  }, [categories, categoryHasOptions, primaryGroupItems]);
+  
+  // Combine real products with virtual products
   const allProducts = useMemo(() => {
     const realProducts = products.map(p => ({ ...p, isVirtualProduct: false }));
     return [...realProducts, ...categoryProducts];
   }, [products, categoryProducts]);
-
-  // Set initial category when categories load
-  const initialCategory = useMemo(() => {
-    if (categories.length > 0) {
-      return categories[0].id;
-    }
-    return null;
-  }, [categories]);
-
-  // Only set active category once when initial category is available
-  const effectiveCategory = activeCategory ?? initialCategory;
-
-  // Check if current category is a pizza category
-  const activeCategoryData = useMemo(() => {
-    return categories.find(c => c.id === effectiveCategory);
-  }, [categories, effectiveCategory]);
-
-  const isPizzaCategory = activeCategoryData?.category_type === "pizza";
   
-  // Check if current category is a standard category (by category_type, not by having sizes)
-  const isStandardCategory = activeCategoryData?.category_type === "standard";
+  // Count products with promotions
+  const promoCount = useMemo(() => {
+    return allProducts.filter(p => 
+      !p.isVirtualProduct && 
+      p.promotional_price !== null && 
+      p.promotional_price < p.price
+    ).length;
+  }, [allProducts]);
   
-  // Check if current category is a beverages category
-  const isBeveragesCategory = activeCategoryData?.category_type === "beverages";
-
-  // Prefetch upsell modals for current category (instant modal loading)
-  const prefetchUpsellModals = usePrefetchUpsellModals(store?.id, activeCategoryData?.id);
-
-  // Define handleSearch before early returns to avoid hook issues
-  const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query);
-    // Clear category filter when searching
-    if (query) {
-      setActiveCategory(null);
+  // Filter and sort products
+  const filteredProducts = useMemo(() => {
+    return filterAndSortProducts(allProducts, {
+      searchQuery: ui.searchQuery,
+      effectiveCategory,
+      showPromoOnly: ui.showPromoOnly,
+      priceFilter: ui.priceFilter,
+      sortOption: ui.sortOption,
+    });
+  }, [allProducts, ui.searchQuery, effectiveCategory, ui.showPromoOnly, ui.priceFilter, ui.sortOption]);
+  
+  const featuredProducts = useMemo(() => {
+    return allProducts.filter(p => p.is_featured && !p.isVirtualProduct);
+  }, [allProducts]);
+  
+  // Generate theme styles
+  const storeThemeStyles = useMemo(() => getStoreThemeStyles(
+    store?.primary_color ?? null,
+    (store as any)?.secondary_color ?? null,
+    (store as any)?.font_family ?? null
+  ), [store?.primary_color, (store as any)?.secondary_color, (store as any)?.font_family]);
+  
+  // Set store data for status context
+  useEffect(() => {
+    if (store) {
+      setStoreData({
+        schedule: store.schedule,
+        is_open_override: store.is_open_override,
+        open_hour: store.open_hour,
+        close_hour: store.close_hour,
+      });
     }
-  }, []);
-
+  }, [store, setStoreData]);
+  
+  // Product click handler
   const handleProductClick = useCallback((product: Product & { isVirtualProduct?: boolean; primaryOptionId?: string }) => {
-    // Block if store is closed
     if (!isStoreOpen) {
       toast.error("Estabelecimento fechado", {
         description: "Não é possível adicionar itens ao carrinho no momento.",
@@ -794,27 +167,20 @@ export default function StorefrontPage() {
       return;
     }
 
-    // Check if this is an inventory product (id starts with 'inv-')
     const isInventoryProduct = product.id.startsWith('inv-');
+    const isStandardSizeProduct = product.id.startsWith('standard-size-');
     
     if (isInventoryProduct) {
-      // Open product detail drawer for inventory products
       const category = categories.find(c => c.id === product.category_id);
       setSimpleProduct(product);
       setSimpleProductCategoryName(category?.name || "Estoque");
       setShowProductDetailDrawer(true);
       return;
     }
-
-    // Check if this is a standard size product (from standard categories like açaí, hamburgueria)
-    const isStandardSizeProduct = product.id.startsWith('standard-size-');
     
     if (isStandardSizeProduct) {
       const category = categories.find(c => c.id === product.category_id);
-      
-      // Check if category has option groups for customization
       if (category && categoryHasOptions.has(category.id)) {
-        // Open customization modal with the size as the base product
         const productForModal: Product = {
           id: product.id,
           name: product.name,
@@ -830,7 +196,6 @@ export default function StorefrontPage() {
         setPreselectedOptionId(null);
         setShowCustomizationModal(true);
       } else {
-        // No customization - open product detail drawer
         setSimpleProduct(product);
         setSimpleProductCategoryName(category?.name || "Produto");
         setShowProductDetailDrawer(true);
@@ -840,42 +205,36 @@ export default function StorefrontPage() {
 
     const category = categories.find(c => c.id === product.category_id);
     
-    
     if (category) {
-      // For virtual products (from primary options), create a simple product object
       const productForModal: Product = product.isVirtualProduct 
         ? {
             id: category.id,
-            name: product.name, // Use the option name
+            name: product.name,
             description: null,
-            price: product.price, // Use the option price
-            promotional_price: product.promotional_price, // Keep promotional price for consistency
+            price: product.price,
+            promotional_price: product.promotional_price,
             image_url: product.image_url || category.image_url,
             category_id: category.id,
             is_featured: false,
           }
         : product;
       
-      // Check if category has option groups (category-level customization)
       if (categoryHasOptions.has(category.id)) {
         setSelectedProduct(productForModal);
         setSelectedCategory(category);
-        // Pass the primary option ID to preselect in modal
         setPreselectedOptionId(product.isVirtualProduct ? product.primaryOptionId || null : null);
         setShowCustomizationModal(true);
       } else {
-        // No customization - open product detail drawer
         setSimpleProduct(product);
         setSimpleProductCategoryName(category.name);
         setShowProductDetailDrawer(true);
       }
     } else {
-      // No category found - open product detail drawer
       setSimpleProduct(product);
       setSimpleProductCategoryName("Produto");
       setShowProductDetailDrawer(true);
     }
-  }, [categories, addToCart, isStoreOpen, categoryHasOptions]);
+  }, [categories, isStoreOpen, categoryHasOptions]);
 
   const handleCustomizationComplete = useCallback(() => {
     setShowCustomizationModal(false);
@@ -884,276 +243,73 @@ export default function StorefrontPage() {
     setPreselectedOptionId(null);
   }, []);
 
-  // Upsell handler - shows DynamicUpsellModal after adding product from customization modal
-  // DON'T close the customization modal here - keep it open while upsell shows
   const handleShowUpsell = useCallback((categoryId: string) => {
-    setUpsellTriggerCategoryId(categoryId);
-    setShowUpsellModal(true);
-  }, []);
+    pizzaFlow.setUpsellTriggerCategoryId(categoryId);
+    pizzaFlow.setShowUpsellModal(true);
+  }, [pizzaFlow]);
 
   const handleUpsellClose = useCallback(() => {
-    setShowUpsellModal(false);
-    setUpsellTriggerCategoryId(null);
-    // Close all open drawers/modals
-    setShowPizzaFlavorDrawer(false);
-    setShowPizzaDoughDrawer(false);
+    pizzaFlow.handleUpsellClose();
     setShowCustomizationModal(false);
     setShowProductDetailDrawer(false);
-    // Reset all selection states
-    setSelectedPizzaSize(null);
-    setSelectedPizzaFlavors(null);
-    setSelectedPizzaEdge(null);
-    setSelectedPizzaDough(null);
     setSelectedProduct(null);
     setSelectedCategory(null);
     setSimpleProduct(null);
-  }, []);
+  }, [pizzaFlow]);
 
-  // Handler for back button in combo modal - only closes upsell, keeps pizza flavor drawer open
-  const handleUpsellBack = useCallback(() => {
-    setShowUpsellModal(false);
-    setUpsellTriggerCategoryId(null);
-    // Don't close pizza flavor drawer - user is going back to it
-  }, []);
-
-  // Pizza size selection handler - prefetch upsell modals immediately
+  // Pizza size selection with prefetch
   const handlePizzaSizeSelect = useCallback((sizeId: string, sizeName: string, maxFlavors: number, basePrice: number, imageUrl: string | null) => {
-    if (!isStoreOpen) {
-      toast.error("Estabelecimento fechado", {
-        description: "Não é possível fazer pedidos no momento.",
-      });
-      return;
+    prefetchUpsellModals();
+    pizzaFlow.handlePizzaSizeSelect(sizeId, sizeName, maxFlavors, basePrice, imageUrl);
+  }, [prefetchUpsellModals, pizzaFlow]);
+
+  // Standard category item selection
+  const handleStandardItemSelect = useCallback((item: any, size: any, price: number, _quantity: number) => {
+    const category = categories.find(c => c.id === effectiveCategory);
+    if (category && categoryHasOptions.has(category.id)) {
+      const productForModal: Product = {
+        id: `${item.id}-${size.id}`,
+        name: `${size.name} - ${item.name}`,
+        description: item.description,
+        price: price,
+        promotional_price: null,
+        image_url: item.image_url || size.image_url || category.image_url,
+        category_id: category.id,
+        is_featured: false,
+      };
+      setSelectedProduct(productForModal);
+      setSelectedCategory(category);
+      setPreselectedOptionId(null);
+      setShowCustomizationModal(true);
+    } else {
+      if (!isStoreOpen) {
+        toast.error("Estabelecimento fechado", {
+          description: "Não é possível adicionar itens ao carrinho no momento.",
+        });
+        return;
+      }
+      const productForDrawer: Product = {
+        id: `${item.id}-${size.id}`,
+        name: `${size.name}${item.name !== size.name ? ` - ${item.name}` : ''}`,
+        description: item.description,
+        price: price,
+        promotional_price: null,
+        image_url: item.image_url || size.image_url || undefined,
+        category_id: effectiveCategory!,
+        is_featured: false,
+      };
+      setSimpleProduct(productForDrawer);
+      setSimpleProductCategoryName(category?.name || "Produto");
+      setShowProductDetailDrawer(true);
     }
-    
-    if (activeCategoryData) {
-      // Prefetch upsell modals NOW so they're ready when user finishes
-      prefetchUpsellModals();
-      
-      setSelectedPizzaSize({
-        id: sizeId,
-        name: sizeName,
-        maxFlavors,
-        categoryId: activeCategoryData.id,
-        basePrice,
-        imageUrl,
-      });
-      setShowPizzaFlavorDrawer(true);
-    }
-  }, [isStoreOpen, activeCategoryData, prefetchUpsellModals]);
+  }, [categories, effectiveCategory, categoryHasOptions, isStoreOpen]);
 
-  // Direct finalize without going through state (used when skipping steps)
-  const finalizePizzaOrderDirect = useCallback((
-    flavorsData: { flavors: { id: string; name: string; price: number; surcharge: number; flavor_type: string }[]; totalPrice: number },
-    edgeData: { id: string; name: string; price: number } | null,
-    doughData: { id: string; name: string; price: number } | null
-  ) => {
-    if (!selectedPizzaSize || !activeCategoryData) return;
-
-    const flavorNames = flavorsData.flavors.map(f => f.name).join(" + ");
-    const edgePrice = edgeData?.price || 0;
-    const doughPrice = doughData?.price || 0;
-    const finalPrice = flavorsData.totalPrice + edgePrice + doughPrice;
-    
-    const descriptionParts = [flavorNames];
-    if (edgeData) {
-      descriptionParts.push(`Borda: ${edgeData.name}`);
-    }
-    if (doughData) {
-      descriptionParts.push(`Massa: ${doughData.name}`);
-    }
-    
-    addToCart({
-      id: `pizza-${selectedPizzaSize.id}-${Date.now()}`,
-      name: `${activeCategoryData.name} ${selectedPizzaSize.name}`,
-      price: finalPrice,
-      quantity: 1,
-      category: activeCategoryData.name,
-      description: descriptionParts.join(" • "),
-    });
-
-    // Reset all pizza selection state
-    setSelectedPizzaSize(null);
-    setSelectedPizzaFlavors(null);
-    setSelectedPizzaEdge(null);
-    setSelectedPizzaDough(null);
-    
-    // Toast removed - cleaner UX without notification blocking content
-  }, [selectedPizzaSize, activeCategoryData, addToCart]);
-
-  // Helper to open the appropriate step drawer
-  const openStepDrawer = useCallback((stepType: string | null, flavorsData?: { flavors: any[]; totalPrice: number }, edgeData?: { id: string; name: string; price: number } | null, doughData?: { id: string; name: string; price: number } | null) => {
-    switch (stepType) {
-      case 'dough':
-        setShowPizzaDoughDrawer(true);
-        break;
-      case 'cart':
-      case null:
-        // Finalize order
-        if (flavorsData) {
-          finalizePizzaOrderDirect(flavorsData, edgeData || null, doughData || null);
-        }
-        break;
-    }
-  }, [finalizePizzaOrderDirect]);
-
-  // Pizza flavor selection complete handler - now receives everything from integrated drawer
-  const handlePizzaFlavorComplete = useCallback((
-    flavors: { id: string; name: string; price: number; surcharge: number; flavor_type: string }[], 
-    totalPrice: number,
-    edge?: { id: string; name: string; price: number } | null,
-    drink?: { id: string; name: string; price: number; promotional_price: number | null; image_url: string | null } | null,
-    notes?: string
-  ) => {
-    if (!selectedPizzaSize || !activeCategoryData) return;
-
-    // DON'T close the drawer here - keep it open while upsell shows
-
-    const flavorNames = flavors.map(f => f.name).join(" + ");
-    const edgePrice = edge?.price || 0;
-    const finalPrice = totalPrice + edgePrice;
-    
-    const descriptionParts = [flavorNames];
-    if (edge) {
-      descriptionParts.push(`Borda: ${edge.name}`);
-    }
-    if (notes) {
-      descriptionParts.push(`Obs: ${notes}`);
-    }
-    
-    // Add pizza to cart
-    addToCart({
-      id: `pizza-${selectedPizzaSize.id}-${Date.now()}`,
-      name: `${activeCategoryData.name} ${selectedPizzaSize.name}`,
-      price: finalPrice,
-      quantity: 1,
-      category: activeCategoryData.name,
-      description: descriptionParts.join(" • "),
-    });
-
-    // Add drink if selected
-    if (drink) {
-      addToCart({
-        id: drink.id,
-        name: drink.name,
-        price: drink.promotional_price ?? drink.price,
-        quantity: 1,
-        category: "Bebidas",
-      });
-    }
-
-    // Toast removed - cleaner UX without notification blocking content
-    
-    // Trigger upsell modal for pizza category - DON'T reset states yet, keep drawers open
-    // The combo modal opens ON TOP with higher z-index
-    // States will be reset when upsell modal closes (in handleUpsellClose)
-    setUpsellTriggerCategoryId(selectedPizzaSize.categoryId);
-    setShowUpsellModal(true);
-  }, [selectedPizzaSize, activeCategoryData, addToCart]);
-
-  // Pizza dough selection complete handler - checks which step to open next
-  const handlePizzaDoughComplete = useCallback((dough: { id: string; name: string; description: string | null; price: number } | null) => {
-    if (!selectedPizzaSize || !activeCategoryData || !selectedPizzaFlavors) return;
-
-    const doughData = dough ? { id: dough.id, name: dough.name, price: dough.price } : null;
-    setSelectedPizzaDough(doughData);
-    setShowPizzaDoughDrawer(false);
-    
-    // Get the next enabled step
-    setTimeout(() => {
-      const nextStep = navigateToNextStep(activeCategoryData.id, 'dough');
-      openStepDrawer(nextStep, selectedPizzaFlavors, selectedPizzaEdge, doughData);
-    }, 150);
-  }, [selectedPizzaSize, activeCategoryData, selectedPizzaFlavors, selectedPizzaEdge, navigateToNextStep, openStepDrawer]);
-
-  // Parse and check if store is open - MUST be before early returns
-  const parsedSchedule = useMemo(() => {
-    if (!store?.schedule) return null;
-    return parseSchedule(store.schedule);
-  }, [store?.schedule]);
-
-  const storeStatus = useMemo(() => {
-    if (!parsedSchedule) return { isOpen: false, statusText: "Fechado" };
-    return isStoreOpenNow(
-      parsedSchedule,
-      store?.is_open_override,
-      store?.open_hour ?? undefined,
-      store?.close_hour ?? undefined
-    );
-  }, [parsedSchedule, store?.is_open_override, store?.open_hour, store?.close_hour]);
-
-  const nextOpeningTime = useMemo(() => {
-    if (storeStatus.isOpen || !parsedSchedule) return null;
-    return getNextOpeningTime(parsedSchedule);
-  }, [storeStatus.isOpen, parsedSchedule]);
-
-  // Count products with promotions - must be before early returns
-  const promoCount = useMemo(() => {
-    return allProducts.filter(p => 
-      !p.isVirtualProduct && 
-      p.promotional_price !== null && 
-      p.promotional_price < p.price
-    ).length;
-  }, [allProducts]);
-
-  // Generate dynamic theme styles from store's colors and font - must be before early returns
-  const storeThemeStyles = useMemo(() => getStoreThemeStyles(
-    store?.primary_color, 
-    (store as any)?.secondary_color, 
-    (store as any)?.font_family
-  ), [store?.primary_color, (store as any)?.secondary_color, (store as any)?.font_family]);
-
-  useEffect(() => {
-    if (store) {
-      setStoreData({
-        schedule: store.schedule,
-        is_open_override: store.is_open_override,
-        open_hour: store.open_hour,
-        close_hour: store.close_hour,
-      });
-    }
-  }, [store?.schedule, store?.is_open_override, store?.open_hour, store?.close_hour, setStoreData, store]);
-
-  // Fetch pending orders count for badge
-  useEffect(() => {
-    if (!store?.id) return;
-    
-    const fetchPendingOrders = async () => {
-      // Get phone from localStorage (saved during order)
-      const savedPhone = localStorage.getItem("customer_phone");
-      if (!savedPhone) return;
-      
-      const cleanPhone = savedPhone.replace(/\D/g, "");
-      const { count } = await supabase
-        .from("orders")
-        .select("*", { count: "exact", head: true })
-        .eq("store_id", store.id)
-        .or(`customer_phone.eq.${cleanPhone},customer_phone.ilike.%${cleanPhone}%`)
-        .in("status", ["pending", "confirmed", "preparing", "ready", "delivering"]);
-      
-      setPendingOrdersCount(count || 0);
-    };
-
-    fetchPendingOrders();
-    
-    // Subscribe to realtime updates
-    const channel = supabase
-      .channel("customer-orders")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "orders", filter: `store_id=eq.${store.id}` },
-        () => fetchPendingOrders()
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [store?.id]);
-
+  // Loading state
   if (loading) {
     return <StorefrontSkeleton />;
   }
 
+  // Not found state
   if (!store) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
@@ -1165,59 +321,6 @@ export default function StorefrontPage() {
     );
   }
 
-
-  const filteredProducts = allProducts
-    .filter(p => {
-      const matchesSearch = !searchQuery || 
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.description?.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesCategory = !effectiveCategory || p.category_id === effectiveCategory;
-      
-      // Promo filter
-      if (showPromoOnly && !p.isVirtualProduct) {
-        const hasPromo = p.promotional_price !== null && p.promotional_price < p.price;
-        if (!hasPromo) return false;
-      }
-      
-      // Skip price filter for virtual products (categories with options)
-      if (p.isVirtualProduct) {
-        return matchesSearch && matchesCategory;
-      }
-      
-      const effectivePrice = p.promotional_price ?? p.price;
-      const matchesPrice = 
-        priceFilter === "all" ||
-        (priceFilter === "under20" && effectivePrice < 20) ||
-        (priceFilter === "20to40" && effectivePrice >= 20 && effectivePrice <= 40) ||
-        (priceFilter === "over40" && effectivePrice > 40);
-      
-      return matchesSearch && matchesCategory && matchesPrice;
-    })
-    .sort((a, b) => {
-      // Virtual products always come first
-      if (a.isVirtualProduct && !b.isVirtualProduct) return -1;
-      if (!a.isVirtualProduct && b.isVirtualProduct) return 1;
-      
-      const priceA = a.promotional_price ?? a.price;
-      const priceB = b.promotional_price ?? b.price;
-      
-      switch (sortOption) {
-        case "price_asc":
-          return priceA - priceB;
-        case "price_desc":
-          return priceB - priceA;
-        case "name_asc":
-          return a.name.localeCompare(b.name);
-        case "name_desc":
-          return b.name.localeCompare(a.name);
-        default:
-          return 0;
-      }
-    });
-
-  const featuredProducts = allProducts.filter(p => p.is_featured && !p.isVirtualProduct);
-
   return (
     <div 
       className="min-h-dvh bg-background flex flex-col light font-storefront antialiased" 
@@ -1225,33 +328,33 @@ export default function StorefrontPage() {
       style={storeThemeStyles}
     >
       {/* Closed Overlay */}
-      {!storeStatus.isOpen && activeTab === "cardapio" && <ClosedOverlay nextOpeningTime={nextOpeningTime} />}
+      {!ui.storeStatus.isOpen && ui.activeTab === "cardapio" && <ClosedOverlay nextOpeningTime={ui.nextOpeningTime} />}
       
       {/* Main scrollable content */}
       <div className="flex-1 max-w-4xl mx-auto w-full overflow-y-auto pb-24 min-h-0 ios-scroll">
         <StorefrontHeader 
           store={store} 
           reviewStats={reviewStats}
-          onRatingClick={() => handleTabChange("sobre")}
+          onRatingClick={() => ui.handleTabChange("sobre")}
         />
         
         {/* Tab Content with Animations */}
         <div className="min-h-0">
           <AnimatePresence mode="wait" initial={false}>
-            {isRefreshing ? (
+            {ui.isRefreshing ? (
               <motion.div
                 key="refreshing-skeleton"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
               >
-                {activeTab === "cardapio" && <CardapioSkeleton />}
-                {activeTab === "pedidos" && <PedidosSkeleton />}
-                {activeTab === "sobre" && <SobreSkeleton />}
+                {ui.activeTab === "cardapio" && <CardapioSkeleton />}
+                {ui.activeTab === "pedidos" && <PedidosSkeleton />}
+                {ui.activeTab === "sobre" && <SobreSkeleton />}
               </motion.div>
             ) : (
               <>
-                {activeTab === "cardapio" && (
+                {ui.activeTab === "cardapio" && (
                   <motion.div
                     key="cardapio"
                     initial={{ opacity: 0 }}
@@ -1261,8 +364,7 @@ export default function StorefrontPage() {
                   >
                     <BannerCarousel storeId={store.id} />
                     
-                    {/* Featured Products Section */}
-                    {!searchQuery && featuredProducts.length > 0 && (
+                    {!ui.searchQuery && featuredProducts.length > 0 && (
                       <FeaturedProducts 
                         products={featuredProducts} 
                         onProductClick={handleProductClick} 
@@ -1271,89 +373,47 @@ export default function StorefrontPage() {
                     
                     {(promoCount > 0 || favoritesCount > 0) && (
                       <ProductFilters
-                        priceFilter={priceFilter}
-                        onPriceChange={setPriceFilter}
-                        sortOption={sortOption}
-                        onSortChange={setSortOption}
-                        showPromoOnly={showPromoOnly}
-                        onPromoChange={setShowPromoOnly}
+                        priceFilter={ui.priceFilter}
+                        onPriceChange={ui.setPriceFilter}
+                        sortOption={ui.sortOption}
+                        onSortChange={ui.setSortOption}
+                        showPromoOnly={ui.showPromoOnly}
+                        onPromoChange={ui.setShowPromoOnly}
                         promoCount={promoCount}
-                        showFavoritesOnly={showFavoritesOnly}
-                        onFavoritesChange={setShowFavoritesOnly}
+                        showFavoritesOnly={ui.showFavoritesOnly}
+                        onFavoritesChange={ui.setShowFavoritesOnly}
                         favoritesCount={favoritesCount}
                       />
                     )}
                     
-                    {!searchQuery && (
+                    {!ui.searchQuery && (
                       <CategoryTabs
                         categories={categories}
                         activeCategory={effectiveCategory}
-                        onCategoryChange={setActiveCategory}
+                        onCategoryChange={ui.setActiveCategory}
                         enableMorphAnimation={enableMorphAnimation}
                       />
                     )}
 
-                    {searchQuery && filteredProducts.length === 0 ? (
+                    {ui.searchQuery && filteredProducts.length === 0 ? (
                       <div className="px-4 py-12 text-center">
-                        <p className="text-muted-foreground">Nenhum produto encontrado para "{searchQuery}"</p>
+                        <p className="text-muted-foreground">Nenhum produto encontrado para "{ui.searchQuery}"</p>
                       </div>
-                    ) : isPizzaCategory && !searchQuery && effectiveCategory && store ? (
+                    ) : isPizzaCategory && !ui.searchQuery && effectiveCategory && store ? (
                       <PizzaSizeGrid
                         categoryId={effectiveCategory}
                         storeId={store.id}
                         onSizeSelect={handlePizzaSizeSelect}
                       />
-                    ) : isStandardCategory && !searchQuery && effectiveCategory && store ? (
+                    ) : isStandardCategory && !ui.searchQuery && effectiveCategory && store ? (
                       <StandardCategoryGrid
                         categoryId={effectiveCategory}
                         storeId={store.id}
                         displayMode={activeCategoryData?.display_mode}
                         allowQuantitySelector={activeCategoryData?.allow_quantity_selector}
-                        onItemSelect={(item, size, price, _quantity) => {
-                          // Check if category has option groups for customization
-                          const category = categories.find(c => c.id === effectiveCategory);
-                          if (category && categoryHasOptions.has(category.id)) {
-                            // Open customization modal
-                            const productForModal: Product = {
-                              id: `${item.id}-${size.id}`,
-                              name: `${size.name} - ${item.name}`,
-                              description: item.description,
-                              price: price,
-                              promotional_price: null,
-                              image_url: item.image_url || size.image_url || category.image_url,
-                              category_id: category.id,
-                              is_featured: false,
-                            };
-                            setSelectedProduct(productForModal);
-                            setSelectedCategory(category);
-                            setPreselectedOptionId(null);
-                            setShowCustomizationModal(true);
-                          } else {
-                            // No customization - open product detail drawer
-                            if (!isStoreOpen) {
-                              toast.error("Estabelecimento fechado", {
-                                description: "Não é possível adicionar itens ao carrinho no momento.",
-                              });
-                              return;
-                            }
-                            const category = categories.find(c => c.id === effectiveCategory);
-                            const productForDrawer: Product = {
-                              id: `${item.id}-${size.id}`,
-                              name: `${size.name}${item.name !== size.name ? ` - ${item.name}` : ''}`,
-                              description: item.description,
-                              price: price,
-                              promotional_price: null,
-                              image_url: item.image_url || size.image_url || undefined,
-                              category_id: effectiveCategory,
-                              is_featured: false,
-                            };
-                            setSimpleProduct(productForDrawer);
-                            setSimpleProductCategoryName(category?.name || "Produto");
-                            setShowProductDetailDrawer(true);
-                          }
-                        }}
+                        onItemSelect={handleStandardItemSelect}
                       />
-                    ) : isBeveragesCategory && !searchQuery && effectiveCategory && store ? (
+                    ) : isBeveragesCategory && !ui.searchQuery && effectiveCategory && store ? (
                       <BeverageTypesGrid
                         categoryId={effectiveCategory}
                         storeId={store.id}
@@ -1366,13 +426,13 @@ export default function StorefrontPage() {
                         updatedProductIds={updatedProductIds}
                         storeId={store.id}
                         showFavorites={true}
-                        filterFavoritesOnly={showFavoritesOnly}
+                        filterFavoritesOnly={ui.showFavoritesOnly}
                       />
                     )}
                   </motion.div>
                 )}
 
-                {activeTab === "pedidos" && (
+                {ui.activeTab === "pedidos" && (
                   <motion.div
                     key="pedidos"
                     initial={{ opacity: 0 }}
@@ -1385,8 +445,7 @@ export default function StorefrontPage() {
                   </motion.div>
                 )}
 
-
-                {activeTab === "sobre" && (
+                {ui.activeTab === "sobre" && (
                   <motion.div
                     key="sobre"
                     initial={{ opacity: 0 }}
@@ -1407,14 +466,15 @@ export default function StorefrontPage() {
       </div>
 
       <BottomNavigation 
-        activeTab={activeTab} 
-        onTabChange={handleTabChange} 
-        pendingOrdersCount={pendingOrdersCount}
+        activeTab={ui.activeTab} 
+        onTabChange={ui.handleTabChange} 
+        pendingOrdersCount={ui.pendingOrdersCount}
         cartItemsCount={totalItems}
         storeSlug={slug}
         hideOrdersTab={(store as any)?.use_comanda_mode === false}
       />
 
+      {/* Customization Modal */}
       {showCustomizationModal && selectedProduct && selectedCategory && store && (
         <ProductCustomizationModal
           product={selectedProduct}
@@ -1428,68 +488,64 @@ export default function StorefrontPage() {
         />
       )}
 
-      {/* Dynamic Upsell Modal - triggered after adding product from customization */}
-      {showUpsellModal && upsellTriggerCategoryId && store && (
+      {/* Dynamic Upsell Modal */}
+      {pizzaFlow.showUpsellModal && pizzaFlow.upsellTriggerCategoryId && store && (
         <DynamicUpsellModal
           storeId={store.id}
-          triggerCategoryId={upsellTriggerCategoryId}
+          triggerCategoryId={pizzaFlow.upsellTriggerCategoryId}
           onClose={handleUpsellClose}
-          onBack={handleUpsellBack}
+          onBack={pizzaFlow.handleUpsellBack}
           onNavigateToCategory={(categoryId) => {
-            setActiveCategory(categoryId);
-            // Scroll to top when navigating to category
+            ui.setActiveCategory(categoryId);
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          // Pass pizza size info for edge integration
-          sizeId={selectedPizzaSize?.id}
-          sizeName={selectedPizzaSize?.name}
+          sizeId={pizzaFlow.selectedPizzaSize?.id}
+          sizeName={pizzaFlow.selectedPizzaSize?.name}
           onSelectEdge={(edge) => {
             if (edge) {
-              setSelectedPizzaEdge(edge);
+              pizzaFlow.setSelectedPizzaEdge(edge);
               toast.success(`Borda ${edge.name} adicionada!`);
             }
-            // Don't call handleUpsellClose - DynamicUpsellModal handles sequential flow
           }}
         />
       )}
+
       {/* Pizza Flavor Selection Drawer */}
-      {selectedPizzaSize && store && (
+      {pizzaFlow.selectedPizzaSize && store && (
         <PizzaFlavorSelectionDrawer
-          open={showPizzaFlavorDrawer}
+          open={pizzaFlow.showPizzaFlavorDrawer}
           onClose={() => {
-            setShowPizzaFlavorDrawer(false);
-            setSelectedPizzaSize(null);
+            pizzaFlow.setShowPizzaFlavorDrawer(false);
+            pizzaFlow.setSelectedPizzaSize(null);
           }}
-          categoryId={selectedPizzaSize.categoryId}
-          sizeId={selectedPizzaSize.id}
-          sizeName={selectedPizzaSize.name}
-          maxFlavors={selectedPizzaSize.maxFlavors}
+          categoryId={pizzaFlow.selectedPizzaSize.categoryId}
+          sizeId={pizzaFlow.selectedPizzaSize.id}
+          sizeName={pizzaFlow.selectedPizzaSize.name}
+          maxFlavors={pizzaFlow.selectedPizzaSize.maxFlavors}
           storeId={store.id}
-          basePrice={selectedPizzaSize.basePrice}
-          sizeImageUrl={selectedPizzaSize.imageUrl}
-          flowSteps={content?.flowStepsData?.[selectedPizzaSize.categoryId]}
-          onComplete={handlePizzaFlavorComplete}
+          basePrice={pizzaFlow.selectedPizzaSize.basePrice}
+          sizeImageUrl={pizzaFlow.selectedPizzaSize.imageUrl}
+          flowSteps={content?.flowStepsData?.[pizzaFlow.selectedPizzaSize.categoryId]}
+          onComplete={pizzaFlow.handlePizzaFlavorComplete}
         />
       )}
 
       {/* Pizza Dough Selection Drawer */}
-      {selectedPizzaSize && store && (
+      {pizzaFlow.selectedPizzaSize && store && (
         <PizzaDoughSelectionDrawer
-          open={showPizzaDoughDrawer}
+          open={pizzaFlow.showPizzaDoughDrawer}
           onClose={() => {
-            setShowPizzaDoughDrawer(false);
-            setSelectedPizzaSize(null);
-            setSelectedPizzaFlavors(null);
-            setSelectedPizzaEdge(null);
+            pizzaFlow.setShowPizzaDoughDrawer(false);
+            pizzaFlow.resetPizzaState();
           }}
-          categoryId={selectedPizzaSize.categoryId}
-          sizeId={selectedPizzaSize.id}
-          sizeName={selectedPizzaSize.name}
-          onComplete={handlePizzaDoughComplete}
+          categoryId={pizzaFlow.selectedPizzaSize.categoryId}
+          sizeId={pizzaFlow.selectedPizzaSize.id}
+          sizeName={pizzaFlow.selectedPizzaSize.name}
+          onComplete={pizzaFlow.handlePizzaDoughComplete}
         />
       )}
 
-      {/* Simple Product Detail Drawer (for products without customization) */}
+      {/* Simple Product Detail Drawer */}
       {simpleProduct && store && (
         <ProductDetailDrawer
           product={simpleProduct}
@@ -1501,7 +557,7 @@ export default function StorefrontPage() {
             setSimpleProduct(null);
           }}
           onNavigateToCategory={(categoryId) => {
-            setActiveCategory(categoryId);
+            ui.setActiveCategory(categoryId);
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
         />
@@ -1509,8 +565,6 @@ export default function StorefrontPage() {
 
       {/* Loyalty Widget */}
       {store && <LoyaltyWidget storeId={store.id} storeName={store.name} />}
-
-      {/* InstallPrompt removed */}
     </div>
   );
 }
