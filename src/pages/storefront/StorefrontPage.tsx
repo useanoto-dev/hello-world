@@ -38,6 +38,7 @@ import { StandardCategoryGrid } from "@/components/storefront/StandardCategoryGr
 import { BeverageTypesGrid } from "@/components/storefront/BeverageTypesGrid";
 import ProductDetailDrawer from "@/components/storefront/ProductDetailDrawer";
 import { useStorefrontCriticalAssets } from "@/hooks/useStorefrontCriticalAssets";
+import { useStorefrontPrefetch } from "@/hooks/useStorefrontPrefetch";
 
 export default function StorefrontPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -75,6 +76,9 @@ export default function StorefrontPage() {
     store?.open_hour ?? null,
     store?.close_hour ?? null
   );
+  
+  // Prefetch all category data in background for instant navigation
+  useStorefrontPrefetch({ categories, storeId: store?.id });
   
   // Favorites hook
   const { favoritesCount } = useFavorites(store?.id);
