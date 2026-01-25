@@ -289,8 +289,8 @@ export default function MenuManagerPage() {
           ...prev,
           [categoryId]: (flavorsResult.data as PizzaFlavor[]) || []
         }));
-      } else if (categoryType === 'standard') {
-        // For standard categories (açaí, hambúrguer, bebidas, etc.), load sizes, items, option groups, and beverage types
+      } else if (categoryType === 'standard' || categoryType === 'beverages') {
+        // For standard categories (açaí, hambúrguer, etc.) AND beverages, load sizes, items, option groups, and beverage types
         const [sizesResult, itemsResult, groupsResult, beverageTypesResult] = await Promise.all([
           supabase
             .from("standard_sizes")
@@ -311,6 +311,7 @@ export default function MenuManagerPage() {
             .from("beverage_types")
             .select("id, name")
             .eq("category_id", categoryId)
+            .eq("is_active", true)
             .order("display_order")
         ]);
         
@@ -454,10 +455,10 @@ export default function MenuManagerPage() {
   const openItemWizard = (categoryId?: string, isPizza?: boolean) => {
     if (isPizza && categoryId) {
       navigate(`/dashboard/pizza-flavor/new?categoryId=${categoryId}`);
-    } else if (categoryId) {
-      navigate(`/dashboard/item/new?categoryId=${categoryId}`);
     } else {
-      navigate(`/dashboard/item/new`);
+      // Open the MenuItemWizard modal
+      setPreselectedCategoryId(categoryId || null);
+      setShowItemWizard(true);
     }
   };
   
@@ -470,8 +471,9 @@ export default function MenuManagerPage() {
       setStandardItemCategoryId(categoryId);
       setShowStandardItemWizard(true);
     } else {
-      // For regular categories, go to item wizard
-      navigate(`/dashboard/item/new?categoryId=${categoryId}`);
+      // For regular categories, open the MenuItemWizard modal
+      setPreselectedCategoryId(categoryId);
+      setShowItemWizard(true);
     }
   };
   
@@ -1228,12 +1230,14 @@ export default function MenuManagerPage() {
                         )}
                       </div>
                     </div>
-                  ) : category.category_type === 'standard' ? (
-                    // Standard Category Content - Clean organized layout
+                  ) : category.category_type === 'standard' || category.category_type === 'beverages' ? (
+                    // Standard/Beverages Category Content - Clean organized layout
                     <div className="space-y-4 p-3 bg-muted/20 rounded-lg border border-border/30">
                       {/* Section Header */}
                       <div className="flex items-center justify-between pb-3 border-b border-border/50">
-                        <h4 className="font-medium text-foreground text-sm">Estrutura da Categoria</h4>
+                        <h4 className="font-medium text-foreground text-sm">
+                          {category.category_type === 'beverages' ? 'Tipos de Bebidas' : 'Estrutura da Categoria'}
+                        </h4>
                         <div className="flex items-center gap-2">
                           {/* Show "Cadastrar Bebidas" button if category has beverage types */}
                           {categoryBeverageTypes[category.id]?.length > 0 && (
@@ -1259,8 +1263,33 @@ export default function MenuManagerPage() {
                         </div>
                       </div>
 
-                      {/* Sizes Section */}
-                      {categoryStandardSizes[category.id]?.length > 0 && (
+                      {/* Beverage Types Section - Show for beverages category */}
+                      {categoryBeverageTypes[category.id]?.length > 0 && (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Tipos</span>
+                            <span className="text-[10px] text-muted-foreground/60">
+                              {categoryBeverageTypes[category.id].length}
+                            </span>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-1.5">
+                            {categoryBeverageTypes[category.id].map((type) => (
+                              <button
+                                key={type.id}
+                                onClick={() => navigate(`/dashboard/beverages?categoryId=${category.id}&typeId=${type.id}`)}
+                                className="inline-flex items-center gap-2 bg-card hover:bg-muted rounded-md border border-border/50 hover:border-primary/30 px-2.5 py-1.5 text-xs transition-all cursor-pointer"
+                              >
+                                <span className="font-medium text-foreground">{type.name}</span>
+                                <ChevronDown className="w-3 h-3 text-muted-foreground" />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Sizes Section - only for standard categories */}
+                      {category.category_type === 'standard' && categoryStandardSizes[category.id]?.length > 0 && (
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
                             <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Tamanhos</span>
@@ -1328,6 +1357,21 @@ export default function MenuManagerPage() {
                           </button>
                         </div>
                       </div>
+
+                      {/* Empty state for beverages */}
+                      {category.category_type === 'beverages' && !categoryBeverageTypes[category.id]?.length && (
+                        <div className="text-center py-4 bg-muted/30 rounded-lg">
+                          <p className="text-muted-foreground text-sm">Nenhum tipo de bebida cadastrado</p>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            onClick={() => navigate(`/dashboard/category/edit?edit=${category.id}&step=3`)}
+                            className="mt-1 text-xs"
+                          >
+                            Adicionar tipos
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   ) : categoryProducts[category.id]?.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
@@ -1584,9 +1628,15 @@ export default function MenuManagerPage() {
                   <div className="mt-3 pt-2 border-t border-border/30 flex items-center gap-3">
                     <button 
                       onClick={() => {
-                        // For beverage categories, go directly to beverage wizard
-                        if (categoryBeverageTypes[category.id]?.length > 0) {
-                          navigate(`/dashboard/beverage/new?categoryId=${category.id}`);
+                        // For beverage categories (with types or category_type = 'beverages'), go to beverage wizard
+                        if (category.category_type === 'beverages' || categoryBeverageTypes[category.id]?.length > 0) {
+                          if (categoryBeverageTypes[category.id]?.length > 0) {
+                            navigate(`/dashboard/beverage/new?categoryId=${category.id}`);
+                          } else {
+                            // No beverage types yet - redirect to category editor step 3 to create types first
+                            toast.info("Primeiro, cadastre os tipos de bebidas");
+                            navigate(`/dashboard/category/edit?edit=${category.id}&step=3`);
+                          }
                         } else {
                           openAddItemTypeModal(
                             category.id, 
@@ -1601,7 +1651,7 @@ export default function MenuManagerPage() {
                       <Plus className="w-3.5 h-3.5" />
                       {category.category_type === 'pizza' 
                         ? 'Adicionar Sabor' 
-                        : categoryBeverageTypes[category.id]?.length > 0 
+                        : (category.category_type === 'beverages' || categoryBeverageTypes[category.id]?.length > 0)
                           ? 'Adicionar Bebida'
                           : 'Adicionar Item'}
                     </button>
@@ -1613,7 +1663,7 @@ export default function MenuManagerPage() {
                         Ver sabores
                       </button>
                     )}
-                    {categoryBeverageTypes[category.id]?.length > 0 && (
+                    {(category.category_type === 'beverages' || categoryBeverageTypes[category.id]?.length > 0) && (
                       <button 
                         onClick={() => navigate(`/dashboard/beverages?categoryId=${category.id}`)}
                         className="text-xs text-muted-foreground hover:text-foreground transition-colors"
