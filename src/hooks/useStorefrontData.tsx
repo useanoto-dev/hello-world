@@ -301,6 +301,9 @@ export function useStorefrontData(slug: string | undefined) {
     };
   }, [store?.id, queryClient]);
 
+  // Loading is true until we have both store AND content with actual data
+  const isFullyLoaded = !storeLoading && !contentLoading && !!store && !!content && content.categories.length >= 0;
+
   return {
     store,
     storeLoading,
@@ -309,6 +312,6 @@ export function useStorefrontData(slug: string | undefined) {
     contentLoading,
     refetchContent,
     updatedProductIds,
-    loading: storeLoading || (!!store && contentLoading),
+    loading: !isFullyLoaded,
   };
 }

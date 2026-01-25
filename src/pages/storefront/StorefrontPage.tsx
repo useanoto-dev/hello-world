@@ -175,8 +175,8 @@ export default function StorefrontPage() {
     productModals.handleStandardItemSelect(item, size, price, quantity, effectiveCategory);
   }, [productModals, effectiveCategory]);
 
-  // Loading state
-  if (loading) {
+  // Loading state - show skeleton until everything is ready
+  if (loading || !store || !content) {
     return <StorefrontSkeleton />;
   }
 
@@ -193,10 +193,13 @@ export default function StorefrontPage() {
   }
 
   return (
-    <div 
+    <motion.div 
       className="min-h-dvh bg-background flex flex-col light font-storefront antialiased" 
       data-theme="light"
       style={storeThemeStyles}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
     >
       {!ui.storeStatus.isOpen && ui.activeTab === "cardapio" && <ClosedOverlay nextOpeningTime={ui.nextOpeningTime} />}
       
@@ -388,6 +391,6 @@ export default function StorefrontPage() {
       )}
 
       {store && <LoyaltyWidget storeId={store.id} storeName={store.name} />}
-    </div>
+    </motion.div>
   );
 }
