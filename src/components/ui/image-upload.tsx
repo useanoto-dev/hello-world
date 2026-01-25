@@ -1,13 +1,16 @@
-import { useState, useRef } from "react";
-import { Upload, X, Loader2 } from "lucide-react";
+import { useState, useRef, useCallback } from "react";
+import { Upload, X, Loader2, Monitor, Smartphone } from "lucide-react";
 import { Button } from "./button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { ImageCropper } from "./image-cropper";
 
 interface ImageUploadProps {
   value?: string | null;
+  mobileValue?: string | null;
   onChange: (url: string | null) => void;
+  onMobileChange?: (url: string | null) => void;
   bucket: string;
   folder: string;
   className?: string;
@@ -15,67 +18,22 @@ interface ImageUploadProps {
   placeholder?: string;
   maxWidth?: number;
   quality?: number;
+  showMobileOption?: boolean;
 }
 
-// Compress image using canvas - preserves transparency for PNGs
-async function compressImage(
-  file: File,
-  maxWidth: number = 1200,
-  quality: number = 0.8
-): Promise<{ blob: Blob; isPng: boolean }> {
-  const isPng = file.type === "image/png";
-  
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+type CropType = "logo" | "banner" | "product";
 
-    img.onload = () => {
-      // Calculate new dimensions
-      let width = img.width;
-      let height = img.height;
-
-      if (width > maxWidth) {
-        height = (height * maxWidth) / width;
-        width = maxWidth;
-      }
-
-      canvas.width = width;
-      canvas.height = height;
-
-      // For PNGs, ensure transparent background
-      if (isPng && ctx) {
-        ctx.clearRect(0, 0, width, height);
-      }
-
-      // Draw and compress
-      ctx?.drawImage(img, 0, 0, width, height);
-
-      // Use PNG format for transparent images, JPEG for others
-      const format = isPng ? "image/png" : "image/jpeg";
-      const compressionQuality = isPng ? undefined : quality;
-
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            resolve({ blob, isPng });
-          } else {
-            reject(new Error("Failed to compress image"));
-          }
-        },
-        format,
-        compressionQuality
-      );
-    };
-
-    img.onerror = () => reject(new Error("Failed to load image"));
-    img.src = URL.createObjectURL(file);
-  });
+function getCropType(aspectRatio: string): CropType {
+  if (aspectRatio === "banner") return "banner";
+  if (aspectRatio === "square") return "product";
+  return "product";
 }
 
 export function ImageUpload({
   value,
+  mobileValue,
   onChange,
+  onMobileChange,
   bucket,
   folder,
   className,
@@ -83,11 +41,14 @@ export function ImageUpload({
   placeholder = "Clique para adicionar imagem",
   maxWidth = 1200,
   quality = 0.8,
+  showMobileOption = false,
 }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -103,20 +64,29 @@ export function ImageUpload({
       return;
     }
 
-    setUploading(true);
-    try {
-      // Compress image (preserves format for PNGs)
-      const { blob: compressedBlob, isPng } = await compressImage(file, maxWidth, quality);
-      const extension = isPng ? "png" : "jpg";
-      const contentType = isPng ? "image/png" : "image/jpeg";
-      const fileName = `${folder}/${Date.now()}.${extension}`;
+    // Create object URL for cropper
+    const objectUrl = URL.createObjectURL(file);
+    setTempImageSrc(objectUrl);
+    setCropperOpen(true);
 
-      // Image compression completed silently
+    // Reset input
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
+  }, []);
+
+  const handleCropComplete = useCallback(async (croppedBlob: Blob, device: "desktop" | "mobile") => {
+    setUploading(true);
+    
+    try {
+      const timestamp = Date.now();
+      const suffix = device === "mobile" ? "_mobile" : "";
+      const fileName = `${folder}/${timestamp}${suffix}.jpg`;
 
       const { error: uploadError } = await supabase.storage
         .from(bucket)
-        .upload(fileName, compressedBlob, {
-          contentType,
+        .upload(fileName, croppedBlob, {
+          contentType: "image/jpeg",
         });
 
       if (uploadError) throw uploadError;
@@ -125,23 +95,41 @@ export function ImageUpload({
         .from(bucket)
         .getPublicUrl(fileName);
 
-      onChange(urlData.publicUrl);
-      toast.success("Imagem enviada!");
+      if (device === "mobile" && onMobileChange) {
+        onMobileChange(urlData.publicUrl);
+      } else {
+        onChange(urlData.publicUrl);
+      }
+
+      toast.success(`Imagem ${device === "mobile" ? "mobile" : "desktop"} salva!`);
+      
+      // Close cropper only if we don't have mobile option or if uploading mobile
+      if (!showMobileOption || device === "mobile") {
+        setCropperOpen(false);
+        setTempImageSrc(null);
+      }
     } catch (error: any) {
       console.error("Upload error:", error);
       toast.error(error.message || "Erro ao enviar imagem");
     } finally {
       setUploading(false);
-      // Reset input
-      if (inputRef.current) {
-        inputRef.current.value = "";
-      }
     }
-  };
+  }, [bucket, folder, onChange, onMobileChange, showMobileOption]);
 
-  const handleRemove = () => {
+  const handleRemove = useCallback(() => {
     onChange(null);
-  };
+    if (onMobileChange) {
+      onMobileChange(null);
+    }
+  }, [onChange, onMobileChange]);
+
+  const handleCloseCropper = useCallback(() => {
+    setCropperOpen(false);
+    if (tempImageSrc) {
+      URL.revokeObjectURL(tempImageSrc);
+      setTempImageSrc(null);
+    }
+  }, [tempImageSrc]);
 
   const aspectClass = {
     square: "aspect-square",
@@ -149,63 +137,154 @@ export function ImageUpload({
     auto: "min-h-[120px]",
   }[aspectRatio];
 
-  return (
-    <div className={cn("relative", className)}>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleUpload}
-        className="hidden"
-      />
+  const cropType = getCropType(aspectRatio);
 
-      {value ? (
-        <div className={cn("relative rounded-xl overflow-hidden border border-border bg-[repeating-conic-gradient(#f0f0f0_0%_25%,#ffffff_0%_50%)_50%/16px_16px]", aspectClass)}>
-          <img
-            src={value}
-            alt="Uploaded"
-            className="w-full h-full object-contain"
+  return (
+    <>
+      <div className={cn("space-y-3", className)}>
+        {/* Desktop Image */}
+        <div className="space-y-1">
+          {showMobileOption && (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+              <Monitor className="w-3 h-3" />
+              Desktop
+            </div>
+          )}
+          
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileSelect}
+            className="hidden"
           />
-          <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-            <Button
+
+          {value ? (
+            <div className={cn(
+              "relative rounded-xl overflow-hidden border border-border bg-[repeating-conic-gradient(#f0f0f0_0%_25%,#ffffff_0%_50%)_50%/16px_16px]",
+              aspectClass
+            )}>
+              <img
+                src={value}
+                alt="Uploaded"
+                className="w-full h-full object-contain"
+              />
+              <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => inputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Trocar"}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="destructive"
+                  onClick={handleRemove}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <button
               type="button"
-              size="sm"
-              variant="secondary"
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
+              className={cn(
+                "w-full rounded-xl border-2 border-dashed border-border bg-muted/30 flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary hover:bg-muted/50 transition-colors cursor-pointer",
+                aspectClass
+              )}
             >
-              {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Trocar"}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="destructive"
-              onClick={handleRemove}
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
+              {uploading ? (
+                <Loader2 className="w-8 h-8 animate-spin" />
+              ) : (
+                <>
+                  <Upload className="w-8 h-8" />
+                  <span className="text-sm">{placeholder}</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          disabled={uploading}
-          className={cn(
-            "w-full rounded-xl border-2 border-dashed border-border bg-muted/30 flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary hover:bg-muted/50 transition-colors cursor-pointer",
-            aspectClass
-          )}
-        >
-          {uploading ? (
-            <Loader2 className="w-8 h-8 animate-spin" />
-          ) : (
-            <>
-              <Upload className="w-8 h-8" />
-              <span className="text-sm">{placeholder}</span>
-            </>
-          )}
-        </button>
+
+        {/* Mobile Image (optional) */}
+        {showMobileOption && onMobileChange && (
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+              <Smartphone className="w-3 h-3" />
+              Mobile
+              <span className="text-[10px]">(opcional)</span>
+            </div>
+            
+            {mobileValue ? (
+              <div className={cn(
+                "relative rounded-xl overflow-hidden border border-border bg-[repeating-conic-gradient(#f0f0f0_0%_25%,#ffffff_0%_50%)_50%/16px_16px]",
+                aspectRatio === "banner" ? "aspect-video" : "aspect-square"
+              )}>
+                <img
+                  src={mobileValue}
+                  alt="Mobile version"
+                  className="w-full h-full object-contain"
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => inputRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Trocar"}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => onMobileChange(null)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => inputRef.current?.click()}
+                disabled={uploading}
+                className={cn(
+                  "w-full rounded-xl border-2 border-dashed border-border bg-muted/30 flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary hover:bg-muted/50 transition-colors cursor-pointer",
+                  aspectRatio === "banner" ? "aspect-video" : "aspect-square"
+                )}
+              >
+                {uploading ? (
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                ) : (
+                  <>
+                    <Smartphone className="w-6 h-6" />
+                    <span className="text-xs">Versão mobile</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Image Cropper Modal */}
+      {tempImageSrc && (
+        <ImageCropper
+          open={cropperOpen}
+          onClose={handleCloseCropper}
+          imageSrc={tempImageSrc}
+          onCropComplete={handleCropComplete}
+          cropType={cropType}
+          loading={uploading}
+        />
       )}
-    </div>
+    </>
   );
 }
