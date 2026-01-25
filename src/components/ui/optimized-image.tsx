@@ -71,7 +71,7 @@ export function OptimizedImage({
       <div
         ref={imgRef}
         className={cn(
-          "bg-[repeating-conic-gradient(#e5e5e5_0%_25%,#ffffff_0%_50%)_50%/16px_16px] dark:bg-[repeating-conic-gradient(#333_0%_25%,#222_0%_50%)_50%/16px_16px] flex items-center justify-center",
+          "bg-white flex items-center justify-center",
           aspectClass,
           className
         )}
@@ -87,7 +87,7 @@ export function OptimizedImage({
     <div
       ref={imgRef}
       className={cn(
-        "relative overflow-hidden bg-[repeating-conic-gradient(#e5e5e5_0%_25%,#ffffff_0%_50%)_50%/16px_16px] dark:bg-[repeating-conic-gradient(#333_0%_25%,#222_0%_50%)_50%/16px_16px]",
+        "relative overflow-hidden bg-white",
         aspectRatio === "auto" ? "h-full" : aspectClass,
         className
       )}

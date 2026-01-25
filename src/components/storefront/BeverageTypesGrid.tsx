@@ -110,12 +110,12 @@ export function BeverageTypesGrid({ categoryId, storeId, isStoreOpen }: Beverage
             onClick={() => handleTypeClick(type)}
           >
             {/* Image */}
-            <div className="relative h-24 w-24 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
+            <div className="relative h-24 w-24 rounded-lg overflow-hidden flex-shrink-0 bg-white">
               {type.image_url ? (
                 <img
                   src={type.image_url}
                   alt={type.name}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain"
                   loading={index < 6 ? "eager" : "lazy"}
                 />
               ) : (
