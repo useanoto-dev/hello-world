@@ -1,65 +1,86 @@
-import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import anotoMascot from "@/assets/anoto-mascot.png";
 
 export default function StorefrontSkeleton() {
   return (
-    <div className="min-h-screen bg-white animate-fade-in">
-      {/* Mascot Loading Animation */}
-      <div className="flex flex-col items-center justify-center py-12">
-        <motion.img
-          src={anotoMascot}
-          alt="Anotô Mascote"
-          className="w-24 h-24 object-contain drop-shadow-lg"
+    <div className="min-h-dvh bg-background flex flex-col items-center justify-center light font-storefront">
+      {/* Centered Professional Loading Animation */}
+      <motion.div
+        className="flex flex-col items-center justify-center gap-6"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
+        {/* Mascot with bounce animation */}
+        <motion.div
+          className="relative"
           animate={{ 
-            y: [0, -8, 0],
-            rotate: [-2, 2, -2]
+            y: [0, -12, 0],
+          }}
+          transition={{ 
+            duration: 1.2, 
+            repeat: Infinity, 
+            ease: "easeInOut" 
+          }}
+        >
+          <motion.img
+            src={anotoMascot}
+            alt="Carregando..."
+            className="w-20 h-20 md:w-24 md:h-24 object-contain drop-shadow-lg"
+            animate={{ 
+              rotate: [-3, 3, -3]
+            }}
+            transition={{ 
+              duration: 1.2, 
+              repeat: Infinity, 
+              ease: "easeInOut" 
+            }}
+          />
+          {/* Subtle glow effect */}
+          <motion.div
+            className="absolute inset-0 rounded-full bg-primary/10 blur-xl -z-10"
+            animate={{ 
+              scale: [1, 1.2, 1],
+              opacity: [0.3, 0.5, 0.3]
+            }}
+            transition={{ 
+              duration: 1.5, 
+              repeat: Infinity, 
+              ease: "easeInOut" 
+            }}
+          />
+        </motion.div>
+
+        {/* Animated progress bar */}
+        <div className="w-32 md:w-40 h-1.5 bg-muted rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-primary rounded-full"
+            initial={{ x: "-100%" }}
+            animate={{ x: "100%" }}
+            transition={{ 
+              duration: 1, 
+              repeat: Infinity, 
+              ease: "easeInOut" 
+            }}
+            style={{ width: "50%" }}
+          />
+        </div>
+
+        {/* Loading text with fade */}
+        <motion.p 
+          className="text-sm text-muted-foreground font-medium"
+          animate={{ 
+            opacity: [0.5, 1, 0.5]
           }}
           transition={{ 
             duration: 1.5, 
             repeat: Infinity, 
             ease: "easeInOut" 
           }}
-        />
-        <div className="w-32 h-1.5 bg-muted rounded-full overflow-hidden mt-4">
-          <motion.div
-            className="h-full bg-primary rounded-full"
-            initial={{ width: "0%" }}
-            animate={{ width: "100%" }}
-            transition={{ duration: 1.2, ease: "easeInOut", repeat: Infinity }}
-          />
-        </div>
-        <p className="text-sm text-muted-foreground mt-3">Carregando cardápio...</p>
-      </div>
-
-      {/* Header Skeleton */}
-      <div className="relative">
-        <Skeleton className="h-24 w-full rounded-none" />
-      </div>
-
-      {/* Category Tabs Skeleton */}
-      <div className="px-4 py-3">
-        <div className="flex gap-2 overflow-hidden">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-9 w-20 rounded-full shrink-0" />
-          ))}
-        </div>
-      </div>
-
-      {/* Product Grid Skeleton */}
-      <div className="px-4 py-2">
-        <div className="grid grid-cols-2 gap-3">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-card rounded-xl overflow-hidden border border-border/50">
-              <Skeleton className="h-28 w-full rounded-none" />
-              <div className="p-3 space-y-2">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-5 w-16" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+        >
+          Carregando cardápio...
+        </motion.p>
+      </motion.div>
     </div>
   );
 }
