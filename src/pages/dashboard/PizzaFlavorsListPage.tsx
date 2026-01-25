@@ -234,7 +234,7 @@ export default function PizzaFlavorsListPage() {
   };
 
   const handleEdit = (flavor: PizzaFlavor) => {
-    navigate(`/dashboard/pizza-flavor/edit?id=${flavor.id}&categoryId=${flavor.category_id}`);
+    navigate(`/dashboard/pizza-flavor/edit?edit=${flavor.id}&categoryId=${flavor.category_id}`);
   };
 
   const filteredFlavors = flavors.filter(flavor => {
