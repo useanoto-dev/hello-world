@@ -37,6 +37,7 @@ import { PizzaDoughSelectionDrawer } from "@/components/storefront/PizzaDoughSel
 import { StandardCategoryGrid } from "@/components/storefront/StandardCategoryGrid";
 import { BeverageTypesGrid } from "@/components/storefront/BeverageTypesGrid";
 import ProductDetailDrawer from "@/components/storefront/ProductDetailDrawer";
+import { useStorefrontCriticalAssets } from "@/hooks/useStorefrontCriticalAssets";
 
 export default function StorefrontPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -53,6 +54,16 @@ export default function StorefrontPage() {
   const primaryGroupItems = content?.primaryGroupItems || {};
   const reviewStats = content?.reviewStats;
   const flowStepsData = content?.flowStepsData || {};
+  const banners = (content as any)?.banners || [];
+
+  const { ready: criticalAssetsReady } = useStorefrontCriticalAssets({
+    urls: [
+      store?.banner_url,
+      store?.logo_url,
+      (banners as any[])?.[0]?.image_url ?? null,
+    ],
+    timeoutMs: 1200,
+  });
   
   // UI state hook
   const ui = useStorefrontUI(
@@ -175,8 +186,8 @@ export default function StorefrontPage() {
     productModals.handleStandardItemSelect(item, size, price, quantity, effectiveCategory);
   }, [productModals, effectiveCategory]);
 
-  // Loading state - show skeleton until everything is ready
-  if (loading || !store || !content) {
+  // Loading state - keep the fullscreen loader until all above-the-fold data is ready
+  if (loading || !criticalAssetsReady) {
     return <StorefrontSkeleton />;
   }
 
@@ -190,6 +201,11 @@ export default function StorefrontPage() {
         </div>
       </div>
     );
+  }
+
+  // Safety: content should always exist when store exists, but keep loader in edge cases.
+  if (!content) {
+    return <StorefrontSkeleton />;
   }
 
   return (
@@ -222,7 +238,7 @@ export default function StorefrontPage() {
               <>
                 {ui.activeTab === "cardapio" && (
                   <motion.div key="cardapio" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15, ease: "easeOut" }}>
-                    <BannerCarousel storeId={store.id} />
+                    <BannerCarousel storeId={store.id} banners={banners} />
                     
                     {!ui.searchQuery && featuredProducts.length > 0 && (
                       <FeaturedProducts products={featuredProducts} onProductClick={productModals.handleProductClick} />

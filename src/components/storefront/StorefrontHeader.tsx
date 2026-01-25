@@ -1,7 +1,8 @@
-import { ChevronLeft, ScrollText } from "lucide-react";
+import { ScrollText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useStoreStatus } from "@/contexts/StoreStatusContext";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 interface StoreData {
   id: string;
@@ -45,10 +46,12 @@ export default function StorefrontHeader({ store }: StorefrontHeaderProps) {
       {/* Cover Image - FSW h-52 */}
       <div className="relative h-52 w-full md:mx-auto md:max-w-5xl md:mt-4 md:rounded-2xl md:overflow-hidden">
         {store.banner_url ? (
-          <img
+          <OptimizedImage
             src={store.banner_url}
             alt={store.name}
+            aspectRatio="auto"
             className="h-full w-full object-cover"
+            priority
           />
         ) : (
           <div className="h-full w-full bg-primary" />
@@ -75,10 +78,12 @@ export default function StorefrontHeader({ store }: StorefrontHeaderProps) {
           {/* Avatar - h-20 w-20, border-4 border-white, shadow-lg */}
           <div className="h-20 w-20 rounded-full border-4 border-white shadow-lg overflow-hidden flex-shrink-0 bg-white">
             {store.logo_url ? (
-              <img
+              <OptimizedImage
                 src={store.logo_url}
                 alt={store.name}
+                aspectRatio="auto"
                 className="h-full w-full object-cover"
+                priority
               />
             ) : (
               <div className="h-full w-full flex items-center justify-center bg-primary">
