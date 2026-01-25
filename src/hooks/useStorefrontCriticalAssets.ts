@@ -26,9 +26,17 @@ async function preloadImage(url: string): Promise<void> {
 export function useStorefrontCriticalAssets({ urls, timeoutMs = 1200 }: Params) {
   const [ready, setReady] = useState(false);
 
+  // IMPORTANT: do NOT depend on the array identity, since callers may pass
+  // an array literal which changes every render and would cause an infinite loop.
+  const urlsKey = useMemo(() => {
+    return urls.filter(Boolean).join("\u0000");
+    // Depend on primitive values to avoid array identity issues.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urls.length, urls[0], urls[1], urls[2], urls[3], urls[4]]);
+
   const normalizedUrls = useMemo(() => {
     return Array.from(new Set(urls.filter(Boolean))) as string[];
-  }, [urls]);
+  }, [urlsKey]);
 
   useEffect(() => {
     // SSR safety / tests

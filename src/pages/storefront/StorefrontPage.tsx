@@ -56,12 +56,14 @@ export default function StorefrontPage() {
   const flowStepsData = content?.flowStepsData || {};
   const banners = (content as any)?.banners || [];
 
+  const firstBannerUrl = (banners as any[])?.[0]?.image_url ?? null;
+  const criticalUrls = useMemo(
+    () => [store?.banner_url, store?.logo_url, firstBannerUrl],
+    [store?.banner_url, store?.logo_url, firstBannerUrl]
+  );
+
   const { ready: criticalAssetsReady } = useStorefrontCriticalAssets({
-    urls: [
-      store?.banner_url,
-      store?.logo_url,
-      (banners as any[])?.[0]?.image_url ?? null,
-    ],
+    urls: criticalUrls,
     timeoutMs: 1200,
   });
   
