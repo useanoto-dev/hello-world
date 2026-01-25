@@ -82,12 +82,12 @@ export function PizzaSizeGrid({ categoryId, storeId, onSizeSelect }: PizzaSizeGr
             className="w-full flex gap-3 p-3 border border-border rounded-xl hover:bg-muted/50 transition-colors text-left"
           >
             {/* Image - Left side h-24 w-24 rounded-lg */}
-            <div className="relative h-24 w-24 rounded-lg overflow-hidden bg-muted shrink-0">
+            <div className="relative h-24 w-24 rounded-lg overflow-hidden bg-white shrink-0">
               <OptimizedImage
                 src={size.image_url}
                 alt={size.name}
                 aspectRatio="auto"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
                 fallbackIcon={<span className="text-2xl text-muted-foreground">🍕</span>}
                 priority={index < 4}
               />

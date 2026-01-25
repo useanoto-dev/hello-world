@@ -64,12 +64,12 @@ const ProductCard = memo(function ProductCard({
       onClick={() => !isOutOfStock && onClick()}
     >
       {/* Product Image - h-24 w-24 rounded-lg */}
-      <div className="relative h-24 w-24 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
+      <div className="relative h-24 w-24 rounded-lg overflow-hidden flex-shrink-0 bg-white">
         {product.image_url ? (
           <img
             src={product.image_url}
             alt={product.name}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-contain"
             loading={index < 6 ? "eager" : "lazy"}
           />
         ) : (
