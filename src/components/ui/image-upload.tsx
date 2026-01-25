@@ -81,12 +81,14 @@ export function ImageUpload({
     try {
       const timestamp = Date.now();
       const suffix = device === "mobile" ? "_mobile" : "";
+      // Add cache-busting query param to force refresh
       const fileName = `${folder}/${timestamp}${suffix}.jpg`;
 
       const { error: uploadError } = await supabase.storage
         .from(bucket)
         .upload(fileName, croppedBlob, {
           contentType: "image/jpeg",
+          cacheControl: "0", // No cache
         });
 
       if (uploadError) throw uploadError;
@@ -95,17 +97,21 @@ export function ImageUpload({
         .from(bucket)
         .getPublicUrl(fileName);
 
+      // Add cache-busting timestamp to URL
+      const publicUrlWithCacheBust = `${urlData.publicUrl}?t=${timestamp}`;
+
       if (device === "mobile" && onMobileChange) {
-        onMobileChange(urlData.publicUrl);
+        onMobileChange(publicUrlWithCacheBust);
       } else {
-        onChange(urlData.publicUrl);
+        onChange(publicUrlWithCacheBust);
       }
 
       toast.success(`Imagem ${device === "mobile" ? "mobile" : "desktop"} salva!`);
       
-      // Close cropper only if we don't have mobile option or if uploading mobile
-      if (!showMobileOption || device === "mobile") {
-        setCropperOpen(false);
+      // Always close cropper after successful upload
+      setCropperOpen(false);
+      if (tempImageSrc) {
+        URL.revokeObjectURL(tempImageSrc);
         setTempImageSrc(null);
       }
     } catch (error: any) {
@@ -114,7 +120,7 @@ export function ImageUpload({
     } finally {
       setUploading(false);
     }
-  }, [bucket, folder, onChange, onMobileChange, showMobileOption]);
+  }, [bucket, folder, onChange, onMobileChange, tempImageSrc]);
 
   const handleRemove = useCallback(() => {
     onChange(null);
