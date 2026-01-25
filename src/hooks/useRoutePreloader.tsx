@@ -12,6 +12,7 @@ const dashboardRoutes: Record<string, () => Promise<unknown>> = {
   "/dashboard/coupons": () => import("@/pages/dashboard/CouponsPage"),
   "/dashboard/banners": () => import("@/pages/dashboard/BannersPage"),
   "/dashboard/settings": () => import("@/pages/dashboard/SettingsPage"),
+  "/dashboard/beverages": () => import("@/pages/dashboard/BeveragesListPage"),
 };
 
 // Storefront routes (using dynamic slug pattern)

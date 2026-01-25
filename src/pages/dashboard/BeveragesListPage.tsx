@@ -1,5 +1,5 @@
-// Beverages List Page - Professional full-screen drawer with animations
-import { useState, useEffect } from "react";
+// Beverages List Page - Enterprise-grade instant drawer with GPU-accelerated animations
+import { useState, useEffect, useCallback, useMemo, useTransition, memo, startTransition } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Plus, Pencil, Trash2, GlassWater, Search, GripVertical, X } from "lucide-react";
@@ -20,6 +20,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import {
   DndContext,
   closestCenter,
@@ -71,7 +72,15 @@ interface SortableProductRowProps {
   formatPrice: (price: number | null) => string;
 }
 
-function SortableProductRow({ product, canDrag, onToggleActive, onEdit, onDelete, formatPrice }: SortableProductRowProps) {
+// Memoized row component for optimal re-renders
+const SortableProductRow = memo(function SortableProductRow({ 
+  product, 
+  canDrag, 
+  onToggleActive, 
+  onEdit, 
+  onDelete, 
+  formatPrice 
+}: SortableProductRowProps) {
   const {
     attributes,
     listeners,
@@ -81,11 +90,11 @@ function SortableProductRow({ product, canDrag, onToggleActive, onEdit, onDelete
     isDragging,
   } = useSortable({ id: product.id, disabled: !canDrag });
 
-  const style = {
+  const style = useMemo(() => ({
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-  };
+  }), [transform, transition, isDragging]);
 
   const hasPromo = product.promotional_price && product.promotional_price < (product.price || 0);
 
@@ -94,7 +103,7 @@ function SortableProductRow({ product, canDrag, onToggleActive, onEdit, onDelete
       ref={setNodeRef}
       style={style}
       className={cn(
-        "hover:bg-muted/30 transition-colors bg-card",
+        "hover:bg-muted/30 transition-colors bg-card will-change-transform",
         !product.is_active && "opacity-50",
         isDragging && "z-50"
       )}
@@ -104,7 +113,7 @@ function SortableProductRow({ product, canDrag, onToggleActive, onEdit, onDelete
           <button
             {...attributes}
             {...listeners}
-            className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded"
+            className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded touch-none"
           >
             <GripVertical className="w-3.5 h-3.5 text-muted-foreground" />
           </button>
@@ -118,6 +127,7 @@ function SortableProductRow({ product, canDrag, onToggleActive, onEdit, onDelete
                 src={product.image_url}
                 alt={product.name}
                 className="w-full h-full object-cover"
+                loading="lazy"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
@@ -184,87 +194,98 @@ function SortableProductRow({ product, canDrag, onToggleActive, onEdit, onDelete
       </td>
     </tr>
   );
+});
+
+// Data fetching functions for React Query
+async function fetchBeverageData(categoryId: string) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("store_id")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (!profile?.store_id) throw new Error("No store");
+
+  const [categoryRes, typesRes, productsRes] = await Promise.all([
+    supabase.from("categories").select("id, name").eq("id", categoryId).maybeSingle(),
+    supabase.from("beverage_types").select("id, name, icon, image_url").eq("category_id", categoryId).order("display_order"),
+    supabase.from("beverage_products").select("id, name, description, price, promotional_price, image_url, is_active, beverage_type_id, display_order").eq("category_id", categoryId).order("display_order"),
+  ]);
+
+  return {
+    category: categoryRes.data as Category | null,
+    beverageTypes: (typesRes.data as BeverageType[]) || [],
+    beverageProducts: (productsRes.data as BeverageProduct[]) || [],
+  };
 }
 
 export default function BeveragesListPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryId = searchParams.get('categoryId');
   const selectedTypeId = searchParams.get('typeId');
   
-  const [loading, setLoading] = useState(true);
   const [isClosing, setIsClosing] = useState(false);
-  const [category, setCategory] = useState<Category | null>(null);
-  const [beverageTypes, setBeverageTypes] = useState<BeverageType[]>([]);
-  const [beverageProducts, setBeverageProducts] = useState<BeverageProduct[]>([]);
+  const [isVisible, setIsVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteProduct, setDeleteProduct] = useState<BeverageProduct | null>(null);
+  const [localProducts, setLocalProducts] = useState<BeverageProduct[] | null>(null);
+  const [isPending, startTransition] = useTransition();
 
+  // React Query for instant cache hits
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ["beverages-list", categoryId],
+    queryFn: () => fetchBeverageData(categoryId!),
+    enabled: !!categoryId,
+    staleTime: 5 * 60 * 1000, // 5 min cache
+    gcTime: 30 * 60 * 1000,
+  });
+
+  const beverageProducts = localProducts ?? data?.beverageProducts ?? [];
+  const beverageTypes = data?.beverageTypes ?? [];
+  const category = data?.category;
+
+  // Instant mount animation - no loading flash
   useEffect(() => {
-    loadData();
-  }, [categoryId]);
+    // Trigger animation immediately on mount
+    requestAnimationFrame(() => {
+      setIsVisible(true);
+    });
+  }, []);
 
   // Auto-select first type if none selected
   useEffect(() => {
-    if (!selectedTypeId && beverageTypes.length > 0 && !loading) {
-      setSearchParams({ categoryId: categoryId || '', typeId: beverageTypes[0].id });
+    if (!selectedTypeId && beverageTypes.length > 0 && !isLoading) {
+      startTransition(() => {
+        setSearchParams({ categoryId: categoryId || '', typeId: beverageTypes[0].id });
+      });
     }
-  }, [beverageTypes, loading]);
+  }, [beverageTypes, isLoading, selectedTypeId, categoryId, setSearchParams]);
 
-  const loadData = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("store_id")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (!profile?.store_id) return;
-
-      if (categoryId) {
-        const { data: cat } = await supabase
-          .from("categories")
-          .select("id, name")
-          .eq("id", categoryId)
-          .single();
-        
-        if (cat) setCategory(cat as Category);
-
-        const { data: types } = await supabase
-          .from("beverage_types")
-          .select("id, name, icon, image_url")
-          .eq("category_id", categoryId)
-          .order("display_order");
-
-        setBeverageTypes((types as BeverageType[]) || []);
-
-        const { data: products } = await supabase
-          .from("beverage_products")
-          .select("id, name, description, price, promotional_price, image_url, is_active, beverage_type_id, display_order")
-          .eq("category_id", categoryId)
-          .order("display_order");
-
-        setBeverageProducts((products as BeverageProduct[]) || []);
-      }
-    } catch (error) {
-      console.error("Error loading data:", error);
-      toast.error("Erro ao carregar dados");
-    } finally {
-      setLoading(false);
+  // Sync local products with query data
+  useEffect(() => {
+    if (data?.beverageProducts) {
+      setLocalProducts(data.beverageProducts);
     }
-  };
+  }, [data?.beverageProducts]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setIsClosing(true);
     setTimeout(() => {
       navigate("/dashboard/products");
-    }, 250);
-  };
+    }, 200);
+  }, [navigate]);
 
-  const handleToggleActive = async (product: BeverageProduct) => {
+  const handleToggleActive = useCallback(async (product: BeverageProduct) => {
+    // Optimistic update
+    setLocalProducts(prev => 
+      prev?.map(p => p.id === product.id ? { ...p, is_active: !p.is_active } : p) ?? null
+    );
+
     try {
       const { error } = await supabase
         .from("beverage_products")
@@ -272,64 +293,75 @@ export default function BeveragesListPage() {
         .eq("id", product.id);
 
       if (error) throw error;
-
-      setBeverageProducts(prev =>
-        prev.map(p => p.id === product.id ? { ...p, is_active: !p.is_active } : p)
-      );
-
       toast.success(product.is_active ? "Bebida ocultada" : "Bebida visível");
-    } catch (error: any) {
+    } catch {
+      // Rollback
+      setLocalProducts(prev => 
+        prev?.map(p => p.id === product.id ? { ...p, is_active: product.is_active } : p) ?? null
+      );
       toast.error("Erro ao atualizar");
     }
-  };
+  }, []);
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (!deleteProduct) return;
+
+    // Optimistic update
+    setLocalProducts(prev => prev?.filter(p => p.id !== deleteProduct.id) ?? null);
+    const deletedProduct = deleteProduct;
+    setDeleteProduct(null);
 
     try {
       const { error } = await supabase
         .from("beverage_products")
         .delete()
-        .eq("id", deleteProduct.id);
+        .eq("id", deletedProduct.id);
 
       if (error) throw error;
-
-      setBeverageProducts(prev => prev.filter(p => p.id !== deleteProduct.id));
       toast.success("Bebida excluída!");
-      setDeleteProduct(null);
-    } catch (error: any) {
+    } catch {
+      // Rollback
+      refetch();
       toast.error("Erro ao excluir");
     }
-  };
+  }, [deleteProduct, refetch]);
 
-  const handleSelectType = (typeId: string) => {
-    setSearchParams({ categoryId: categoryId || '', typeId });
-  };
+  const handleSelectType = useCallback((typeId: string) => {
+    startTransition(() => {
+      setSearchParams({ categoryId: categoryId || '', typeId });
+    });
+  }, [categoryId, setSearchParams]);
 
-  const formatPrice = (price: number | null) => {
+  const formatPrice = useCallback((price: number | null) => {
     if (!price) return "R$ 0,00";
     return `R$ ${price.toFixed(2).replace('.', ',')}`;
-  };
+  }, []);
 
-  // Drag and drop sensors
+  // Drag and drop sensors with touch optimization
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const handleDragEnd = async (event: DragEndEvent) => {
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const oldIndex = filteredProducts.findIndex(p => p.id === active.id);
-    const newIndex = filteredProducts.findIndex(p => p.id === over.id);
+    const currentProducts = localProducts ?? [];
+    const filtered = currentProducts
+      .filter(p => selectedTypeId ? p.beverage_type_id === selectedTypeId : true)
+      .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+
+    const oldIndex = filtered.findIndex(p => p.id === active.id);
+    const newIndex = filtered.findIndex(p => p.id === over.id);
 
     if (oldIndex === -1 || newIndex === -1) return;
 
-    const reordered = arrayMove(filteredProducts, oldIndex, newIndex);
+    const reordered = arrayMove(filtered, oldIndex, newIndex);
     
-    // Update local state immediately
-    setBeverageProducts(prev => {
+    // Optimistic update
+    setLocalProducts(prev => {
+      if (!prev) return null;
       const otherProducts = prev.filter(p => !reordered.some(r => r.id === p.id));
       return [...otherProducts, ...reordered.map((p, i) => ({ ...p, display_order: i }))];
     });
@@ -341,60 +373,70 @@ export default function BeveragesListPage() {
         display_order: index,
       }));
 
-      for (const update of updates) {
-        await supabase
+      await Promise.all(updates.map(update => 
+        supabase
           .from("beverage_products")
           .update({ display_order: update.display_order })
-          .eq("id", update.id);
-      }
+          .eq("id", update.id)
+      ));
 
       toast.success("Ordem atualizada!");
-    } catch (error) {
-      console.error("Error updating order:", error);
+    } catch {
       toast.error("Erro ao atualizar ordem");
-      loadData(); // Reload on error
+      refetch();
     }
-  };
+  }, [localProducts, selectedTypeId, refetch]);
 
-  const filteredProducts = beverageProducts
-    .filter(p => selectedTypeId ? p.beverage_type_id === selectedTypeId : true)
-    .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+  // Memoized filtered products for performance
+  const filteredProducts = useMemo(() => 
+    beverageProducts
+      .filter(p => selectedTypeId ? p.beverage_type_id === selectedTypeId : true)
+      .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      .sort((a, b) => (a.display_order || 0) - (b.display_order || 0)),
+    [beverageProducts, selectedTypeId, searchTerm]
+  );
 
-  const selectedType = beverageTypes.find(t => t.id === selectedTypeId);
+  const selectedType = useMemo(() => 
+    beverageTypes.find(t => t.id === selectedTypeId),
+    [beverageTypes, selectedTypeId]
+  );
   
-  const canDrag = !searchTerm; // Disable drag when searching
+  const canDrag = !searchTerm;
+
+  // GPU-accelerated spring animation config
+  const drawerVariants = useMemo(() => ({
+    hidden: { y: "100%", opacity: 1 },
+    visible: { y: 0, opacity: 1 },
+    exit: { y: "100%", opacity: 1 }
+  }), []);
 
   return (
-    <AnimatePresence mode="wait">
-      {/* Backdrop */}
+    <>
+      {/* Backdrop - instant render */}
       <motion.div
-        key="backdrop"
         initial={{ opacity: 0 }}
-        animate={{ opacity: isClosing ? 0 : 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+        animate={{ opacity: isVisible && !isClosing ? 1 : 0 }}
+        transition={{ duration: 0.15 }}
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 will-change-opacity"
         onClick={handleClose}
       />
 
-      {/* Full screen drawer */}
+      {/* Full screen drawer - GPU accelerated */}
       <motion.div
-        key="drawer"
-        initial={{ y: "100%" }}
-        animate={{ y: isClosing ? "100%" : 0 }}
-        exit={{ y: "100%" }}
+        initial="hidden"
+        animate={isVisible && !isClosing ? "visible" : "hidden"}
+        variants={drawerVariants}
         transition={{ 
           type: "spring", 
-          damping: 30, 
-          stiffness: 350,
-          mass: 0.8
+          damping: 28, 
+          stiffness: 400,
+          mass: 0.6
         }}
-        className="fixed inset-x-0 bottom-0 top-0 z-50 bg-background flex flex-col"
+        className="fixed inset-x-0 bottom-0 top-0 z-50 bg-background flex flex-col will-change-transform"
+        style={{ transform: "translateZ(0)" }} // Force GPU layer
       >
-        {/* Header */}
+        {/* Header - always render immediately */}
         <div className="flex-shrink-0 border-b border-border bg-card">
-          {/* Handle bar - visual indicator for mobile */}
           <div className="flex justify-center pt-3 pb-1 md:hidden">
             <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
           </div>
@@ -403,7 +445,7 @@ export default function BeveragesListPage() {
             <div className="flex items-center gap-3">
               <button 
                 onClick={handleClose}
-                className="p-2 -ml-2 hover:bg-muted rounded-full transition-colors"
+                className="p-2 -ml-2 hover:bg-muted rounded-full transition-colors active:scale-95"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
@@ -419,16 +461,16 @@ export default function BeveragesListPage() {
             
             <button 
               onClick={handleClose}
-              className="p-2 -mr-2 hover:bg-muted rounded-full transition-colors md:flex hidden"
+              className="p-2 -mr-2 hover:bg-muted rounded-full transition-colors md:flex hidden active:scale-95"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Content */}
+        {/* Content - show skeleton only on initial load with no cache */}
         <div className="flex-1 flex min-h-0 overflow-hidden">
-          {loading ? (
+          {isLoading && beverageTypes.length === 0 ? (
             <div className="flex-1 flex">
               <div className="w-44 bg-card border-r border-border p-3 space-y-2">
                 <Skeleton className="h-8 w-full" />
@@ -587,6 +629,6 @@ export default function BeveragesListPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </AnimatePresence>
+    </>
   );
 }

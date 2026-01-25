@@ -1,6 +1,7 @@
-// Menu Manager Page - Anota AI Style
-import { useState, useEffect } from "react";
+// Menu Manager Page - Enterprise-grade with prefetching
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { 
   Plus, 
   Search, 
@@ -173,12 +174,45 @@ interface OptionGroup {
 
 export default function MenuManagerPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
   const [storeId, setStoreId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("categories");
+
+  // Prefetch beverage data for instant navigation
+  const prefetchBeverageData = useCallback(async (categoryId: string) => {
+    await queryClient.prefetchQuery({
+      queryKey: ["beverages-list", categoryId],
+      queryFn: async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("store_id")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (!profile?.store_id) throw new Error("No store");
+
+        const [categoryRes, typesRes, productsRes] = await Promise.all([
+          supabase.from("categories").select("id, name").eq("id", categoryId).maybeSingle(),
+          supabase.from("beverage_types").select("id, name, icon, image_url").eq("category_id", categoryId).order("display_order"),
+          supabase.from("beverage_products").select("id, name, description, price, promotional_price, image_url, is_active, beverage_type_id, display_order").eq("category_id", categoryId).order("display_order"),
+        ]);
+
+        return {
+          category: categoryRes.data,
+          beverageTypes: typesRes.data || [],
+          beverageProducts: productsRes.data || [],
+        };
+      },
+      staleTime: 5 * 60 * 1000,
+    });
+  }, [queryClient]);
   
   // Expanded categories state
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
@@ -1255,7 +1289,10 @@ export default function MenuManagerPage() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => navigate(`/dashboard/beverages?categoryId=${category.id}`)}
-                                className="gap-1.5 h-7 text-xs"
+                                onMouseEnter={() => prefetchBeverageData(category.id)}
+                                onFocus={() => prefetchBeverageData(category.id)}
+                                onTouchStart={() => prefetchBeverageData(category.id)}
+                                className="gap-1.5 h-7 text-xs active:scale-95 transition-transform"
                               >
                                 Ver bebidas
                               </Button>
@@ -1279,7 +1316,10 @@ export default function MenuManagerPage() {
                               <button
                                 key={type.id}
                                 onClick={() => navigate(`/dashboard/beverages?categoryId=${category.id}&typeId=${type.id}`)}
-                                className="inline-flex items-center gap-2 bg-card hover:bg-muted rounded-md border border-border/50 hover:border-primary/30 px-2.5 py-1.5 text-xs transition-all cursor-pointer"
+                                onMouseEnter={() => prefetchBeverageData(category.id)}
+                                onFocus={() => prefetchBeverageData(category.id)}
+                                onTouchStart={() => prefetchBeverageData(category.id)}
+                                className="inline-flex items-center gap-2 bg-card hover:bg-muted rounded-md border border-border/50 hover:border-primary/30 px-2.5 py-1.5 text-xs transition-all cursor-pointer active:scale-95"
                               >
                                 <span className="font-medium text-foreground">{type.name}</span>
                                 <ChevronDown className="w-3 h-3 text-muted-foreground" />
