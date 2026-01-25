@@ -15,6 +15,7 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
+      // Cache version bump - forces SW update: v2025.01.25.1
       includeAssets: ["favicon.ico", "robots.txt"],
       manifest: {
         name: "Anotô - Cardápio Digital Inteligente",
