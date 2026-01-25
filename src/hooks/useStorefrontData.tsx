@@ -264,12 +264,12 @@ export function useStorefrontData(slug: string | undefined) {
   const queryClient = useQueryClient();
   const [updatedProductIds, setUpdatedProductIds] = useState<Set<string>>(new Set());
 
-  // Fetch store with aggressive caching
+  // Fetch store with reasonable caching (realtime will invalidate on changes)
   const { data: store, isLoading: storeLoading, refetch: refetchStore } = useQuery({
     queryKey: ["store", slug],
     queryFn: () => fetchStoreData(slug!),
     enabled: !!slug,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 60 * 1000, // 1 minute - realtime will invalidate if store changes
     gcTime: 30 * 60 * 1000,
   });
 
@@ -278,16 +278,20 @@ export function useStorefrontData(slug: string | undefined) {
     queryKey: ["store-content", store?.id],
     queryFn: () => fetchStoreContent(store!.id),
     enabled: !!store?.id,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 60 * 1000, // 1 minute - realtime will invalidate if content changes
     gcTime: 30 * 60 * 1000,
   });
 
-  // Real-time subscription for updates
+  // Real-time subscription for updates (including store settings like banner)
   useEffect(() => {
     if (!store?.id) return;
 
     const channel = supabase
       .channel('storefront-realtime')
+      // Listen to store changes (banner, logo, settings)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'stores', filter: `id=eq.${store.id}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ["store", slug] });
+      })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, (payload) => {
         if (payload.eventType === 'UPDATE') {
           const productId = payload.new?.id;
@@ -319,12 +323,15 @@ export function useStorefrontData(slug: string | undefined) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'beverage_products' }, () => 
         queryClient.invalidateQueries({ queryKey: ["store-content", store.id] })
       )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'banners' }, () => 
+        queryClient.invalidateQueries({ queryKey: ["store-content", store.id] })
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [store?.id, queryClient]);
+  }, [store?.id, slug, queryClient]);
 
   return {
     store,
