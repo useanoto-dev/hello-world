@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Carousel,
@@ -8,7 +8,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import Autoplay from "embla-carousel-autoplay";
 
-interface Banner {
+export interface Banner {
   id: string;
   title: string | null;
   image_url: string;
@@ -16,14 +16,31 @@ interface Banner {
 }
 
 interface BannerCarouselProps {
-  storeId: string;
+  /** When provided, renders immediately (no internal loading state). */
+  banners?: Banner[];
+  /** Fallback for legacy usage (will fetch internally). */
+  storeId?: string;
 }
 
-export default function BannerCarousel({ storeId }: BannerCarouselProps) {
-  const [banners, setBanners] = useState<Banner[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function BannerCarousel({ storeId, banners }: BannerCarouselProps) {
+  const [internalBanners, setInternalBanners] = useState<Banner[]>(() => banners ?? []);
+  const [loading, setLoading] = useState(() => !banners);
+
+  const effectiveBanners = useMemo(() => banners ?? internalBanners, [banners, internalBanners]);
 
   useEffect(() => {
+    // If banners are provided by parent (preferred), skip internal fetch.
+    if (banners) {
+      setInternalBanners(banners);
+      setLoading(false);
+      return;
+    }
+
+    if (!storeId) {
+      setLoading(false);
+      return;
+    }
+
     async function loadBanners() {
       // Use secure public view instead of direct table access
       const { data } = await supabase
@@ -34,13 +51,13 @@ export default function BannerCarousel({ storeId }: BannerCarouselProps) {
         .order("display_order");
 
       if (data) {
-        setBanners(data);
+        setInternalBanners(data);
       }
       setLoading(false);
     }
 
     loadBanners();
-  }, [storeId]);
+  }, [storeId, banners]);
 
   if (loading) {
     return (
@@ -50,7 +67,7 @@ export default function BannerCarousel({ storeId }: BannerCarouselProps) {
     );
   }
 
-  if (banners.length === 0) {
+  if (effectiveBanners.length === 0) {
     return null;
   }
 
@@ -76,7 +93,7 @@ export default function BannerCarousel({ storeId }: BannerCarouselProps) {
         className="w-full"
       >
         <CarouselContent className="-ml-2 lg:-ml-4">
-          {banners.map((banner) => (
+          {effectiveBanners.map((banner, idx) => (
             <CarouselItem key={banner.id} className="pl-2 lg:pl-4 basis-full">
               <div
                 className={`relative overflow-hidden rounded-xl lg:rounded-2xl ${banner.link_url ? "cursor-pointer" : ""}`}
@@ -86,6 +103,8 @@ export default function BannerCarousel({ storeId }: BannerCarouselProps) {
                   src={banner.image_url}
                   alt={banner.title || "Banner promocional"}
                   className="w-full h-32 sm:h-40 md:h-48 lg:h-56 object-cover"
+                  loading={idx === 0 ? "eager" : "lazy"}
+                  decoding="async"
                 />
                 {banner.title && (
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 sm:p-4 lg:p-5">

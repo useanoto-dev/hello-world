@@ -43,6 +43,13 @@ export interface PrimaryGroupItem {
   description: string | null;
 }
 
+export interface StorefrontBanner {
+  id: string;
+  title: string | null;
+  image_url: string;
+  link_url: string | null;
+}
+
 interface CategoryOptionGroup {
   id: string;
   category_id: string;
@@ -64,7 +71,17 @@ export async function fetchStoreData(slug: string) {
 
 // Fetch categories, products and option groups
 export async function fetchStoreContent(storeId: string) {
-  const [categoriesResult, productsResult, optionGroupsResult, reviewsResult, inventoryCategoriesResult, inventoryProductsResult, flowStepsResult, standardSizesResult] = await Promise.all([
+  const [
+    categoriesResult,
+    productsResult,
+    optionGroupsResult,
+    reviewsResult,
+    inventoryCategoriesResult,
+    inventoryProductsResult,
+    flowStepsResult,
+    standardSizesResult,
+    bannersResult,
+  ] = await Promise.all([
     supabase
       .from("categories")
       .select("id, name, slug, icon, image_url, use_sequential_flow, has_base_product, category_type, show_flavor_prices, display_mode, allow_quantity_selector")
@@ -109,11 +126,18 @@ export async function fetchStoreContent(storeId: string) {
       .eq("store_id", storeId)
       .eq("is_active", true)
       .order("display_order"),
+    supabase
+      .from("v_public_banners")
+      .select("id, title, image_url, link_url")
+      .eq("store_id", storeId)
+      .eq("is_active", true)
+      .order("display_order"),
   ]);
 
   if (categoriesResult.error) throw categoriesResult.error;
   if (productsResult.error) throw productsResult.error;
   if (optionGroupsResult.error) throw optionGroupsResult.error;
+  if (bannersResult.error) throw bannersResult.error;
 
   // Calculate review stats
   const reviews = reviewsResult.data || [];
@@ -232,6 +256,7 @@ export async function fetchStoreContent(storeId: string) {
     inventoryProductIds: new Set(inventoryProducts.map(p => p.id)),
     flowStepsData,
     standardCategoryIds,
+    banners: (bannersResult.data || []) as StorefrontBanner[],
   };
 }
 
@@ -301,9 +326,6 @@ export function useStorefrontData(slug: string | undefined) {
     };
   }, [store?.id, queryClient]);
 
-  // Loading is true until we have both store AND content with actual data
-  const isFullyLoaded = !storeLoading && !contentLoading && !!store && !!content && content.categories.length >= 0;
-
   return {
     store,
     storeLoading,
@@ -312,6 +334,8 @@ export function useStorefrontData(slug: string | undefined) {
     contentLoading,
     refetchContent,
     updatedProductIds,
-    loading: !isFullyLoaded,
+    // Keep the storefront splash visible until both queries complete.
+    // Content now includes banners (above-the-fold), so we avoid layout "flash".
+    loading: storeLoading || (!!store && contentLoading),
   };
 }
