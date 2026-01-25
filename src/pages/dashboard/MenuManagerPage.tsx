@@ -1239,27 +1239,28 @@ export default function MenuManagerPage() {
                           {category.category_type === 'beverages' ? 'Tipos de Bebidas' : 'Estrutura da Categoria'}
                         </h4>
                         <div className="flex items-center gap-2">
-                          {/* Show "Cadastrar Bebidas" button if category has beverage types */}
+                          {/* Show "Cadastrar Bebidas" and "Ver bebidas" buttons if category has beverage types */}
                           {categoryBeverageTypes[category.id]?.length > 0 && (
-                            <Button
-                              variant="default"
-                              size="sm"
-                              onClick={() => navigate(`/dashboard/beverage/new?categoryId=${category.id}`)}
-                              className="gap-1.5 h-7 text-xs"
-                            >
-                              <Plus className="w-3 h-3" />
-                              Cadastrar Bebidas
-                            </Button>
+                            <>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => navigate(`/dashboard/beverage/new?categoryId=${category.id}`)}
+                                className="gap-1.5 h-7 text-xs"
+                              >
+                                <Plus className="w-3 h-3" />
+                                Cadastrar Bebidas
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => navigate(`/dashboard/beverages?categoryId=${category.id}`)}
+                                className="gap-1.5 h-7 text-xs"
+                              >
+                                Ver bebidas
+                              </Button>
+                            </>
                           )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate(`/dashboard/category/edit?edit=${category.id}`)}
-                            className="gap-1.5 h-7 text-xs text-muted-foreground hover:text-foreground"
-                          >
-                            <Pencil className="w-3 h-3" />
-                            Editar
-                          </Button>
                         </div>
                       </div>
 
@@ -1624,54 +1625,33 @@ export default function MenuManagerPage() {
                     </div>
                   )}
                   
-                  {/* Add Item Button - Compact */}
-                  <div className="mt-3 pt-2 border-t border-border/30 flex items-center gap-3">
-                    <button 
-                      onClick={() => {
-                        // For beverage categories (with types or category_type = 'beverages'), go to beverage wizard
-                        if (category.category_type === 'beverages' || categoryBeverageTypes[category.id]?.length > 0) {
-                          if (categoryBeverageTypes[category.id]?.length > 0) {
-                            navigate(`/dashboard/beverage/new?categoryId=${category.id}`);
-                          } else {
-                            // No beverage types yet - redirect to category editor step 3 to create types first
-                            toast.info("Primeiro, cadastre os tipos de bebidas");
-                            navigate(`/dashboard/category/edit?edit=${category.id}&step=3`);
-                          }
-                        } else {
+                  {/* Add Item Button - Compact (only for non-beverage categories) */}
+                  {category.category_type !== 'beverages' && !categoryBeverageTypes[category.id]?.length && (
+                    <div className="mt-3 pt-2 border-t border-border/30 flex items-center gap-3">
+                      <button 
+                        onClick={() => {
                           openAddItemTypeModal(
                             category.id, 
                             category.name, 
                             category.category_type === 'pizza',
                             category.category_type === 'standard'
                           );
-                        }
-                      }}
-                      className="flex items-center gap-1.5 text-primary hover:text-primary/80 font-medium text-xs transition-colors"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      {category.category_type === 'pizza' 
-                        ? 'Adicionar Sabor' 
-                        : (category.category_type === 'beverages' || categoryBeverageTypes[category.id]?.length > 0)
-                          ? 'Adicionar Bebida'
-                          : 'Adicionar Item'}
-                    </button>
-                    {category.category_type === 'pizza' && (
-                      <button 
-                        onClick={() => navigate(`/dashboard/pizza-flavors?categoryId=${category.id}`)}
-                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                        }}
+                        className="flex items-center gap-1.5 text-primary hover:text-primary/80 font-medium text-xs transition-colors"
                       >
-                        Ver sabores
+                        <Plus className="w-3.5 h-3.5" />
+                        {category.category_type === 'pizza' ? 'Adicionar Sabor' : 'Adicionar Item'}
                       </button>
-                    )}
-                    {(category.category_type === 'beverages' || categoryBeverageTypes[category.id]?.length > 0) && (
-                      <button 
-                        onClick={() => navigate(`/dashboard/beverages?categoryId=${category.id}`)}
-                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        Ver bebidas
-                      </button>
-                    )}
-                  </div>
+                      {category.category_type === 'pizza' && (
+                        <button 
+                          onClick={() => navigate(`/dashboard/pizza-flavors?categoryId=${category.id}`)}
+                          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          Ver sabores
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </SortableCategoryItem>
