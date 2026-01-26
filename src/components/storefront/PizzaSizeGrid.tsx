@@ -77,25 +77,25 @@ export function PizzaSizeGrid({ categoryId, storeId, onSizeSelect }: PizzaSizeGr
         >
           {/* Text Info - Left side */}
           <div className="flex-1 min-w-0 pr-4">
-            {/* Title - Black, Bold, Uppercase */}
-            <h3 className="font-bold text-gray-900 text-[15px] leading-tight uppercase">
+            {/* Title - Black, Bold */}
+            <h3 className="font-bold text-gray-900 text-[15px] leading-tight">
               {size.name}
             </h3>
             
-            {/* Slices info - Purple/Violet */}
+            {/* Description - Purple/Violet (slices info) */}
             {size.slices > 0 && (
-              <p className="text-[13px] text-violet-500 mt-1">
+              <p className="text-[13px] text-violet-500 mt-0.5">
                 {size.slices} fatias
               </p>
             )}
             
-            {/* Price - Black Bold with "A partir de" prefix */}
-            <div className="mt-1.5 flex items-baseline gap-1.5">
-              <span className="text-[12px] text-gray-400">A partir de</span>
+            {/* Price - "A partir de" + price */}
+            <p className="mt-1 text-[13px] text-gray-400">
+              A partir de{' '}
               <span className="text-[15px] font-bold text-gray-900">
                 {formatCurrency(size.base_price)}
               </span>
-            </div>
+            </p>
           </div>
 
           {/* Image - Right side */}
