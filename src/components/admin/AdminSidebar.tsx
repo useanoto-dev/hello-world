@@ -193,7 +193,7 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
     }
   };
 
-  // macOS-style menu item component with blue selection indicator and yellow buttons
+  // Clean minimalist menu item - white bg with yellow accent on active
   const MenuItem = ({ item, isActive, end = false }: { 
     item: MenuItemWithRoles; 
     isActive?: boolean;
@@ -209,25 +209,33 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
             to={item.url}
             end={end}
             className={cn(
-              "group relative flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200",
-              // Yellow button style
-              "bg-gradient-to-b from-amber-400 to-amber-500 text-amber-950",
-              "hover:from-amber-500 hover:to-amber-600 hover:shadow-md hover:shadow-amber-500/25",
-              "shadow-sm shadow-amber-600/20",
-              "border border-amber-500/30"
+              "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150",
+              "text-gray-600 hover:text-gray-900",
+              "hover:bg-gray-100/80",
+              active && "!bg-amber-50 !text-amber-900"
             )}
-            activeClassName="!from-amber-500 !to-amber-600 !shadow-lg !shadow-amber-500/30"
+            activeClassName="!bg-amber-50 !text-amber-900"
           >
-            {/* Blue selection indicator - left bar */}
-            {active && (
-              <motion.span 
-                layoutId="sidebar-indicator"
-                className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full shadow-lg shadow-blue-500/50"
-                transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
-              />
+            {/* Yellow left indicator for active */}
+            <AnimatePresence>
+              {active && (
+                <motion.span 
+                  layoutId="sidebar-active-indicator"
+                  initial={{ opacity: 0, scaleY: 0 }}
+                  animate={{ opacity: 1, scaleY: 1 }}
+                  exit={{ opacity: 0, scaleY: 0 }}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-amber-500 rounded-r-full"
+                  transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
+                />
+              )}
+            </AnimatePresence>
+            <Icon className={cn(
+              "w-[18px] h-[18px] flex-shrink-0 transition-colors",
+              active ? "text-amber-600" : "text-gray-400 group-hover:text-gray-600"
+            )} />
+            {!collapsed && (
+              <span className="truncate">{item.title}</span>
             )}
-            <Icon className="w-4 h-4 flex-shrink-0 text-amber-900" />
-            {!collapsed && <span className="text-amber-900">{item.title}</span>}
           </NavLink>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -238,19 +246,18 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
     <Sidebar 
       collapsible="icon" 
       className={cn(
-        "border-r border-amber-500/30",
-        // Amber yellow background #FFBE00
-        "!bg-[#FFBE00] dark:!bg-[#FFBE00]"
+        "border-r border-gray-200/80",
+        "!bg-white"
       )}
     >
       <SidebarContent className="bg-transparent">
-        {/* Header - Store info */}
-        <div className="px-3 py-4 border-b border-white/10">
+        {/* Header - Clean branding */}
+        <div className="px-4 py-5 border-b border-gray-100">
           <div className="flex items-center gap-3">
             <div className={cn(
-              "w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0",
-              "bg-gradient-to-br from-amber-400 to-amber-600",
-              "shadow-md shadow-amber-500/30"
+              "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0",
+              "bg-gradient-to-br from-amber-400 to-amber-500",
+              "shadow-lg shadow-amber-500/25"
             )}>
               <Pizza className="w-5 h-5 text-white" />
             </div>
@@ -259,12 +266,13 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
                 initial={{ opacity: 0, x: -4 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.15 }}
+                className="flex-1 min-w-0"
               >
-                <h2 className="font-bold text-sm text-gray-800 dark:text-gray-100 leading-tight">
-                  {isStaffLoggedIn ? staffName : "Pizzaria"}
+                <h2 className="font-semibold text-[15px] text-gray-900 leading-tight truncate">
+                  {isStaffLoggedIn ? staffName : "Anotô"}
                 </h2>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">
-                  {isStaffLoggedIn ? (staffRole === 'garcom' ? 'Garçom' : 'Admin') : "Portuguesa"}
+                <p className="text-[11px] text-gray-500 leading-tight">
+                  {isStaffLoggedIn ? (staffRole === 'garcom' ? 'Garçom' : 'Admin') : "Sistema de Delivery"}
                 </p>
               </motion.div>
             )}
@@ -273,12 +281,14 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
 
         {/* Quick Access - only if has items */}
         {filteredQuickAccess.length > 0 && (
-          <SidebarGroup className="py-3">
-            <SidebarGroupLabel className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
-              Acesso Rápido
-            </SidebarGroupLabel>
-            <SidebarGroupContent className="px-2.5 mt-1">
-              <SidebarMenu className="gap-2">
+          <SidebarGroup className="py-2">
+            {!collapsed && (
+              <SidebarGroupLabel className="px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                Acesso Rápido
+              </SidebarGroupLabel>
+            )}
+            <SidebarGroupContent className="px-2">
+              <SidebarMenu className="gap-0.5">
                 {filteredQuickAccess.map((item) => (
                   <MenuItem key={item.title} item={item} />
                 ))}
@@ -289,12 +299,14 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
 
         {/* Operational - only if has items */}
         {filteredOperational.length > 0 && (
-          <SidebarGroup className="py-3">
-            <SidebarGroupLabel className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
-              Operacional
-            </SidebarGroupLabel>
-            <SidebarGroupContent className="px-2.5 mt-1">
-              <SidebarMenu className="gap-2">
+          <SidebarGroup className="py-2">
+            {!collapsed && (
+              <SidebarGroupLabel className="px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                Operacional
+              </SidebarGroupLabel>
+            )}
+            <SidebarGroupContent className="px-2">
+              <SidebarMenu className="gap-0.5">
                 {filteredOperational.map((item) => (
                   <MenuItem key={item.title} item={item} />
                 ))}
@@ -305,12 +317,14 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
 
         {/* Management - only if has items or is admin */}
         {(filteredManagement.length > 0 || showMenuManager) && (
-          <SidebarGroup className="py-3 flex-1">
-            <SidebarGroupLabel className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
-              Gestão
-            </SidebarGroupLabel>
-            <SidebarGroupContent className="px-2.5 mt-1">
-              <SidebarMenu className="gap-2">
+          <SidebarGroup className="py-2 flex-1">
+            {!collapsed && (
+              <SidebarGroupLabel className="px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                Gestão
+              </SidebarGroupLabel>
+            )}
+            <SidebarGroupContent className="px-2">
+              <SidebarMenu className="gap-0.5">
                 {/* Dashboard and Pedidos */}
                 {filteredManagement.slice(0, 2).map((item) => (
                   <MenuItem key={item.title} item={item} end={item.url === "/dashboard"} />
@@ -323,29 +337,29 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
                       <CollapsibleTrigger asChild>
                         <button
                           className={cn(
-                            "relative w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200",
-                            // Yellow button style
-                            "bg-gradient-to-b from-amber-400 to-amber-500 text-amber-950",
-                            "hover:from-amber-500 hover:to-amber-600 hover:shadow-md hover:shadow-amber-500/25",
-                            "shadow-sm shadow-amber-600/20",
-                            "border border-amber-500/30"
+                            "group relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150",
+                            "text-gray-600 hover:text-gray-900 hover:bg-gray-100/80",
+                            isMenuManagerActive && "bg-amber-50 text-amber-900"
                           )}
                         >
-                          {/* Blue selection indicator */}
+                          {/* Yellow left indicator */}
                           {isMenuManagerActive && (
                             <motion.span 
-                              layoutId="sidebar-indicator-menu"
-                              className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full shadow-lg shadow-blue-500/50"
-                              transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                              layoutId="sidebar-menu-indicator"
+                              className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-amber-500 rounded-r-full"
+                              transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
                             />
                           )}
-                          <Menu className="w-4 h-4 flex-shrink-0 text-amber-900" />
+                          <Menu className={cn(
+                            "w-[18px] h-[18px] flex-shrink-0 transition-colors",
+                            isMenuManagerActive ? "text-amber-600" : "text-gray-400 group-hover:text-gray-600"
+                          )} />
                           {!collapsed && (
                             <>
-                              <span className="flex-1 text-left text-amber-900">Cardápio</span>
+                              <span className="flex-1 text-left truncate">Cardápio</span>
                               <ChevronRight 
                                 className={cn(
-                                  "w-3.5 h-3.5 transition-transform duration-200 text-amber-800",
+                                  "w-4 h-4 text-gray-400 transition-transform duration-200",
                                   menuManagerOpen && "rotate-90"
                                 )} 
                               />
@@ -354,7 +368,7 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
                         </button>
                       </CollapsibleTrigger>
                       <AnimatePresence>
-                        {menuManagerOpen && (
+                        {menuManagerOpen && !collapsed && (
                           <CollapsibleContent forceMount asChild>
                             <motion.div
                               initial={{ height: 0, opacity: 0 }}
@@ -363,7 +377,7 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
                               transition={{ duration: 0.2, ease: "easeInOut" }}
                               className="overflow-hidden"
                             >
-                              <div className={cn("ml-4 pl-3 border-l-2 border-amber-400/40 mt-2 space-y-1.5", collapsed && "hidden")}>
+                              <div className="ml-5 pl-3 border-l border-gray-200 mt-1 space-y-0.5">
                                 {menuManagerSubItems.map((subItem) => {
                                   const Icon = subItem.icon;
                                   const isSubActive = location.pathname.startsWith(subItem.url);
@@ -372,19 +386,17 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
                                       key={subItem.url}
                                       to={subItem.url}
                                       className={cn(
-                                        "relative flex items-center gap-2 px-2.5 py-2 rounded-lg text-[12px] font-semibold transition-all duration-200",
-                                        // Yellow sub-button style
-                                        "bg-gradient-to-b from-amber-300/90 to-amber-400/90 text-amber-900",
-                                        "hover:from-amber-400 hover:to-amber-500 hover:shadow-sm",
-                                        "border border-amber-400/30"
+                                        "group relative flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[12px] font-medium transition-all duration-150",
+                                        "text-gray-500 hover:text-gray-800 hover:bg-gray-100/60",
+                                        isSubActive && "!bg-amber-50/80 !text-amber-800"
                                       )}
-                                      activeClassName="!from-amber-400 !to-amber-500 !shadow-md"
+                                      activeClassName="!bg-amber-50/80 !text-amber-800"
                                     >
-                                      {isSubActive && (
-                                        <span className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1 h-4 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full shadow-md shadow-blue-500/40" />
-                                      )}
-                                      <Icon className="w-3.5 h-3.5 flex-shrink-0 text-amber-800" />
-                                      <span className="text-amber-900">{subItem.title}</span>
+                                      <Icon className={cn(
+                                        "w-4 h-4 flex-shrink-0 transition-colors",
+                                        isSubActive ? "text-amber-500" : "text-gray-400 group-hover:text-gray-500"
+                                      )} />
+                                      <span className="truncate">{subItem.title}</span>
                                     </NavLink>
                                   );
                                 })}
@@ -412,31 +424,25 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
         )}
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-white/10 p-3 bg-transparent">
-        <div className="space-y-2">
+      <SidebarFooter className="border-t border-gray-100 p-3 bg-gray-50/50">
+        <div className="space-y-1.5">
           {storeSlug && !isStaffLoggedIn && (
             <button
               onClick={() => window.open(`/cardapio/${storeSlug}`, '_blank')}
               className={cn(
-                "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200",
-                // Yellow button style for footer
-                "bg-gradient-to-b from-amber-400 to-amber-500 text-amber-950",
-                "hover:from-amber-500 hover:to-amber-600 hover:shadow-md hover:shadow-amber-500/25",
-                "shadow-sm shadow-amber-600/20",
-                "border border-amber-500/30"
+                "w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[12px] font-medium transition-all duration-150",
+                "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200"
               )}
             >
-              <ExternalLink className="w-4 h-4 text-amber-900" />
-              {!collapsed && <span className="text-amber-900">Ver Cardápio</span>}
+              <ExternalLink className="w-4 h-4" />
+              {!collapsed && <span>Ver Cardápio</span>}
             </button>
           )}
           <button
             onClick={handleSignOut}
             className={cn(
-              "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200",
-              "bg-gradient-to-b from-red-500/20 to-red-600/20 text-red-600 dark:text-red-400",
-              "hover:from-red-500/30 hover:to-red-600/30",
-              "border border-red-500/20"
+              "w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[12px] font-medium transition-all duration-150",
+              "text-gray-500 hover:text-red-600 hover:bg-red-50"
             )}
           >
             <LogOut className="w-4 h-4" />
@@ -446,14 +452,14 @@ export default function AdminSidebar({ isDark = false }: AdminSidebarProps) {
         
         {/* User info */}
         {!collapsed && (
-          <div className="mt-3 pt-3 border-t border-sidebar-border/40 px-1">
+          <div className="mt-3 pt-3 border-t border-gray-100 px-1">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                <span className="text-[10px] font-medium text-white uppercase">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center shadow-sm">
+                <span className="text-[11px] font-semibold text-white uppercase">
                   {isStaffLoggedIn ? staffName?.charAt(0) : user?.email?.charAt(0) || 'U'}
                 </span>
               </div>
-              <p className="text-[11px] text-sidebar-foreground-muted truncate flex-1">
+              <p className="text-[11px] text-gray-500 truncate flex-1">
                 {isStaffLoggedIn ? staffName : user?.email}
               </p>
             </div>
