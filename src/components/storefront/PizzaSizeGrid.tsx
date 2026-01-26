@@ -68,50 +68,47 @@ export function PizzaSizeGrid({ categoryId, storeId, onSizeSelect }: PizzaSizeGr
   }
 
   return (
-    <div className="px-4 pb-32 flex flex-col bg-white">
+    <div className="px-4 pb-32 flex flex-col bg-background">
       {sizes.map((size, index) => (
         <button
           key={size.id}
           onClick={() => onSizeSelect(size.id, size.name, size.max_flavors, size.base_price, size.image_url)}
-          className="w-full flex items-start justify-between py-5 border-b border-gray-200 hover:bg-gray-50/50 transition-colors text-left"
+          className="w-full flex items-start justify-between py-4 border-b-2 border-border hover:bg-muted/30 transition-colors text-left"
         >
           {/* Text Info - Left side */}
           <div className="flex-1 min-w-0 pr-4">
-            {/* Title - Black, Bold */}
-            <h3 className="font-bold text-gray-900 text-[15px] leading-tight">
+            {/* Title */}
+            <h3 className="font-semibold text-foreground text-[13px] leading-snug uppercase tracking-tight">
               {size.name}
             </h3>
             
-            {/* Description - Purple/Violet (slices info) */}
+            {/* Description */}
             {size.slices > 0 && (
-              <p className="text-[13px] text-violet-500 mt-0.5">
+              <p className="text-[12px] text-muted-foreground mt-0.5">
                 {size.slices} fatias
               </p>
             )}
             
-            {/* Price - "A partir de" + price */}
-            <p className="mt-1 text-[13px] text-gray-400">
-              A partir de{' '}
-              <span className="text-[15px] font-bold text-gray-900">
-                {formatCurrency(size.base_price)}
-              </span>
+            {/* Price (no "A partir de") */}
+            <p className="mt-1 text-[13px] font-bold text-foreground">
+              {formatCurrency(size.base_price)}
             </p>
           </div>
 
           {/* Image - Right side */}
-          <div className="relative w-[88px] h-[88px] flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+          <div className="relative w-[76px] h-[76px] flex-shrink-0 rounded-md overflow-hidden border border-border bg-muted">
             <OptimizedImage
               src={size.image_url}
               alt={size.name}
               aspectRatio="auto"
-              className="w-full h-full object-cover"
-              fallbackIcon={<span className="text-2xl text-gray-300">🍕</span>}
+              className="w-full h-full object-cover bg-muted"
+              fallbackIcon={<span className="text-2xl text-muted-foreground">🍕</span>}
               priority={index < 4}
             />
             
             {/* Flavors badge overlay */}
             {size.max_flavors > 1 && (
-              <div className="absolute bottom-1.5 left-1.5 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
+              <div className="absolute bottom-1.5 left-1.5 bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
                 {size.max_flavors} sabores
               </div>
             )}
