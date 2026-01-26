@@ -101,17 +101,10 @@ export function PizzaSizeGrid({ categoryId, storeId, onSizeSelect }: PizzaSizeGr
               src={size.image_url}
               alt={size.name}
               aspectRatio="auto"
-              className="w-full h-full object-cover bg-muted"
+              className="w-full h-full object-cover"
               fallbackIcon={<span className="text-2xl text-muted-foreground">🍕</span>}
               priority={index < 4}
             />
-            
-            {/* Flavors badge overlay */}
-            {size.max_flavors > 1 && (
-              <div className="absolute bottom-1.5 left-1.5 bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
-                {size.max_flavors} sabores
-              </div>
-            )}
           </div>
         </button>
       ))}

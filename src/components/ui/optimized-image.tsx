@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface OptimizedImageProps {
@@ -8,13 +8,6 @@ interface OptimizedImageProps {
   fallbackIcon?: React.ReactNode;
   aspectRatio?: "square" | "video" | "auto";
   priority?: boolean;
-  width?: number;
-  quality?: number;
-}
-
-// Get image URL - use original URL (Supabase image transformation may not be enabled)
-function getOptimizedUrl(src: string): string {
-  return src;
 }
 
 export function OptimizedImage({
@@ -24,41 +17,8 @@ export function OptimizedImage({
   fallbackIcon,
   aspectRatio = "square",
   priority = false,
-  width = 400,
-  quality = 75,
 }: OptimizedImageProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isInView, setIsInView] = useState(priority);
   const [hasError, setHasError] = useState(false);
-  const imgRef = useRef<HTMLDivElement>(null);
-
-  // Memoize the optimized URL
-  const optimizedSrc = useMemo(() => {
-    if (!src) return null;
-    return getOptimizedUrl(src);
-  }, [src]);
-
-  // Intersection Observer for lazy loading
-  useEffect(() => {
-    if (priority || !imgRef.current) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsInView(true);
-          observer.disconnect();
-        }
-      },
-      {
-        rootMargin: "200px", // Start loading 200px before visible
-        threshold: 0.01,
-      }
-    );
-
-    observer.observe(imgRef.current);
-
-    return () => observer.disconnect();
-  }, [priority]);
 
   const aspectClass = {
     square: "aspect-square",
@@ -69,9 +29,8 @@ export function OptimizedImage({
   if (!src || hasError) {
     return (
       <div
-        ref={imgRef}
         className={cn(
-          "bg-white flex items-center justify-center",
+          "bg-muted flex items-center justify-center",
           aspectClass,
           className
         )}
@@ -84,40 +43,17 @@ export function OptimizedImage({
   }
 
   return (
-    <div
-      ref={imgRef}
+    <img
+      src={src}
+      alt={alt}
+      loading={priority ? "eager" : "lazy"}
+      decoding="async"
+      onError={() => setHasError(true)}
       className={cn(
-        "relative overflow-hidden bg-white",
+        "w-full h-full object-cover",
         aspectRatio === "auto" ? "h-full" : aspectClass,
         className
       )}
-    >
-      {/* Blur placeholder - always visible until image loads */}
-      <div
-        className={cn(
-          "absolute inset-0 bg-muted/50 transition-opacity duration-500",
-          isLoaded ? "opacity-0" : "opacity-100"
-        )}
-      >
-        {/* Animated shimmer effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
-      </div>
-
-      {/* Actual image - only render when in view */}
-      {isInView && optimizedSrc && (
-        <img
-          src={optimizedSrc}
-          alt={alt}
-          loading={priority ? "eager" : "lazy"}
-          decoding="async"
-          onLoad={() => setIsLoaded(true)}
-          onError={() => setHasError(true)}
-          className={cn(
-            "w-full h-full object-cover transition-all duration-500",
-            isLoaded ? "opacity-100 scale-100" : "opacity-0 scale-105"
-          )}
-        />
-      )}
-    </div>
+    />
   );
 }
