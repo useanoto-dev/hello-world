@@ -57,34 +57,48 @@ async function getCroppedImage(
   targetHeight: number
 ): Promise<Blob> {
   const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d", { 
+    alpha: false,
+    // High quality rendering
+    willReadFrequently: false 
+  });
 
   if (!ctx) {
     throw new Error("No 2d context");
   }
 
+  // Use highest quality image rendering
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+
   // Set canvas size to target dimensions
   canvas.width = targetWidth;
   canvas.height = targetHeight;
 
-  // Calculate scale factors
+  // Calculate scale factors using natural dimensions for best quality
   const scaleX = image.naturalWidth / image.width;
   const scaleY = image.naturalHeight / image.height;
 
-  // Draw the cropped image onto the canvas
+  // Source coordinates (from original image)
+  const sourceX = crop.x * scaleX;
+  const sourceY = crop.y * scaleY;
+  const sourceWidth = crop.width * scaleX;
+  const sourceHeight = crop.height * scaleY;
+
+  // Draw the cropped image onto the canvas with high quality
   ctx.drawImage(
     image,
-    crop.x * scaleX,
-    crop.y * scaleY,
-    crop.width * scaleX,
-    crop.height * scaleY,
+    sourceX,
+    sourceY,
+    sourceWidth,
+    sourceHeight,
     0,
     0,
     targetWidth,
     targetHeight
   );
 
-  // Convert canvas to blob
+  // Convert canvas to blob with MAXIMUM quality (1.0 = 100%)
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
@@ -95,7 +109,7 @@ async function getCroppedImage(
         }
       },
       "image/jpeg",
-      0.9
+      1.0 // Maximum quality - no compression
     );
   });
 }
