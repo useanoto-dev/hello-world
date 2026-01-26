@@ -226,7 +226,7 @@ export function StandardCategoryGrid({
                     src={size.image_url}
                     alt={size.name}
                     aspectRatio="auto"
-                    className="w-full h-full object-cover bg-muted"
+                    className="w-full h-full object-cover"
                     fallbackIcon={<span className="text-2xl text-muted-foreground">🍽️</span>}
                   />
                 </div>
@@ -323,7 +323,7 @@ export function StandardCategoryGrid({
                   src={item.image_url}
                   alt={item.name}
                   aspectRatio="auto"
-                  className="w-full h-full object-cover bg-muted"
+                  className="w-full h-full object-cover"
                   fallbackIcon={<span className="text-2xl text-muted-foreground">🍽️</span>}
                 />
               </div>
