@@ -1,27 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
+import { preloadImage } from "@/lib/imageCache";
 
 type Params = {
   urls: Array<string | null | undefined>;
   /** Maximum time (ms) to wait before letting UI render anyway. */
   timeoutMs?: number;
 };
-
-async function preloadImage(url: string): Promise<void> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.src = url;
-
-    const done = () => resolve();
-
-    // Best-effort: decode if available (avoids layout showing before decode).
-    // decode() can throw for cross-origin images; still resolve.
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    (img as HTMLImageElement & { decode?: () => Promise<void> }).decode?.().then(done).catch(done);
-
-    img.onload = done;
-    img.onerror = done;
-  });
-}
 
 export function useStorefrontCriticalAssets({ urls, timeoutMs = 1200 }: Params) {
   const [ready, setReady] = useState(false);

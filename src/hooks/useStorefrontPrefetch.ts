@@ -1,7 +1,8 @@
-// Hook to prefetch category data in the background for instant navigation
+// Hook to prefetch category data AND images in the background for instant navigation
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { preloadImages } from "@/lib/imageCache";
 import type { Category } from "./useStorefrontData";
 
 interface PrefetchParams {
@@ -101,20 +102,30 @@ export function useStorefrontPrefetch({ categories, storeId }: PrefetchParams) {
         };
 
         if (categoryType === "pizza") {
-          scheduleTask(() => {
-            queryClient.prefetchQuery({
+          scheduleTask(async () => {
+            const sizes = await queryClient.fetchQuery({
               queryKey: ["pizza-sizes", category.id],
               queryFn: () => fetchPizzaSizes(category.id),
               staleTime: 5 * 60 * 1000,
             });
+            // Prefetch pizza size images
+            if (sizes && sizes.length > 0) {
+              const imageUrls = sizes.map((s: any) => s.image_url).filter(Boolean);
+              preloadImages(imageUrls);
+            }
           });
         } else if (categoryType === "beverages") {
-          scheduleTask(() => {
-            queryClient.prefetchQuery({
+          scheduleTask(async () => {
+            const types = await queryClient.fetchQuery({
               queryKey: ["beverage-types", category.id],
               queryFn: () => fetchBeverageTypes(category.id),
               staleTime: 2 * 60 * 1000,
             });
+            // Prefetch beverage type images
+            if (types && types.length > 0) {
+              const imageUrls = types.map((t: any) => t.image_url).filter(Boolean);
+              preloadImages(imageUrls);
+            }
           });
         } else if (categoryType === "standard") {
           scheduleTask(async () => {
@@ -125,14 +136,18 @@ export function useStorefrontPrefetch({ categories, storeId }: PrefetchParams) {
               staleTime: 5 * 60 * 1000,
             });
 
-            // Prefetch sizes
-            queryClient.prefetchQuery({
+            // Prefetch sizes and their images
+            const sizes = await queryClient.fetchQuery({
               queryKey: ["standard-sizes", category.id],
               queryFn: () => fetchStandardSizes(category.id),
               staleTime: 5 * 60 * 1000,
             });
+            if (sizes && sizes.length > 0) {
+              const sizeImageUrls = sizes.map((s: any) => s.image_url).filter(Boolean);
+              preloadImages(sizeImageUrls);
+            }
 
-            // Prefetch items and then prices
+            // Prefetch items and their images + prices
             const items = await queryClient.fetchQuery({
               queryKey: ["standard-items", category.id],
               queryFn: () => fetchStandardItems(category.id),
@@ -140,6 +155,10 @@ export function useStorefrontPrefetch({ categories, storeId }: PrefetchParams) {
             });
 
             if (items && items.length > 0) {
+              // Prefetch item images
+              const itemImageUrls = items.map((i: any) => i.image_url).filter(Boolean);
+              preloadImages(itemImageUrls);
+
               const itemIds = items.map((i: any) => i.id);
               queryClient.prefetchQuery({
                 queryKey: ["standard-item-prices", category.id],
