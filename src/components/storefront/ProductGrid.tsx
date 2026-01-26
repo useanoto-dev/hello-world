@@ -1,4 +1,4 @@
-// Product Grid - FSW Style - Horizontal Card Layout (Image Left, Text Right)
+// Product Grid - Anota AI Style - Text Left, Image Right
 import { formatCurrency } from "@/lib/formatters";
 import { memo, useMemo } from "react";
 import { FavoriteButton } from "./FavoriteButton";
@@ -28,7 +28,7 @@ interface ProductGridProps {
   filterFavoritesOnly?: boolean;
 }
 
-// Memoized product card - FSW horizontal style
+// Memoized product card - Anota AI style (text left, image right)
 const ProductCard = memo(function ProductCard({
   product,
   index,
@@ -57,47 +57,25 @@ const ProductCard = memo(function ProductCard({
   return (
     <div
       className={`
-        flex gap-3 p-3 border border-border rounded-xl cursor-pointer 
-        hover:bg-muted/50 transition-colors font-storefront
-        ${isOutOfStock ? 'opacity-60 cursor-not-allowed' : ''}
+        flex items-start justify-between py-4 cursor-pointer 
+        border-b border-gray-100 last:border-b-0
+        hover:bg-gray-50/50 transition-colors font-storefront
+        ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}
       `}
       onClick={() => !isOutOfStock && onClick()}
     >
-      {/* Product Image - h-24 w-24 rounded-lg */}
-      <div className="relative h-24 w-24 rounded-lg overflow-hidden flex-shrink-0 bg-white">
-        {product.image_url ? (
-          <img
-            src={product.image_url}
-            alt={product.name}
-            className="h-full w-full object-contain"
-            loading={index < 6 ? "eager" : "lazy"}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-2xl">
-            🍽️
+      {/* Text Info - Left Side */}
+      <div className="flex-1 min-w-0 pr-4">
+        {/* Favorite Button - inline with title on mobile */}
+        <div className="flex items-start gap-2">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-gray-900 text-[15px] leading-snug line-clamp-2 uppercase tracking-tight">
+              {product.name}
+            </h3>
           </div>
-        )}
-        
-        {/* Out of Stock Overlay */}
-        {isOutOfStock && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <span className="text-white text-[10px] font-bold bg-destructive px-1.5 py-0.5 rounded">
-              Esgotado
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Product Info */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-medium text-foreground line-clamp-1">
-            {product.name}
-          </h3>
           
-          {/* Favorite Button */}
           {showFavorites && !isVirtual && (
-            <div onClick={(e) => e.stopPropagation()}>
+            <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0 -mt-0.5">
               <FavoriteButton
                 isFavorite={isFavorite}
                 onToggle={onToggleFavorite}
@@ -108,22 +86,45 @@ const ProductCard = memo(function ProductCard({
         </div>
         
         {product.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
+          <p className="text-[13px] text-gray-500 line-clamp-2 mt-1 leading-relaxed">
             {product.description}
           </p>
         )}
         
-        {/* Price - FSW style: text-sm font-semibold text-[#EA1D2C] (red like iFood) */}
+        {/* Price - Anota AI style: green/teal color */}
         <div className="mt-2 flex items-center gap-2">
           {hasPromo && (
-            <span className="text-xs text-muted-foreground line-through">
+            <span className="text-xs text-gray-400 line-through">
               {formatCurrency(product.price)}
             </span>
           )}
-          <span className="text-sm font-semibold text-[#EA1D2C]">
+          <span className="text-[15px] font-bold text-emerald-600">
             {formatCurrency(displayPrice)}
           </span>
         </div>
+        
+        {/* Out of Stock Badge */}
+        {isOutOfStock && (
+          <span className="inline-block mt-2 text-[11px] font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded">
+            Esgotado
+          </span>
+        )}
+      </div>
+
+      {/* Image - Right Side */}
+      <div className="relative w-[100px] h-[100px] flex-shrink-0 rounded-lg overflow-hidden bg-gray-50">
+        {product.image_url ? (
+          <img
+            src={product.image_url}
+            alt={product.name}
+            className="w-full h-full object-cover"
+            loading={index < 6 ? "eager" : "lazy"}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-300 text-3xl">
+            🍽️
+          </div>
+        )}
       </div>
     </div>
   );
@@ -147,20 +148,20 @@ function ProductGrid({
 
   if (displayProducts.length === 0) {
     return (
-      <div className="text-center py-12 text-muted-foreground px-4">
+      <div className="text-center py-12 text-gray-400 px-4">
         <div className="text-4xl mb-2">{filterFavoritesOnly ? "💔" : "🍽️"}</div>
-        <p className="font-medium">
+        <p className="font-medium text-gray-600">
           {filterFavoritesOnly ? "Nenhum favorito ainda" : "Nenhum produto encontrado nesta categoria."}
         </p>
         {filterFavoritesOnly && (
-          <p className="text-sm text-muted-foreground mt-1">Toque no ❤️ para adicionar favoritos</p>
+          <p className="text-sm text-gray-400 mt-1">Toque no ❤️ para adicionar favoritos</p>
         )}
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-3 px-5 pb-32">
+    <div className="flex flex-col px-4 pb-32 bg-white">
       {displayProducts.map((product, index) => (
         <ProductCard
           key={product.id}
