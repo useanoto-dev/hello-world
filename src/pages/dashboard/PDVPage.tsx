@@ -1,7 +1,7 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useOutletContext } from "react-router-dom";
 import { 
-  Plus, Minus, Check, Tag, Monitor, Users
+  Plus, Minus, Check, Tag, Monitor, Users, Keyboard
 } from "lucide-react";
 import { PDVLoyaltyRedemption } from "@/components/pdv/PDVLoyaltyRedemption";
 import { PDVPaymentSection } from "@/components/pdv/PDVPaymentSection";
@@ -21,6 +21,11 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { toast } from "sonner";
@@ -34,6 +39,7 @@ import {
 } from "@/services/PrintService";
 import { usePDVData, Table, getItemPrice } from "@/hooks/usePDVData";
 import { usePDVCart } from "@/hooks/usePDVCart";
+import { usePDVKeyboardShortcuts, PDVShortcutsHelp } from "@/hooks/usePDVKeyboardShortcuts";
 
 interface PDVOutletContext {
   store: {
@@ -113,6 +119,12 @@ export default function PDVPage() {
     complementsTotal,
   } = usePDVCart(getSecondaryGroups, getGroupItems, allOptionItems);
 
+  // Ref for search input focus
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  
+  // Discount modal state
+  const [isDiscountOpen, setIsDiscountOpen] = useState(false);
+
   // NEW FLOW: Table selection happens AFTER order is built
   const [isTableSelectionOpen, setIsTableSelectionOpen] = useState(false);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
@@ -121,6 +133,32 @@ export default function PDVPage() {
   // Payment modal
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Keyboard shortcuts
+  usePDVKeyboardShortcuts({
+    onFinishOrder: () => {
+      if (cart.length > 0 && activeModule === "vendas") {
+        handleFinishOrder();
+      }
+    },
+    onClearCart: () => {
+      if (cart.length > 0 && activeModule === "vendas") {
+        clearCart();
+      }
+    },
+    onToggleDiscount: () => {
+      if (activeModule === "vendas") {
+        setIsDiscountOpen(prev => !prev);
+      }
+    },
+    onSearchFocus: () => {
+      searchInputRef.current?.focus();
+    },
+    onOpenTables: () => {
+      setActiveModule("mesas");
+    },
+    enabled: activeModule === "vendas" || activeModule === "mesas",
+  });
 
   const handleFinishOrder = () => {
     if (cart.length === 0) {
@@ -562,19 +600,37 @@ export default function PDVPage() {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col">
       {/* Module Tabs */}
-      <div className="border-b bg-background px-4 pt-2">
-        <Tabs value={activeModule} onValueChange={setActiveModule} className="w-full">
+      <div className="border-b bg-background px-4 pt-2 flex items-center justify-between">
+        <Tabs value={activeModule} onValueChange={setActiveModule} className="flex-1">
           <TabsList className="h-10 bg-muted/50">
             <TabsTrigger value="vendas" className="text-sm gap-2 px-6">
               <Monitor className="w-4 h-4" />
               Vendas
+              <kbd className="hidden sm:inline-flex kbd-hint ml-1">F2</kbd>
             </TabsTrigger>
             <TabsTrigger value="mesas" className="text-sm gap-2 px-6">
               <Users className="w-4 h-4" />
               Mesas
+              <kbd className="hidden sm:inline-flex kbd-hint ml-1">F6</kbd>
             </TabsTrigger>
           </TabsList>
         </Tabs>
+        
+        {/* Keyboard shortcuts help */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hidden md:flex">
+              <Keyboard className="w-4 h-4" />
+              <span className="text-xs">Atalhos</span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80" align="end">
+            <div className="space-y-3">
+              <h4 className="font-medium text-sm">Atalhos de Teclado</h4>
+              <PDVShortcutsHelp />
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Content based on active module */}

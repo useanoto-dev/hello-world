@@ -99,6 +99,11 @@
     --chart-primary: 152 69% 40%;
     --chart-gradient-start: 152 69% 40%;
     --chart-gradient-end: 152 69% 50%;
+    /* Micro-interaction tokens */
+    --transition-fast: 0.1s ease;
+    --transition-base: 0.2s ease;
+    --transition-slow: 0.3s ease-out;
+    --transition-spring: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   .dark {
@@ -783,6 +788,158 @@ img[loading="lazy"] {
 /* Success state */
 .success-bounce {
   animation: bounce 0.5s ease;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* ===== MICRO-INTERACTIONS ===== */
+
+/* Interactive card with subtle lift effect */
+.interactive-card {
+  @apply transition-all duration-200 ease-out;
+}
+
+.interactive-card:hover {
+  @apply shadow-md -translate-y-0.5;
+}
+
+.interactive-card:active {
+  @apply scale-[0.98] shadow-sm;
+}
+
+/* Button press effect */
+.btn-press {
+  @apply transition-transform duration-100 ease-out;
+}
+
+.btn-press:active {
+  @apply scale-95;
+}
+
+/* Icon button with rotation on hover */
+.icon-btn-rotate {
+  @apply transition-transform duration-200;
+}
+
+.icon-btn-rotate:hover svg {
+  @apply rotate-12;
+}
+
+/* Smooth fade for appearing elements */
+.fade-appear {
+  @apply opacity-0 animate-fade-in;
+}
+
+/* Scale appear for modals/popovers */
+.scale-appear {
+  @apply opacity-0 scale-95 animate-scale-in;
+}
+
+/* Stagger children animation helper */
+.stagger-children > * {
+  @apply opacity-0 animate-fade-in;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 50ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 100ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 150ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 250ms; }
+
+/* Focus ring with spring animation */
+.focus-spring:focus-visible {
+  @apply ring-2 ring-primary ring-offset-2 ring-offset-background;
+  animation: focusPop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes focusPop {
+  0% { transform: scale(0.98); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+/* Keyboard shortcut hint */
+.kbd-hint {
+  @apply px-1.5 py-0.5 text-[10px] font-mono bg-muted/80 text-muted-foreground rounded border border-border/50;
+}
+
+/* Status dot with pulse */
+.status-dot {
+  @apply w-2 h-2 rounded-full;
+}
+
+.status-dot.active {
+  @apply bg-success;
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--success) / 0.4); }
+  50% { box-shadow: 0 0 0 6px hsl(var(--success) / 0); }
+}
+
+/* Table row highlight on hover */
+.table-row-interactive {
+  @apply transition-colors duration-150;
+}
+
+.table-row-interactive:hover {
+  @apply bg-muted/50;
+}
+
+/* Chip/tag with click effect */
+.chip-interactive {
+  @apply transition-all duration-150 cursor-pointer;
+}
+
+.chip-interactive:hover {
+  @apply bg-primary/10 border-primary/30;
+}
+
+.chip-interactive:active {
+  @apply scale-95;
+}
+
+/* Loading shimmer for images */
+.img-loading {
+  @apply bg-muted relative overflow-hidden;
+}
+
+.img-loading::after {
+  content: "";
+  @apply absolute inset-0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--background) / 0.4) 50%,
+    transparent 100%
+  );
+  animation: shimmerSlide 1.5s infinite;
+}
+
+@keyframes shimmerSlide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Number counter animation helper */
+.number-animate {
+  @apply tabular-nums;
+  transition: transform 0.2s ease-out;
+}
+
+.number-animate.changed {
+  animation: numberPop 0.3s ease-out;
+}
+
+@keyframes numberPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); color: hsl(var(--primary)); }
+  100% { transform: scale(1); }
 }
 
 @keyframes bounce {

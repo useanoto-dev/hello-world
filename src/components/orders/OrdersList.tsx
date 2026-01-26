@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { EmptyState } from '@/components/admin/EmptyState';
 
 interface OrderItem {
   name: string;
@@ -56,10 +57,12 @@ export const OrdersList = memo(function OrdersList({
 }: OrdersListProps) {
   if (orders.length === 0) {
     return (
-      <div className="text-center py-6 bg-muted/20 rounded-lg">
-        <ShoppingBag className="w-6 h-6 mx-auto mb-1.5 text-muted-foreground/50" />
-        <p className="text-[10px] text-muted-foreground">Nenhum pedido encontrado</p>
-      </div>
+      <EmptyState
+        icon={ShoppingBag}
+        title="Nenhum pedido encontrado"
+        description="Novos pedidos aparecerão aqui em tempo real"
+        variant="compact"
+      />
     );
   }
 
@@ -77,7 +80,8 @@ export const OrdersList = memo(function OrdersList({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ delay: index * 0.02 }}
-                className="flex items-center gap-3 p-2.5 hover:bg-muted/30 transition-colors"
+                className="flex items-center gap-3 p-2.5 table-row-interactive cursor-pointer"
+                onClick={() => onViewOrder(order)}
               >
                 {/* Order Number */}
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">

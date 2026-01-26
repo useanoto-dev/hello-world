@@ -71,7 +71,7 @@ export function PDVProductsPanel({
                   <Card
                     key={item.id}
                     onClick={() => onProductClick(item)}
-                    className="p-3 cursor-pointer hover:shadow-md hover:border-primary/50 transition-all relative"
+                    className="p-3 cursor-pointer interactive-card border-transparent hover:border-primary/50 relative group"
                   >
                     {isInventoryItem && (
                       <Badge variant="secondary" className="absolute top-2 right-2 text-[9px] px-1.5">
