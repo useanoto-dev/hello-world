@@ -1,5 +1,4 @@
-// Standard Category Product Grid - Display standard_items for standard categories
-// Unified UI with PizzaSizeCard style
+// Standard Category Product Grid - Anota AI Style (Text Left, Image Right)
 import { useMemo, useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,13 +48,6 @@ interface StandardCategoryGridProps {
   allowQuantitySelector?: boolean;
 }
 
-// Badge variants for visual variety (matching PizzaSizeCard)
-const getBadgeForIndex = (index: number): { label: string; color: string } | null => {
-  if (index === 1) return { label: "Popular", color: "bg-destructive text-white" };
-  if (index === 5) return { label: "Especial", color: "bg-purple-500 text-white" };
-  return null;
-};
-
 export function StandardCategoryGrid({
   categoryId,
   storeId,
@@ -84,8 +76,6 @@ export function StandardCategoryGrid({
     enabled: !!categoryId,
   });
 
-  // FORCE list mode always - FSW style
-  const displayMode = "list";
   const allowQuantitySelector = propAllowQuantity !== undefined ? propAllowQuantity : (categorySettings?.allow_quantity_selector !== false);
 
   // Fetch sizes for this category
@@ -158,13 +148,6 @@ export function StandardCategoryGrid({
 
   const getQuantity = (itemId: string) => quantities[itemId] || 1;
 
-  const updateQuantity = (itemId: string, delta: number) => {
-    setQuantities(prev => ({
-      ...prev,
-      [itemId]: Math.max(1, (prev[itemId] || 1) + delta)
-    }));
-  };
-
   const handleItemClick = useCallback((item: StandardItem) => {
     const size = sizes?.find(s => s.id === effectiveSize);
     if (!size) return;
@@ -184,17 +167,17 @@ export function StandardCategoryGrid({
 
   if (isLoading) {
     return (
-      <div className="px-3 sm:px-4 lg:px-6 space-y-4">
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {[1, 2, 3].map(i => (
-            <Skeleton key={i} className="h-10 w-24 shrink-0 rounded-full" />
-          ))}
-        </div>
-        <div className={displayMode === "list" ? "space-y-3" : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5"}>
-          {[1, 2, 3, 4, 5, 6].map(i => (
-            <Skeleton key={i} className={displayMode === "list" ? "h-24 rounded-xl" : "aspect-[4/3] rounded-xl lg:rounded-2xl"} />
-          ))}
-        </div>
+      <div className="px-4 space-y-0">
+        {[1, 2, 3, 4, 5, 6].map(i => (
+          <div key={i} className="flex items-start justify-between py-4 border-b border-gray-100">
+            <div className="flex-1 space-y-2 pr-4">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-4 w-48" />
+              <Skeleton className="h-5 w-20" />
+            </div>
+            <Skeleton className="w-[100px] h-[100px] rounded-lg shrink-0" />
+          </div>
+        ))}
       </div>
     );
   }
@@ -203,18 +186,18 @@ export function StandardCategoryGrid({
   if (!items || items.length === 0) {
     if (sizes && sizes.length > 0) {
       return (
-        <div className="px-5 pb-6">
-        <div className="flex flex-col gap-3 font-storefront">
-            {sizes.map((size, index) => {
-              const badge = getBadgeForIndex(index);
-              const quantity = getQuantity(size.id);
-              
-              return (
-                <motion.div
-                  key={size.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.02, duration: 0.2 }}
+        <div className="px-4 pb-32 flex flex-col bg-white font-storefront">
+          {sizes.map((size, index) => {
+            const quantity = getQuantity(size.id);
+            
+            return (
+              <motion.div
+                key={size.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.02, duration: 0.2 }}
+              >
+                <button
                   onClick={() => onItemSelect({ 
                     id: size.id, 
                     name: size.name, 
@@ -223,40 +206,37 @@ export function StandardCategoryGrid({
                     item_type: 'standard',
                     is_premium: false 
                   }, size, size.base_price, allowQuantitySelector ? quantity : 1)}
-                  className="cursor-pointer"
+                  className="w-full flex items-start justify-between py-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50/50 transition-colors text-left"
                 >
-                  {/* FSW Style: flex gap-3 p-3 border rounded-xl */}
-                  <div className="flex gap-3 p-3 border border-border rounded-xl hover:bg-muted/50 transition-colors">
-                    {/* Image - h-24 w-24 rounded-lg */}
-                    <div className="relative h-24 w-24 rounded-lg overflow-hidden bg-white shrink-0">
-                      <OptimizedImage
-                        src={size.image_url}
-                        alt={size.name}
-                        aspectRatio="auto"
-                        className="w-full h-full object-contain"
-                        fallbackIcon={<span className="text-2xl text-muted-foreground">🍽️</span>}
-                      />
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-foreground line-clamp-1">
-                        {size.name}
-                      </h3>
-                      {size.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
-                          {size.description}
-                        </p>
-                      )}
-                      <p className="mt-2 text-sm font-semibold text-primary">
-                        {formatCurrency(size.base_price)}
+                  {/* Text Info - Left side */}
+                  <div className="flex-1 min-w-0 pr-4">
+                    <h3 className="font-semibold text-gray-900 text-[15px] leading-snug uppercase tracking-tight">
+                      {size.name}
+                    </h3>
+                    {size.description && (
+                      <p className="text-[13px] text-gray-500 line-clamp-2 mt-1 leading-relaxed">
+                        {size.description}
                       </p>
-                    </div>
+                    )}
+                    <p className="mt-2 text-[15px] font-bold text-emerald-600">
+                      {formatCurrency(size.base_price)}
+                    </p>
                   </div>
-                </motion.div>
-              );
-            })}
-          </div>
+
+                  {/* Image - Right side */}
+                  <div className="relative w-[100px] h-[100px] flex-shrink-0 rounded-lg overflow-hidden bg-gray-50">
+                    <OptimizedImage
+                      src={size.image_url}
+                      alt={size.name}
+                      aspectRatio="auto"
+                      className="w-full h-full object-cover"
+                      fallbackIcon={<span className="text-3xl text-gray-300">🍽️</span>}
+                    />
+                  </div>
+                </button>
+              </motion.div>
+            );
+          })}
         </div>
       );
     }
@@ -264,29 +244,29 @@ export function StandardCategoryGrid({
     return (
       <div className="p-8 text-center">
         <div className="text-5xl mb-3">🍽️</div>
-        <p className="text-lg font-medium text-foreground">Nenhum item cadastrado</p>
-        <p className="text-muted-foreground text-sm">Os itens aparecerão aqui</p>
+        <p className="text-lg font-medium text-gray-900">Nenhum item cadastrado</p>
+        <p className="text-gray-500 text-sm">Os itens aparecerão aqui</p>
       </div>
     );
   }
 
   return (
-    <div className="px-5 pb-6 space-y-4">
+    <div className="px-4 pb-32 space-y-4 bg-white">
       {/* Size selector */}
       {sizes && sizes.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-2 -mx-3 sm:-mx-4 lg:-mx-6 px-3 sm:px-4 lg:px-6 scrollbar-hide">
+        <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
           {sizes.map(size => (
             <button
               key={size.id}
               onClick={() => setSelectedSizeId(size.id)}
-              className={`shrink-0 px-4 py-2 lg:px-5 lg:py-2.5 rounded-full text-sm lg:text-base font-medium transition-colors ${
+              className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 effectiveSize === size.id
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  ? 'bg-amber-500 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
               {size.name}
-              <span className="ml-1 text-xs lg:text-sm opacity-75">
+              <span className="ml-1 text-xs opacity-75">
                 {formatCurrency(size.base_price)}
               </span>
             </button>
@@ -294,14 +274,12 @@ export function StandardCategoryGrid({
         </div>
       )}
 
-      {/* Items list - FSW style */}
-      <div className="flex flex-col gap-3 font-storefront">
+      {/* Items list - Anota AI style */}
+      <div className="flex flex-col font-storefront">
         {items.map((item, index) => {
           const selectedSize = sizes?.find(s => s.id === effectiveSize);
           const itemPrice = priceMap.get(item.id)?.get(effectiveSize || '');
           const displayPrice = itemPrice !== undefined ? itemPrice : selectedSize?.base_price || 0;
-          const badge = getBadgeForIndex(index);
-          const quantity = getQuantity(item.id);
 
           return (
             <motion.div
@@ -309,41 +287,57 @@ export function StandardCategoryGrid({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.02, duration: 0.2 }}
-              onClick={() => handleItemClick(item)}
-              className="cursor-pointer"
             >
-              {/* FSW Style: flex gap-3 p-3 border rounded-xl */}
-              <div className="flex gap-3 p-3 border border-border rounded-xl hover:bg-muted/50 transition-colors">
-                {/* Image - h-24 w-24 rounded-lg */}
-                <div className="relative h-24 w-24 rounded-lg overflow-hidden bg-white shrink-0">
+              <button
+                onClick={() => handleItemClick(item)}
+                className="w-full flex items-start justify-between py-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50/50 transition-colors text-left"
+              >
+                {/* Text Info - Left side */}
+                <div className="flex-1 min-w-0 pr-4">
+                  <div className="flex items-start gap-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-gray-900 text-[15px] leading-snug uppercase tracking-tight line-clamp-2">
+                        {item.name}
+                        {item.is_premium && (
+                          <Crown className="w-3.5 h-3.5 inline-block ml-1.5 text-amber-500" />
+                        )}
+                      </h3>
+                    </div>
+                    
+                    {showFavorites && (
+                      <div onClick={(e) => { e.stopPropagation(); toggleFavorite(item.id); }} className="flex-shrink-0 -mt-0.5">
+                        <FavoriteButton
+                          isFavorite={isFavorite(item.id)}
+                          onToggle={() => {}}
+                          size="sm"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  
+                  {item.description && (
+                    <p className="text-[13px] text-gray-500 line-clamp-2 mt-1 leading-relaxed">
+                      {item.description}
+                    </p>
+                  )}
+                  
+                  <p className="mt-2 text-[15px] font-bold text-emerald-600">
+                    {formatCurrency(displayPrice)}
+                  </p>
+                </div>
+
+                {/* Image - Right side */}
+                <div className="relative w-[100px] h-[100px] flex-shrink-0 rounded-lg overflow-hidden bg-gray-50">
                   <OptimizedImage
                     src={item.image_url}
                     alt={item.name}
                     aspectRatio="auto"
-                    className="w-full h-full object-contain"
-                    fallbackIcon={<span className="text-2xl text-muted-foreground">🍽️</span>}
+                    className="w-full h-full object-cover"
+                    fallbackIcon={<span className="text-3xl text-gray-300">🍽️</span>}
                   />
                 </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-foreground line-clamp-1">
-                    {item.name}
-                    {item.is_premium && (
-                      <Crown className="w-3.5 h-3.5 inline-block ml-1.5 text-amber-500" />
-                    )}
-                  </h3>
-                  {item.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
-                      {item.description}
-                    </p>
-                  )}
-                  <p className="mt-2 text-sm font-semibold text-primary">
-                    {formatCurrency(displayPrice)}
-                  </p>
-                </div>
-              </div>
-          </motion.div>
+              </button>
+            </motion.div>
           );
         })}
       </div>
