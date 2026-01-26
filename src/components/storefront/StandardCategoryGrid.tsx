@@ -221,7 +221,7 @@ export function StandardCategoryGrid({
                 </div>
 
                 {/* Image - Right side */}
-                <div className="relative w-[76px] h-[76px] flex-shrink-0 rounded-md overflow-hidden border border-border bg-muted">
+                <div className="relative w-[76px] h-[76px] flex-shrink-0 rounded-md overflow-hidden bg-muted">
                   <OptimizedImage
                     src={size.image_url}
                     alt={size.name}
@@ -318,7 +318,7 @@ export function StandardCategoryGrid({
               </div>
 
               {/* Image - Right side */}
-              <div className="relative w-[76px] h-[76px] flex-shrink-0 rounded-md overflow-hidden border border-border bg-muted">
+              <div className="relative w-[76px] h-[76px] flex-shrink-0 rounded-md overflow-hidden bg-muted">
                 <OptimizedImage
                   src={item.image_url}
                   alt={item.name}

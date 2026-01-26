@@ -108,7 +108,7 @@ const ProductCard = memo(function ProductCard({
       </div>
 
       {/* Image - Right Side, Square with rounded corners */}
-      <div className="relative w-[76px] h-[76px] flex-shrink-0 rounded-md overflow-hidden border border-border bg-muted">
+      <div className="relative w-[76px] h-[76px] flex-shrink-0 rounded-md overflow-hidden bg-muted">
         {product.image_url ? (
           <img
             src={product.image_url}
