@@ -1,9 +1,8 @@
-// Standard Category Product Grid - Anota AI Style (Text Left, Image Right)
+// Standard Category Product Grid - Anota AI Exact Style
 import { useMemo, useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/formatters";
-import { motion } from "framer-motion";
 import { Crown } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -167,15 +166,15 @@ export function StandardCategoryGrid({
 
   if (isLoading) {
     return (
-      <div className="px-4 space-y-0">
+      <div className="px-4">
         {[1, 2, 3, 4, 5, 6].map(i => (
-          <div key={i} className="flex items-start justify-between py-4 border-b border-gray-100">
+          <div key={i} className="flex items-start justify-between py-5 border-b border-gray-200">
             <div className="flex-1 space-y-2 pr-4">
               <Skeleton className="h-5 w-32" />
               <Skeleton className="h-4 w-48" />
               <Skeleton className="h-5 w-20" />
             </div>
-            <Skeleton className="w-[100px] h-[100px] rounded-lg shrink-0" />
+            <Skeleton className="w-[88px] h-[88px] rounded-lg shrink-0" />
           </div>
         ))}
       </div>
@@ -186,55 +185,52 @@ export function StandardCategoryGrid({
   if (!items || items.length === 0) {
     if (sizes && sizes.length > 0) {
       return (
-        <div className="px-4 pb-32 flex flex-col bg-white font-storefront">
+        <div className="px-4 pb-32 flex flex-col bg-white">
           {sizes.map((size, index) => {
             const quantity = getQuantity(size.id);
             
             return (
-              <motion.div
+              <button
                 key={size.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.02, duration: 0.2 }}
+                onClick={() => onItemSelect({ 
+                  id: size.id, 
+                  name: size.name, 
+                  description: size.description,
+                  image_url: size.image_url,
+                  item_type: 'standard',
+                  is_premium: false 
+                }, size, size.base_price, allowQuantitySelector ? quantity : 1)}
+                className="w-full flex items-start justify-between py-5 border-b border-gray-200 hover:bg-gray-50/50 transition-colors text-left"
               >
-                <button
-                  onClick={() => onItemSelect({ 
-                    id: size.id, 
-                    name: size.name, 
-                    description: size.description,
-                    image_url: size.image_url,
-                    item_type: 'standard',
-                    is_premium: false 
-                  }, size, size.base_price, allowQuantitySelector ? quantity : 1)}
-                  className="w-full flex items-start justify-between py-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50/50 transition-colors text-left"
-                >
-                  {/* Text Info - Left side */}
-                  <div className="flex-1 min-w-0 pr-4">
-                    <h3 className="font-semibold text-gray-900 text-[15px] leading-snug uppercase tracking-tight">
-                      {size.name}
-                    </h3>
-                    {size.description && (
-                      <p className="text-[13px] text-gray-500 line-clamp-2 mt-1 leading-relaxed">
-                        {size.description}
-                      </p>
-                    )}
-                    <p className="mt-2 text-[15px] font-bold text-emerald-600">
-                      {formatCurrency(size.base_price)}
+                {/* Text Info - Left side */}
+                <div className="flex-1 min-w-0 pr-4">
+                  {/* Title - Black, Bold, Uppercase */}
+                  <h3 className="font-bold text-gray-900 text-[15px] leading-tight uppercase">
+                    {size.name}
+                  </h3>
+                  {/* Description - Purple/Violet */}
+                  {size.description && (
+                    <p className="text-[13px] text-violet-500 mt-1 line-clamp-2">
+                      {size.description}
                     </p>
-                  </div>
+                  )}
+                  {/* Price - Black Bold */}
+                  <p className="mt-1.5 text-[15px] font-bold text-gray-900">
+                    {formatCurrency(size.base_price)}
+                  </p>
+                </div>
 
-                  {/* Image - Right side */}
-                  <div className="relative w-[100px] h-[100px] flex-shrink-0 rounded-lg overflow-hidden bg-gray-50">
-                    <OptimizedImage
-                      src={size.image_url}
-                      alt={size.name}
-                      aspectRatio="auto"
-                      className="w-full h-full object-cover"
-                      fallbackIcon={<span className="text-3xl text-gray-300">🍽️</span>}
-                    />
-                  </div>
-                </button>
-              </motion.div>
+                {/* Image - Right side */}
+                <div className="relative w-[88px] h-[88px] flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                  <OptimizedImage
+                    src={size.image_url}
+                    alt={size.name}
+                    aspectRatio="auto"
+                    className="w-full h-full object-cover"
+                    fallbackIcon={<span className="text-2xl text-gray-300">🍽️</span>}
+                  />
+                </div>
+              </button>
             );
           })}
         </div>
@@ -274,70 +270,64 @@ export function StandardCategoryGrid({
         </div>
       )}
 
-      {/* Items list - Anota AI style */}
-      <div className="flex flex-col font-storefront">
+      {/* Items list - Anota AI exact style */}
+      <div className="flex flex-col">
         {items.map((item, index) => {
           const selectedSize = sizes?.find(s => s.id === effectiveSize);
           const itemPrice = priceMap.get(item.id)?.get(effectiveSize || '');
           const displayPrice = itemPrice !== undefined ? itemPrice : selectedSize?.base_price || 0;
 
           return (
-            <motion.div
+            <button
               key={item.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.02, duration: 0.2 }}
+              onClick={() => handleItemClick(item)}
+              className="w-full flex items-start justify-between py-5 border-b border-gray-200 hover:bg-gray-50/50 transition-colors text-left"
             >
-              <button
-                onClick={() => handleItemClick(item)}
-                className="w-full flex items-start justify-between py-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50/50 transition-colors text-left"
-              >
-                {/* Text Info - Left side */}
-                <div className="flex-1 min-w-0 pr-4">
-                  <div className="flex items-start gap-2">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 text-[15px] leading-snug uppercase tracking-tight line-clamp-2">
-                        {item.name}
-                        {item.is_premium && (
-                          <Crown className="w-3.5 h-3.5 inline-block ml-1.5 text-amber-500" />
-                        )}
-                      </h3>
-                    </div>
-                    
-                    {showFavorites && (
-                      <div onClick={(e) => { e.stopPropagation(); toggleFavorite(item.id); }} className="flex-shrink-0 -mt-0.5">
-                        <FavoriteButton
-                          isFavorite={isFavorite(item.id)}
-                          onToggle={() => {}}
-                          size="sm"
-                        />
-                      </div>
-                    )}
-                  </div>
-                  
-                  {item.description && (
-                    <p className="text-[13px] text-gray-500 line-clamp-2 mt-1 leading-relaxed">
-                      {item.description}
-                    </p>
+              {/* Text Info - Left side */}
+              <div className="flex-1 min-w-0 pr-4">
+                {/* Title - Black, Bold, Uppercase */}
+                <h3 className="font-bold text-gray-900 text-[15px] leading-tight uppercase">
+                  {item.name}
+                  {item.is_premium && (
+                    <Crown className="w-3.5 h-3.5 inline-block ml-1.5 text-amber-500" />
                   )}
-                  
-                  <p className="mt-2 text-[15px] font-bold text-emerald-600">
-                    {formatCurrency(displayPrice)}
+                </h3>
+                
+                {/* Description - Purple/Violet */}
+                {item.description && (
+                  <p className="text-[13px] text-violet-500 mt-1 line-clamp-2">
+                    {item.description}
                   </p>
-                </div>
+                )}
+                
+                {/* Price - Black Bold */}
+                <p className="mt-1.5 text-[15px] font-bold text-gray-900">
+                  {formatCurrency(displayPrice)}
+                </p>
+                
+                {/* Favorite Button - below price */}
+                {showFavorites && (
+                  <div onClick={(e) => { e.stopPropagation(); toggleFavorite(item.id); }} className="mt-2">
+                    <FavoriteButton
+                      isFavorite={isFavorite(item.id)}
+                      onToggle={() => {}}
+                      size="sm"
+                    />
+                  </div>
+                )}
+              </div>
 
-                {/* Image - Right side */}
-                <div className="relative w-[100px] h-[100px] flex-shrink-0 rounded-lg overflow-hidden bg-gray-50">
-                  <OptimizedImage
-                    src={item.image_url}
-                    alt={item.name}
-                    aspectRatio="auto"
-                    className="w-full h-full object-cover"
-                    fallbackIcon={<span className="text-3xl text-gray-300">🍽️</span>}
-                  />
-                </div>
-              </button>
-            </motion.div>
+              {/* Image - Right side */}
+              <div className="relative w-[88px] h-[88px] flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                <OptimizedImage
+                  src={item.image_url}
+                  alt={item.name}
+                  aspectRatio="auto"
+                  className="w-full h-full object-cover"
+                  fallbackIcon={<span className="text-2xl text-gray-300">🍽️</span>}
+                />
+              </div>
+            </button>
           );
         })}
       </div>

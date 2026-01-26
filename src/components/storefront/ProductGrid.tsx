@@ -1,4 +1,4 @@
-// Product Grid - Anota AI Style - Text Left, Image Right
+// Product Grid - Anota AI Exact Style
 import { formatCurrency } from "@/lib/formatters";
 import { memo, useMemo } from "react";
 import { FavoriteButton } from "./FavoriteButton";
@@ -28,7 +28,7 @@ interface ProductGridProps {
   filterFavoritesOnly?: boolean;
 }
 
-// Memoized product card - Anota AI style (text left, image right)
+// Memoized product card - Anota AI exact style
 const ProductCard = memo(function ProductCard({
   product,
   index,
@@ -57,62 +57,60 @@ const ProductCard = memo(function ProductCard({
   return (
     <div
       className={`
-        flex items-start justify-between py-4 cursor-pointer 
-        border-b border-gray-100 last:border-b-0
-        hover:bg-gray-50/50 transition-colors font-storefront
+        flex items-start justify-between py-5 cursor-pointer 
+        border-b border-gray-200
+        hover:bg-gray-50/50 transition-colors
         ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}
       `}
       onClick={() => !isOutOfStock && onClick()}
     >
       {/* Text Info - Left Side */}
       <div className="flex-1 min-w-0 pr-4">
-        {/* Favorite Button - inline with title on mobile */}
-        <div className="flex items-start gap-2">
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 text-[15px] leading-snug line-clamp-2 uppercase tracking-tight">
-              {product.name}
-            </h3>
-          </div>
-          
-          {showFavorites && !isVirtual && (
-            <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0 -mt-0.5">
-              <FavoriteButton
-                isFavorite={isFavorite}
-                onToggle={onToggleFavorite}
-                size="sm"
-              />
-            </div>
-          )}
-        </div>
+        {/* Title - Black, Bold, Uppercase */}
+        <h3 className="font-bold text-gray-900 text-[15px] leading-tight uppercase">
+          {product.name}
+        </h3>
         
+        {/* Description - Purple/Violet color */}
         {product.description && (
-          <p className="text-[13px] text-gray-500 line-clamp-2 mt-1 leading-relaxed">
+          <p className="text-[13px] text-violet-500 mt-1 line-clamp-2">
             {product.description}
           </p>
         )}
         
-        {/* Price - Anota AI style: green/teal color */}
-        <div className="mt-2 flex items-center gap-2">
+        {/* Price - Black Bold with R$ prefix */}
+        <div className="mt-1.5">
           {hasPromo && (
-            <span className="text-xs text-gray-400 line-through">
+            <span className="text-xs text-gray-400 line-through mr-2">
               {formatCurrency(product.price)}
             </span>
           )}
-          <span className="text-[15px] font-bold text-emerald-600">
+          <span className="text-[15px] font-bold text-gray-900">
             {formatCurrency(displayPrice)}
           </span>
         </div>
         
         {/* Out of Stock Badge */}
         {isOutOfStock && (
-          <span className="inline-block mt-2 text-[11px] font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded">
+          <span className="inline-block mt-1.5 text-[11px] font-medium text-red-600">
             Esgotado
           </span>
         )}
+        
+        {/* Favorite Button - below price */}
+        {showFavorites && !isVirtual && (
+          <div onClick={(e) => e.stopPropagation()} className="mt-2">
+            <FavoriteButton
+              isFavorite={isFavorite}
+              onToggle={onToggleFavorite}
+              size="sm"
+            />
+          </div>
+        )}
       </div>
 
-      {/* Image - Right Side */}
-      <div className="relative w-[100px] h-[100px] flex-shrink-0 rounded-lg overflow-hidden bg-gray-50">
+      {/* Image - Right Side, Square with rounded corners */}
+      <div className="relative w-[88px] h-[88px] flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
         {product.image_url ? (
           <img
             src={product.image_url}
@@ -121,7 +119,7 @@ const ProductCard = memo(function ProductCard({
             loading={index < 6 ? "eager" : "lazy"}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-300 text-3xl">
+          <div className="w-full h-full flex items-center justify-center text-gray-300 text-2xl">
             🍽️
           </div>
         )}
