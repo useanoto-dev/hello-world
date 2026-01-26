@@ -58,7 +58,7 @@ const ProductCard = memo(function ProductCard({
     <div
       className={`
         flex items-start justify-between py-4 cursor-pointer
-        border-b-2 border-border
+        border-b border-gray-300
         hover:bg-muted/30 transition-colors
         ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}
       `}

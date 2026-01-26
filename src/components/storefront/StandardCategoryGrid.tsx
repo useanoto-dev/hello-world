@@ -168,7 +168,7 @@ export function StandardCategoryGrid({
     return (
       <div className="px-4">
         {[1, 2, 3, 4, 5, 6].map(i => (
-          <div key={i} className="flex items-start justify-between py-4 border-b-2 border-border">
+          <div key={i} className="flex items-start justify-between py-4 border-b border-gray-300">
             <div className="flex-1 space-y-2 pr-4">
               <Skeleton className="h-5 w-32" />
               <Skeleton className="h-4 w-48" />
@@ -200,7 +200,7 @@ export function StandardCategoryGrid({
                   item_type: 'standard',
                   is_premium: false 
                 }, size, size.base_price, allowQuantitySelector ? quantity : 1)}
-                className="w-full flex items-start justify-between py-4 border-b-2 border-border hover:bg-muted/30 transition-colors text-left"
+                className="w-full flex items-start justify-between py-4 border-b border-gray-300 hover:bg-muted/30 transition-colors text-left"
               >
                 {/* Text Info - Left side */}
                 <div className="flex-1 min-w-0 pr-4">
@@ -281,7 +281,7 @@ export function StandardCategoryGrid({
             <button
               key={item.id}
               onClick={() => handleItemClick(item)}
-              className="w-full flex items-start justify-between py-4 border-b-2 border-border hover:bg-muted/30 transition-colors text-left"
+              className="w-full flex items-start justify-between py-4 border-b border-gray-300 hover:bg-muted/30 transition-colors text-left"
             >
               {/* Text Info - Left side */}
               <div className="flex-1 min-w-0 pr-4">
