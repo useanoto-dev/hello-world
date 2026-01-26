@@ -204,18 +204,18 @@ export function StandardCategoryGrid({
               >
                 {/* Text Info - Left side */}
                 <div className="flex-1 min-w-0 pr-4">
-                  {/* Title - Black, Bold, Uppercase */}
-                  <h3 className="font-bold text-gray-900 text-[15px] leading-tight uppercase">
+                  {/* Title - Black, Bold */}
+                  <h3 className="font-bold text-gray-900 text-[15px] leading-tight">
                     {size.name}
                   </h3>
                   {/* Description - Purple/Violet */}
                   {size.description && (
-                    <p className="text-[13px] text-violet-500 mt-1 line-clamp-2">
+                    <p className="text-[13px] text-violet-500 mt-0.5 line-clamp-2">
                       {size.description}
                     </p>
                   )}
                   {/* Price - Black Bold */}
-                  <p className="mt-1.5 text-[15px] font-bold text-gray-900">
+                  <p className="mt-1 text-[15px] font-bold text-gray-900">
                     {formatCurrency(size.base_price)}
                   </p>
                 </div>
@@ -285,8 +285,8 @@ export function StandardCategoryGrid({
             >
               {/* Text Info - Left side */}
               <div className="flex-1 min-w-0 pr-4">
-                {/* Title - Black, Bold, Uppercase */}
-                <h3 className="font-bold text-gray-900 text-[15px] leading-tight uppercase">
+                {/* Title - Black, Bold */}
+                <h3 className="font-bold text-gray-900 text-[15px] leading-tight">
                   {item.name}
                   {item.is_premium && (
                     <Crown className="w-3.5 h-3.5 inline-block ml-1.5 text-amber-500" />
@@ -295,13 +295,13 @@ export function StandardCategoryGrid({
                 
                 {/* Description - Purple/Violet */}
                 {item.description && (
-                  <p className="text-[13px] text-violet-500 mt-1 line-clamp-2">
+                  <p className="text-[13px] text-violet-500 mt-0.5 line-clamp-2">
                     {item.description}
                   </p>
                 )}
                 
                 {/* Price - Black Bold */}
-                <p className="mt-1.5 text-[15px] font-bold text-gray-900">
+                <p className="mt-1 text-[15px] font-bold text-gray-900">
                   {formatCurrency(displayPrice)}
                 </p>
                 

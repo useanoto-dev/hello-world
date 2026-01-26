@@ -66,29 +66,27 @@ const ProductCard = memo(function ProductCard({
     >
       {/* Text Info - Left Side */}
       <div className="flex-1 min-w-0 pr-4">
-        {/* Title - Black, Bold, Uppercase */}
-        <h3 className="font-bold text-gray-900 text-[15px] leading-tight uppercase">
+        {/* Title - Black, Bold */}
+        <h3 className="font-bold text-gray-900 text-[15px] leading-tight">
           {product.name}
         </h3>
         
         {/* Description - Purple/Violet color */}
         {product.description && (
-          <p className="text-[13px] text-violet-500 mt-1 line-clamp-2">
+          <p className="text-[13px] text-violet-500 mt-0.5 line-clamp-2">
             {product.description}
           </p>
         )}
         
-        {/* Price - Black Bold with R$ prefix */}
-        <div className="mt-1.5">
+        {/* Price - Black Bold "R$ XX,00" */}
+        <p className="mt-1 text-[15px] font-bold text-gray-900">
           {hasPromo && (
-            <span className="text-xs text-gray-400 line-through mr-2">
+            <span className="text-gray-400 line-through font-normal text-[13px] mr-2">
               {formatCurrency(product.price)}
             </span>
           )}
-          <span className="text-[15px] font-bold text-gray-900">
-            {formatCurrency(displayPrice)}
-          </span>
-        </div>
+          {formatCurrency(displayPrice)}
+        </p>
         
         {/* Out of Stock Badge */}
         {isOutOfStock && (
