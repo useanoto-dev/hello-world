@@ -73,7 +73,7 @@ export function PizzaSizeGrid({ categoryId, storeId, onSizeSelect }: PizzaSizeGr
         <button
           key={size.id}
           onClick={() => onSizeSelect(size.id, size.name, size.max_flavors, size.base_price, size.image_url)}
-          className="w-full flex items-start justify-between py-4 border-b-2 border-border hover:bg-muted/30 transition-colors text-left"
+          className="w-full flex items-start justify-between py-4 border-b border-gray-300 hover:bg-muted/30 transition-colors text-left"
         >
           {/* Text Info - Left side */}
           <div className="flex-1 min-w-0 pr-4">
