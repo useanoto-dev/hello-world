@@ -1,4 +1,4 @@
-// Pizza Size Grid - FSW Style List Layout (Image Left, Text Right)
+// Pizza Size Grid - Anota AI Style (Text Left, Image Right)
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -43,15 +43,15 @@ export function PizzaSizeGrid({ categoryId, storeId, onSizeSelect }: PizzaSizeGr
 
   if (isLoading) {
     return (
-      <div className="px-5 pb-6 space-y-3">
+      <div className="px-4 pb-6 space-y-0">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="flex items-center gap-4 p-3 bg-white rounded-xl border border-gray-100">
-            <Skeleton className="w-24 h-24 rounded-lg shrink-0" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-5 w-3/4" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-5 w-1/3" />
+          <div key={i} className="flex items-start justify-between py-4 border-b border-gray-100">
+            <div className="flex-1 space-y-2 pr-4">
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-5 w-20" />
             </div>
+            <Skeleton className="w-[100px] h-[100px] rounded-lg shrink-0" />
           </div>
         ))}
       </div>
@@ -69,7 +69,7 @@ export function PizzaSizeGrid({ categoryId, storeId, onSizeSelect }: PizzaSizeGr
   }
 
   return (
-    <div className="px-5 pb-32 flex flex-col gap-3 font-storefront">
+    <div className="px-4 pb-32 flex flex-col bg-white font-storefront">
       {sizes.map((size, index) => (
         <motion.div
           key={size.id}
@@ -79,53 +79,47 @@ export function PizzaSizeGrid({ categoryId, storeId, onSizeSelect }: PizzaSizeGr
         >
           <button
             onClick={() => onSizeSelect(size.id, size.name, size.max_flavors, size.base_price, size.image_url)}
-            className="w-full flex gap-3 p-3 border border-border rounded-xl hover:bg-muted/50 transition-colors text-left"
+            className="w-full flex items-start justify-between py-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50/50 transition-colors text-left"
           >
-            {/* Image - Left side h-24 w-24 rounded-lg */}
-            <div className="relative h-24 w-24 rounded-lg overflow-hidden bg-white shrink-0">
+            {/* Text Info - Left side */}
+            <div className="flex-1 min-w-0 pr-4">
+              <h3 className="font-semibold text-gray-900 text-[15px] leading-snug uppercase tracking-tight">
+                {size.name}
+              </h3>
+              
+              {/* Slices info */}
+              {size.slices > 0 && (
+                <p className="text-[13px] text-gray-500 mt-1">
+                  {size.slices} fatias
+                </p>
+              )}
+              
+              {/* Price - Anota AI style */}
+              <div className="mt-2 flex items-center gap-1.5">
+                <span className="text-[13px] text-gray-400">A partir de</span>
+                <span className="text-[15px] font-bold text-emerald-600">
+                  {formatCurrency(size.base_price)}
+                </span>
+              </div>
+            </div>
+
+            {/* Image - Right side */}
+            <div className="relative w-[100px] h-[100px] flex-shrink-0 rounded-lg overflow-hidden bg-gray-50">
               <OptimizedImage
                 src={size.image_url}
                 alt={size.name}
                 aspectRatio="auto"
-                className="w-full h-full object-contain"
-                fallbackIcon={<span className="text-2xl text-muted-foreground">🍕</span>}
+                className="w-full h-full object-cover"
+                fallbackIcon={<span className="text-3xl text-gray-300">🍕</span>}
                 priority={index < 4}
               />
               
               {/* Flavors badge overlay */}
               {size.max_flavors > 1 && (
-                <div className="absolute bottom-1 right-1 bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
+                <div className="absolute bottom-1.5 left-1.5 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
                   {size.max_flavors} sabores
                 </div>
               )}
-            </div>
-
-            {/* Info - Right side */}
-            <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-foreground line-clamp-1">
-                {size.name}
-              </h3>
-              
-              {size.description && (
-                <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
-                  {size.description}
-                </p>
-              )}
-              
-              {/* Slices info */}
-              {size.slices > 0 && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  {size.slices} fatias
-                </p>
-              )}
-              
-              {/* Price - FSW style: text-sm font-semibold text-primary */}
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">A partir de</span>
-                <span className="text-sm font-semibold text-primary">
-                  {formatCurrency(size.base_price)}
-                </span>
-              </div>
             </div>
           </button>
         </motion.div>
