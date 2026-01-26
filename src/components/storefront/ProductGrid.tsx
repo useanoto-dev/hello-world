@@ -57,31 +57,31 @@ const ProductCard = memo(function ProductCard({
   return (
     <div
       className={`
-        flex items-start justify-between py-5 cursor-pointer 
-        border-b border-gray-200
-        hover:bg-gray-50/50 transition-colors
+        flex items-start justify-between py-4 cursor-pointer
+        border-b-2 border-border
+        hover:bg-muted/30 transition-colors
         ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}
       `}
       onClick={() => !isOutOfStock && onClick()}
     >
       {/* Text Info - Left Side */}
       <div className="flex-1 min-w-0 pr-4">
-        {/* Title - Black, Bold */}
-        <h3 className="font-bold text-gray-900 text-[15px] leading-tight">
+        {/* Title */}
+        <h3 className="font-semibold text-foreground text-[13px] leading-snug uppercase tracking-tight">
           {product.name}
         </h3>
         
-        {/* Description - Purple/Violet color */}
+        {/* Description */}
         {product.description && (
-          <p className="text-[13px] text-violet-500 mt-0.5 line-clamp-2">
+          <p className="text-[12px] text-muted-foreground mt-0.5 line-clamp-1">
             {product.description}
           </p>
         )}
         
-        {/* Price - Black Bold "R$ XX,00" */}
-        <p className="mt-1 text-[15px] font-bold text-gray-900">
+        {/* Price */}
+        <p className="mt-1 text-[13px] font-bold text-foreground">
           {hasPromo && (
-            <span className="text-gray-400 line-through font-normal text-[13px] mr-2">
+            <span className="text-muted-foreground line-through font-normal text-[12px] mr-2">
               {formatCurrency(product.price)}
             </span>
           )}
@@ -90,7 +90,7 @@ const ProductCard = memo(function ProductCard({
         
         {/* Out of Stock Badge */}
         {isOutOfStock && (
-          <span className="inline-block mt-1.5 text-[11px] font-medium text-red-600">
+          <span className="inline-block mt-1.5 text-[11px] font-medium text-destructive">
             Esgotado
           </span>
         )}
@@ -108,7 +108,7 @@ const ProductCard = memo(function ProductCard({
       </div>
 
       {/* Image - Right Side, Square with rounded corners */}
-      <div className="relative w-[88px] h-[88px] flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+      <div className="relative w-[76px] h-[76px] flex-shrink-0 rounded-md overflow-hidden border border-border bg-muted">
         {product.image_url ? (
           <img
             src={product.image_url}
@@ -117,7 +117,7 @@ const ProductCard = memo(function ProductCard({
             loading={index < 6 ? "eager" : "lazy"}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-300 text-2xl">
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-2xl">
             🍽️
           </div>
         )}
@@ -157,7 +157,7 @@ function ProductGrid({
   }
 
   return (
-    <div className="flex flex-col px-4 pb-32 bg-white">
+    <div className="flex flex-col px-4 pb-32 bg-background">
       {displayProducts.map((product, index) => (
         <ProductCard
           key={product.id}

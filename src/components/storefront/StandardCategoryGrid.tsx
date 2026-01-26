@@ -168,13 +168,13 @@ export function StandardCategoryGrid({
     return (
       <div className="px-4">
         {[1, 2, 3, 4, 5, 6].map(i => (
-          <div key={i} className="flex items-start justify-between py-5 border-b border-gray-200">
+          <div key={i} className="flex items-start justify-between py-4 border-b-2 border-border">
             <div className="flex-1 space-y-2 pr-4">
               <Skeleton className="h-5 w-32" />
               <Skeleton className="h-4 w-48" />
               <Skeleton className="h-5 w-20" />
             </div>
-            <Skeleton className="w-[88px] h-[88px] rounded-lg shrink-0" />
+            <Skeleton className="w-[76px] h-[76px] rounded-md shrink-0" />
           </div>
         ))}
       </div>
@@ -185,7 +185,7 @@ export function StandardCategoryGrid({
   if (!items || items.length === 0) {
     if (sizes && sizes.length > 0) {
       return (
-        <div className="px-4 pb-32 flex flex-col bg-white">
+        <div className="px-4 pb-32 flex flex-col bg-background">
           {sizes.map((size, index) => {
             const quantity = getQuantity(size.id);
             
@@ -200,34 +200,34 @@ export function StandardCategoryGrid({
                   item_type: 'standard',
                   is_premium: false 
                 }, size, size.base_price, allowQuantitySelector ? quantity : 1)}
-                className="w-full flex items-start justify-between py-5 border-b border-gray-200 hover:bg-gray-50/50 transition-colors text-left"
+                className="w-full flex items-start justify-between py-4 border-b-2 border-border hover:bg-muted/30 transition-colors text-left"
               >
                 {/* Text Info - Left side */}
                 <div className="flex-1 min-w-0 pr-4">
-                  {/* Title - Black, Bold */}
-                  <h3 className="font-bold text-gray-900 text-[15px] leading-tight">
+                  {/* Title */}
+                  <h3 className="font-semibold text-foreground text-[13px] leading-snug uppercase tracking-tight">
                     {size.name}
                   </h3>
-                  {/* Description - Purple/Violet */}
+                  {/* Description */}
                   {size.description && (
-                    <p className="text-[13px] text-violet-500 mt-0.5 line-clamp-2">
+                    <p className="text-[12px] text-muted-foreground mt-0.5 line-clamp-1">
                       {size.description}
                     </p>
                   )}
-                  {/* Price - Black Bold */}
-                  <p className="mt-1 text-[15px] font-bold text-gray-900">
+                  {/* Price */}
+                  <p className="mt-1 text-[13px] font-bold text-foreground">
                     {formatCurrency(size.base_price)}
                   </p>
                 </div>
 
                 {/* Image - Right side */}
-                <div className="relative w-[88px] h-[88px] flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                <div className="relative w-[76px] h-[76px] flex-shrink-0 rounded-md overflow-hidden border border-border bg-muted">
                   <OptimizedImage
                     src={size.image_url}
                     alt={size.name}
                     aspectRatio="auto"
-                    className="w-full h-full object-cover"
-                    fallbackIcon={<span className="text-2xl text-gray-300">🍽️</span>}
+                    className="w-full h-full object-cover bg-muted"
+                    fallbackIcon={<span className="text-2xl text-muted-foreground">🍽️</span>}
                   />
                 </div>
               </button>
@@ -247,7 +247,7 @@ export function StandardCategoryGrid({
   }
 
   return (
-    <div className="px-4 pb-32 space-y-4 bg-white">
+    <div className="px-4 pb-32 space-y-4 bg-background">
       {/* Size selector */}
       {sizes && sizes.length > 1 && (
         <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
@@ -257,8 +257,8 @@ export function StandardCategoryGrid({
               onClick={() => setSelectedSizeId(size.id)}
               className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 effectiveSize === size.id
-                  ? 'bg-amber-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
             >
               {size.name}
@@ -281,27 +281,27 @@ export function StandardCategoryGrid({
             <button
               key={item.id}
               onClick={() => handleItemClick(item)}
-              className="w-full flex items-start justify-between py-5 border-b border-gray-200 hover:bg-gray-50/50 transition-colors text-left"
+              className="w-full flex items-start justify-between py-4 border-b-2 border-border hover:bg-muted/30 transition-colors text-left"
             >
               {/* Text Info - Left side */}
               <div className="flex-1 min-w-0 pr-4">
-                {/* Title - Black, Bold */}
-                <h3 className="font-bold text-gray-900 text-[15px] leading-tight">
+                {/* Title */}
+                <h3 className="font-semibold text-foreground text-[13px] leading-snug uppercase tracking-tight">
                   {item.name}
                   {item.is_premium && (
-                    <Crown className="w-3.5 h-3.5 inline-block ml-1.5 text-amber-500" />
+                    <Crown className="w-3.5 h-3.5 inline-block ml-1.5 text-primary" />
                   )}
                 </h3>
                 
-                {/* Description - Purple/Violet */}
+                {/* Description */}
                 {item.description && (
-                  <p className="text-[13px] text-violet-500 mt-0.5 line-clamp-2">
+                  <p className="text-[12px] text-muted-foreground mt-0.5 line-clamp-1">
                     {item.description}
                   </p>
                 )}
                 
-                {/* Price - Black Bold */}
-                <p className="mt-1 text-[15px] font-bold text-gray-900">
+                {/* Price */}
+                <p className="mt-1 text-[13px] font-bold text-foreground">
                   {formatCurrency(displayPrice)}
                 </p>
                 
@@ -318,13 +318,13 @@ export function StandardCategoryGrid({
               </div>
 
               {/* Image - Right side */}
-              <div className="relative w-[88px] h-[88px] flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+              <div className="relative w-[76px] h-[76px] flex-shrink-0 rounded-md overflow-hidden border border-border bg-muted">
                 <OptimizedImage
                   src={item.image_url}
                   alt={item.name}
                   aspectRatio="auto"
-                  className="w-full h-full object-cover"
-                  fallbackIcon={<span className="text-2xl text-gray-300">🍽️</span>}
+                  className="w-full h-full object-cover bg-muted"
+                  fallbackIcon={<span className="text-2xl text-muted-foreground">🍽️</span>}
                 />
               </div>
             </button>
